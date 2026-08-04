@@ -27,7 +27,7 @@ class CourseSession extends Model
         });
     }
 
-    protected $fillable = ['module_id', 'title', 'slug', 'description', 'duration_minutes', 'thumbnail_path', 'sort_order'];
+    protected $fillable = ['module_id', 'title', 'is_hidden', 'slug', 'description', 'duration_minutes', 'thumbnail_path', 'sort_order'];
 
     public function module(): BelongsTo {
         return $this->belongsTo(Module::class);

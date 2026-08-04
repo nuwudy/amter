@@ -10,6 +10,7 @@ class LibraryController extends Controller
     {
         // Fetch Course Sessions (Titles) for the Library
         $sessions = \App\Models\CourseSession::with('module')
+            ->where('is_hidden', false)
             ->withCount('units')
             ->orderBy('sort_order')
             ->get();
@@ -25,6 +26,7 @@ class LibraryController extends Controller
 
             // Fetch all sessions (client-side pagination will handle UI)
             $sessions = $module->courseSessions()
+                ->where('is_hidden', false)
                 ->with(['units' => function($query) {
                     $query->where('is_published', true)->orderBy('sort_order');
                 }])

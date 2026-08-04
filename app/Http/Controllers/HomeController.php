@@ -34,6 +34,7 @@ class HomeController extends Controller
         $sessions = \App\Models\CourseSession::with(['module', 'units' => function ($query) {
                         $query->orderBy('sort_order', 'asc');
                     }])
+                        ->where('is_hidden', false)
                         ->withCount('units')
                         ->whereHas('units', function($q) {
                             $q->where('is_published', true);

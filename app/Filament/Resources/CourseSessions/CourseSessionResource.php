@@ -43,6 +43,10 @@ class CourseSessionResource extends Resource
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
 
+                \Filament\Forms\Components\Toggle::make('is_hidden')
+                    ->label('Hide Title')
+                    ->helperText('Hide the title on the library card'),
+
                 // 3. Slug
                 TextInput::make('slug')
                     ->required()

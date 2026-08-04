@@ -20,6 +20,7 @@ class Library extends Page
     public function getSessions()
     {
         return CourseSession::with('module')
+            ->where('is_hidden', false)
             ->withCount('units')
             ->orderBy('sort_order')
             ->when($this->search, function ($query) {
