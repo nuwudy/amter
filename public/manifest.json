@@ -1,0 +1,16 @@
+{
+    "name": "Amter - Speak English Naturally",
+    "short_name": "Amter",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#00c2e8",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/splash.png?v=4",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

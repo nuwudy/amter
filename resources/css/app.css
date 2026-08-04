@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/typography";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-primary-50: #ecfeff;
+    --color-primary-100: #cffafe;
+    --color-primary-500: #00c2e8;
+    --color-primary-600: #0891b2;
+    --color-primary-700: #0e7490;
+
+    --color-secondary-50: #f0f9ff;
+    --color-secondary-500: #0ea5e9;
+}
+
+/* Fix for Filament SVGs blowing up */
+svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Explicit constraint for header icons if they reappear */
+.fi-header svg,
+.fi-header-icon svg {
+    max-width: 3rem !important;
+    max-height: 3rem !important;
+}
+
+/* Force standard icon sizes */
+.w-5 {
+    width: 1.25rem !important;
+}
+
+.h-5 {
+    height: 1.25rem !important;
+}
+
+.w-6 {
+    width: 1.5rem !important;
+}
+
+.h-6 {
+    height: 1.5rem !important;
+}

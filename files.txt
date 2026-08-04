@@ -1,0 +1,1 @@
+.\database\migrations\2026_03_26_062909_create_speaking_games_table.php
