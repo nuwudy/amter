@@ -486,6 +486,28 @@ class UnitResource extends Resource
                                             ->required(),
                                     ]),
 
+                                // LISTEN AND SPEAK BLOCK
+                                \Filament\Forms\Components\Builder\Block::make('listen_speak')
+                                    ->label('Listen & Speak')
+                                    ->icon('heroicon-m-sparkles')
+                                    ->schema([
+                                        \Filament\Forms\Components\Textarea::make('english_text')
+                                            ->label('English Text')
+                                            ->required()
+                                            ->placeholder('e.g. I learn to speak english')
+                                            ->rows(3),
+                                            
+                                        \Filament\Forms\Components\Toggle::make('hide_english')
+                                            ->label('Hide English by default')
+                                            ->helperText('Students must click a button to reveal the English text')
+                                            ->default(false),
+                                            
+                                        \Filament\Forms\Components\Textarea::make('malayalam_text')
+                                            ->label('Malayalam Translation (Optional)')
+                                            ->placeholder('e.g. ഞാൻ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കുന്നു')
+                                            ->rows(3),
+                                    ]),
+
                                 // 8. SEPARATOR BLOCK
                                 \Filament\Forms\Components\Builder\Block::make('separator')
                                     ->label('Space / Divider')

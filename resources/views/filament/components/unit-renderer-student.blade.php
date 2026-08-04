@@ -909,6 +909,121 @@
                             </div>
                         </div>
 
+                    {{-- 12. LISTEN AND SPEAK BLOCK --}}
+                    @elseif($block['type'] === 'listen_speak')
+                        @php
+                            $data = $block['data'];
+                            $englishText = trim($data['english_text'] ?? '');
+                            $hideEnglish = $data['hide_english'] ?? false;
+                            $meaningMalayalam = $data['malayalam_text'] ?? '';
+                        @endphp
+                        <div x-data="listenSpeakBlock('{{ addslashes($englishText) }}', {{ $hideEnglish ? 'true' : 'false' }})" style="margin: 0.25rem 0; width: 100%; display: flex; justify-content: center;">
+                            <div class="lego-block" style="gap: 1.5rem; width: 95%; max-width: 550px;">
+                                <div style="text-align: center; position: relative; width: 100%;">
+                                    
+                                    <div style="width: 100%; display: flex; flex-direction: column; gap: 0.75rem; align-items: center;">
+                                        <!-- Toggle Buttons Container -->
+                                        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; width: 100%;">
+                                            <!-- See English Toggle -->
+                                            <button type="button" 
+                                                    @click="showEnglish = !showEnglish"
+                                                    class="transcript-toggle-btn btn-english-toggle"
+                                                    :class="{ 'is-active': showEnglish }">
+                                                <!-- Icon -->
+                                                <svg x-show="!showEnglish" style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                                <svg x-show="showEnglish" style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3" x-cloak><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.893 7.893L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                                                <span x-text="showEnglish ? 'Hide English' : 'See English'">See English</span>
+                                            </button>
+                                            
+                                            <!-- See Malayalam Toggle -->
+                                            @if(!empty($meaningMalayalam))
+                                                <button type="button" 
+                                                        @click="showMalayalam = !showMalayalam"
+                                                        class="transcript-toggle-btn btn-malayalam-toggle"
+                                                        :class="{ 'is-active': showMalayalam }">
+                                                    <!-- Icon -->
+                                                    <svg x-show="!showMalayalam" style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                                    <svg x-show="showMalayalam" style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3" x-cloak><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.893 7.893L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                                                    <span x-text="showMalayalam ? 'Hide Malayalam' : 'See Malayalam'">See Malayalam</span>
+                                                </button>
+                                            @endif
+                                        </div>
+                                        
+                                        <!-- English Text Area -->
+                                        <div x-show="showEnglish" 
+                                             x-transition:enter="transition ease-out duration-300"
+                                             x-transition:enter-start="opacity-0 transform scale-95"
+                                             x-transition:enter-end="opacity-100 transform scale-100"
+                                             style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-top: 0.5rem;">
+                                            <h3 style="font-size: 1.7rem; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; line-height: 1.2; margin: 0;">
+                                                "{{ $englishText }}"
+                                            </h3>
+                                        </div>
+                                        
+                                        <!-- Malayalam Meaning Area -->
+                                        @if(!empty($meaningMalayalam))
+                                            <div x-show="showMalayalam" 
+                                                 x-transition:enter="transition ease-out duration-300"
+                                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                                 style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                                                <p style="font-size: 1.15rem; font-weight: 700; color: #059669; margin: 0; line-height: 1.6;">{{ $meaningMalayalam }}</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 0.5rem;">
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                        <button type="button" @click="speakNow()"
+                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); box-shadow: 0 10px 20px rgba(168, 85, 247, 0.25);">
+                                            <svg x-show="!speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            <svg x-show="speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                        </button>
+                                        <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Listen</span>
+                                    </div>
+
+                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                                        <button type="button" @click="micStatus === 'listening' || micStatus === 'preparing' ? stopMic() : startMic()"
+                                                class="transition-all duration-300"
+                                                :class="{ 'mic-preparing': micStatus === 'preparing', 'mic-listening': micStatus === 'listening' }"
+                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);"
+                                                :style="{ 
+                                                    background: micStatus === 'listening' ? '#f43f5e' : (micStatus === 'preparing' ? '#eab308' : (micStatus === 'success' ? '#10b981' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')),
+                                                    transform: micStatus === 'listening' || micStatus === 'preparing' ? 'scale(1.1)' : 'scale(1)',
+                                                    boxShadow: '0 15px 30px rgba(99,102,241,0.25)'
+                                                }">
+                                            <svg x-show="micStatus !== 'success'" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                                            <svg x-show="micStatus === 'success'" style="width: 24px; height: 24px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                        </button>
+                                        <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Speak</span>
+                                    </div>
+                                </div>
+                                
+                                <div style="text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+                                    <template x-if="score > 0">
+                                        <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.25rem;">
+                                            <span style="padding: 0.4rem 1.2rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 900; color: #fff; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.3s;"
+                                                  :style="{
+                                                      background: score === 100 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
+                                                                 (score >= 85 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' :
+                                                                 (score >= 50 ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' :
+                                                                                'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)')),
+                                                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                                  }"
+                                                  x-text="score + '% ACCURATE'">
+                                            </span>
+                                        </div>
+                                    </template>
+                                    <span style="font-size: 13px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em;"
+                                          :style="{ color: micStatus === 'success' ? '#10b981' : (micStatus === 'error' ? '#f43f5e' : '#64748b') }"
+                                          x-text="micStatus === 'idle' ? '' : (micStatus === 'preparing' ? 'Connecting Mic...' : (micStatus === 'listening' ? 'Speak Now...' : (micStatus === 'success' ? (score === 100 ? 'Perfect Pronunciation!' : 'Great Pronunciation!') : 'Didn\'t catch that. Try again?')))"></span>
+                                    <p x-show="recognizedText" style="font-size: 16px; font-weight: 800; font-style: italic; color: #6366f1; line-height: 1.4;" x-text="recognizedText"></p>
+                                </div>
+
+                            </div>
+                        </div>
+
                     {{-- 9. SEPARATOR BLOCK --}}
                     @elseif($block['type'] === 'separator')
                         @php $style = $block['data']['style'] ?? 'empty_space'; @endphp
@@ -1180,6 +1295,186 @@
             }
             return matched;
         };
+
+        Alpine.data('listenSpeakBlock', (englishText, hideEnglish) => ({
+            englishText: englishText,
+            showEnglish: !hideEnglish,
+            showMalayalam: false,
+            speaking: false,
+            
+            // Mic logic (adapted from voiceMatcher)
+            micStatus: 'idle',
+            recognizedText: '',
+            score: 0,
+            recInstance: null,
+            safetyTimeout: null,
+
+            speakNow() {
+                if (!this.englishText.trim()) return;
+
+                if (window.speechSynthesis.speaking || this.speaking) {
+                    window.speechSynthesis.cancel();
+                    this.speaking = false;
+                    return;
+                }
+
+                this.speaking = true;
+                const utterance = new SpeechSynthesisUtterance(this.englishText);
+                utterance.lang = 'en-US';
+                utterance.rate = 1.0;
+
+                const matchedVoice = window.getAmterSpeechVoice('en-US', 'any');
+                if (matchedVoice) {
+                    utterance.voice = matchedVoice;
+                }
+
+                utterance.onstart = () => { this.speaking = true; };
+                utterance.onend = () => { this.speaking = false; };
+                utterance.onerror = () => { this.speaking = false; };
+
+                window.speechSynthesis.speak(utterance);
+            },
+
+            getWordMatchPercentage(targetStr, spokenStr) {
+                const cleanWord = (w) => {
+                    let word = w.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
+                    if (word === 'whats' || word === 'whatis') return 'was';
+                    if (word === 'where') return 'were';
+                    if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
+                    return word;
+                };
+                
+                const targetWords = targetStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
+                const spokenWords = spokenStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
+                
+                if (targetWords.length === 0) return 0;
+                
+                const dp = Array(targetWords.length + 1).fill(null).map(() => Array(spokenWords.length + 1).fill(0));
+                
+                for (let i = 0; i <= targetWords.length; i++) dp[i][0] = i;
+                for (let j = 0; j <= spokenWords.length; j++) dp[0][j] = j;
+                
+                for (let i = 1; i <= targetWords.length; i++) {
+                    for (let j = 1; j <= spokenWords.length; j++) {
+                        if (targetWords[i - 1] === spokenWords[j - 1]) {
+                            dp[i][j] = dp[i - 1][j - 1];
+                        } else {
+                            dp[i][j] = Math.min(
+                                dp[i - 1][j] + 1,
+                                dp[i][j - 1] + 1,
+                                dp[i - 1][j - 1] + 1
+                            );
+                        }
+                    }
+                }
+                
+                const editDistance = dp[targetWords.length][spokenWords.length];
+                const maxLen = Math.max(targetWords.length, spokenWords.length);
+                
+                let percentage = Math.round(((maxLen - editDistance) / maxLen) * 100);
+                return Math.max(0, percentage);
+            },
+            
+            startMic() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) return;
+
+                this.stopMic();
+
+                const rec = new SpeechRecognition();
+                this.recInstance = rec;
+                rec.lang = 'en-US';
+                rec.interimResults = true;
+                this.micStatus = 'preparing';
+                this.score = 0;
+                this.recognizedText = '';
+
+                rec.onstart = () => {
+                    this.micStatus = 'listening';
+                    this.safetyTimeout = setTimeout(() => {
+                        if (this.micStatus === 'listening') {
+                            rec.stop();
+                        }
+                    }, 8000);
+                };
+
+                rec.onresult = (e) => { 
+                    this.recognizedText = Array.from(e.results).map(r => r[0].transcript).join(''); 
+                };
+
+                rec.onerror = (e) => {
+                    if (this.micStatus === 'listening' || this.micStatus === 'preparing') {
+                        this.micStatus = 'error';
+                        setTimeout(() => {
+                            if (this.micStatus === 'error') this.micStatus = 'idle';
+                        }, 2000);
+                    }
+                };
+
+                rec.onend = () => {
+                    if (this.safetyTimeout) {
+                        clearTimeout(this.safetyTimeout);
+                        this.safetyTimeout = null;
+                    }
+                    this.recInstance = null;
+
+                    if (!this.recognizedText.trim()) {
+                        if (this.micStatus === 'listening' || this.micStatus === 'preparing') {
+                            this.micStatus = 'idle';
+                        }
+                        this.score = 0;
+                        return;
+                    }
+
+                    const clean = (s) => {
+                        let t = s.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
+                        return t.split(' ').map(word => {
+                            if (word === 'whats' || word === 'whatis') return 'was';
+                            if (word === 'where') return 'were';
+                            if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
+                            return word;
+                        }).join('');
+                    };
+                    const text = clean(this.recognizedText);
+                    const isStrictMatch = (clean(this.englishText) === text);
+
+                    this.score = this.getWordMatchPercentage(this.englishText, this.recognizedText);
+
+                    if (isStrictMatch && this.score < 100) {
+                        this.score = 100;
+                    }
+
+                    if (isStrictMatch || this.score >= 70) {
+                        this.micStatus = 'success';
+                        if (window.confetti) confetti();
+                    } else {
+                        this.micStatus = 'error';
+                        setTimeout(() => {
+                            if (this.micStatus === 'error') {
+                                this.micStatus = 'idle';
+                            }
+                        }, 2000);
+                    }
+                };
+                rec.start();
+            },
+
+            stopMic() {
+                if (this.safetyTimeout) {
+                    clearTimeout(this.safetyTimeout);
+                    this.safetyTimeout = null;
+                }
+                if (this.recInstance) {
+                    try {
+                        this.recInstance.abort();
+                    } catch (e) {}
+                    this.recInstance = null;
+                }
+                if (this.micStatus === 'listening' || this.micStatus === 'preparing') {
+                    this.micStatus = 'idle';
+                }
+            }
+        }));
 
         Alpine.data('textToSpeech', (defaultText, defaultAccent, gender = 'any') => ({
             text: defaultText,
