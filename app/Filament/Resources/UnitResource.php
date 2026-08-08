@@ -179,6 +179,14 @@ class UnitResource extends Resource
                                             ->label('OR Select from Media Library')
                                             ->options(fn () => \App\Models\MediaItem::where('type', 'video')->latest()->pluck('title', 'id'))
                                             ->searchable(),
+                                        \Filament\Forms\Components\TextInput::make('custom_url')
+                                            ->label('OR Paste Video Link / Path'),
+                                        \Filament\Forms\Components\TextInput::make('copy_video_url')
+                                            ->label('Uploaded Video URL (Click to Copy)')
+                                            ->formatStateUsing(fn ($get) => $get('video_path') ? asset('storage/' . $get('video_path')) : null)
+                                            ->disabled()
+                                            ->copyable()
+                                            ->visible(fn ($get) => auth()->user()?->isAdmin() && filled($get('video_path'))),
                                         \Filament\Forms\Components\Textarea::make('transcript')
                                             ->label('Transcript (Optional)')
                                             ->placeholder('Type the video transcript here...')
@@ -199,6 +207,12 @@ class UnitResource extends Resource
                                             ->image()
                                             ->disk('public')
                                             ->directory('lesson-images'),
+                                        \Filament\Forms\Components\TextInput::make('copy_image_url')
+                                            ->label('Uploaded Image URL (Click to Copy)')
+                                            ->formatStateUsing(fn ($get) => $get('url') ? asset('storage/' . $get('url')) : null)
+                                            ->disabled()
+                                            ->copyable()
+                                            ->visible(fn ($get) => auth()->user()?->isAdmin() && filled($get('url'))),
                                         \Filament\Forms\Components\Select::make('media_item_selection')
                                             ->label('OR Select from Media Library')
                                             ->options(fn () => \App\Models\MediaItem::where('type', 'image')->latest()->pluck('title', 'id'))

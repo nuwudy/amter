@@ -335,6 +335,8 @@
                             $vUrl = null;
                             if (!empty($data['video_path'])) {
                                 $vUrl = asset('storage/' . $data['video_path']);
+                            } elseif (!empty($data['custom_url'])) {
+                                $vUrl = str_starts_with($data['custom_url'], 'http') ? $data['custom_url'] : asset('storage/' . $data['custom_url']);
                             } elseif (!empty($data['media_item_id'])) {
                                 $media = \App\Models\MediaItem::find($data['media_item_id']);
                                 $vUrl = $media ? asset('storage/' . $media->path) : null;
