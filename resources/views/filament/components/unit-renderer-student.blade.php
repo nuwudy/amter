@@ -281,6 +281,11 @@
         }
 
         /* Pulsing Glow Animations for Speech/Recording states */
+        @keyframes mic-pulse-idle {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6); }
+            70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
         @keyframes mic-pulse-prep {
             0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7); }
             70% { box-shadow: 0 0 0 15px rgba(234, 179, 8, 0); }
@@ -290,6 +295,9 @@
             0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.7); }
             70% { box-shadow: 0 0 0 20px rgba(244, 63, 94, 0); }
             100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
+        }
+        .mic-idle {
+            animation: mic-pulse-idle 2s infinite !important;
         }
         .mic-preparing {
             animation: mic-pulse-prep 1.5s infinite !important;
@@ -984,7 +992,7 @@
                                 <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 0.5rem;">
                                     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                                         <button type="button" @click="speakNow()"
-                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%); box-shadow: 0 10px 20px rgba(168, 85, 247, 0.25);">
+                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);">
                                             <svg x-show="!speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                             <svg x-show="speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                                         </button>
@@ -994,7 +1002,7 @@
                                     <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                                         <button type="button" @click="micStatus === 'listening' || micStatus === 'preparing' ? stopMic() : startMic()"
                                                 class="transition-all duration-300"
-                                                :class="{ 'mic-preparing': micStatus === 'preparing', 'mic-listening': micStatus === 'listening' }"
+                                                :class="{ 'mic-idle': micStatus === 'idle', 'mic-preparing': micStatus === 'preparing', 'mic-listening': micStatus === 'listening' }"
                                                 style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);"
                                                 :style="{ 
                                                     background: micStatus === 'listening' ? '#f43f5e' : (micStatus === 'preparing' ? '#eab308' : (micStatus === 'success' ? '#10b981' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')),
