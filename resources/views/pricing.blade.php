@@ -3,20 +3,23 @@
 @section('meta_description', 'Choose the best plan for your English learning journey. Simple, transparent pricing with no hidden fees.')
 
 @section('content')
-<div class="bg-slate-900 min-h-screen py-16 sm:py-32" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-16">
-            <h2 class="text-3xl font-extrabold text-white sm:text-4xl mb-4">
-                Simple, Transparent Pricing
-            </h2>
-            <p class="text-xl text-gray-300">
-                Choose the plan that fits your learning pace. No hidden fees, no auto-renewals.
-            </p>
-        </div>
+<div class="py-24 sm:py-32 bg-slate-900 min-h-screen relative overflow-hidden">
+    <!-- Background Blobs -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-600/10 blur-3xl mix-blend-screen"></div>
+        <div class="absolute bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-tl from-indigo-500/20 to-indigo-600/10 blur-3xl mix-blend-screen"></div>
+    </div>
 
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        <div class="max-w-4xl mx-auto text-center mb-10 sm:mb-16">
+            <h2 class="text-base font-semibold leading-7 text-indigo-400">Pricing</h2>
+            <p class="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl font-sans">Invest in your English journey</p>
+            <p class="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-300">Choose the perfect plan to unlock your spoken English potential.</p>
+        </div>
+        
         @if(session('error'))
             <div class="max-w-4xl mx-auto mb-8">
-                <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3">
+                <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl flex items-center gap-3">
                     <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
                     <span>{{ session('error') }}</span>
                 </div>
@@ -25,7 +28,7 @@
         
         @if ($errors->any())
             <div class="max-w-4xl mx-auto mb-8">
-                <div class="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl">
+                <div class="bg-red-500/10 border border-red-500/20 text-red-400 px-6 py-4 rounded-xl">
                     <ul class="list-disc list-inside space-y-1">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -35,82 +38,132 @@
             </div>
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto relative z-10">
+        @php
+            $strategyData = [
+                'Starter' => [
+                    'tag' => null,
+                    'basePrice' => 399,
+                    'subText' => 'Test the AI speech practice and build daily comfort.',
+                    'badge' => null,
+                    'isPopular' => false,
+                ],
+                'Booster' => [
+                    'tag' => null,
+                    'basePrice' => 798,
+                    'subText' => 'Overcome basic hesitation and speak simple sentences.',
+                    'badge' => null,
+                    'isPopular' => false,
+                ],
+                'Fluency Builder' => [
+                    'tag' => null,
+                    'basePrice' => 1197,
+                    'subText' => 'Build an unbreakable habit and gain conversational confidence.',
+                    'badge' => '🔥 Most Popular',
+                    'isPopular' => true,
+                ],
+                'Complete Mastery / Pro Speaker' => [
+                    'tag' => null,
+                    'basePrice' => 2394,
+                    'subText' => 'Complete English transformation for interviews, work, and travel.',
+                    'badge' => '💎 Best Value',
+                    'isPopular' => false,
+                ]
+            ];
+        @endphp
+
+        <div class="isolate mx-auto mt-8 grid w-full grid-cols-1 gap-y-8 sm:mt-12 sm:grid-cols-2 lg:grid-cols-4 sm:gap-x-6 xl:gap-x-8 items-stretch">
             @foreach($plans as $plan)
-            <div class="relative bg-white/5 rounded-3xl shadow-lg border border-gray-600 backdrop-blur hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group">
-                <!-- Highlight Ribbon for Best Value -->
-                @if($plan->is_best_value)
-                <div class="absolute top-0 right-0 bg-gradient-to-r from-primary-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl shadow-sm">
-                    BEST VALUE
-                </div>
-                @endif
+                @php
+                    $meta = $strategyData[$plan->name] ?? [
+                        'tag' => null,
+                        'basePrice' => $plan->price,
+                        'subText' => 'Full access to all language courses and practice.',
+                        'badge' => $plan->is_best_value ? '💎 Best Value' : null,
+                        'isPopular' => false,
+                    ];
+                    
+                    $discount = $meta['basePrice'] > $plan->price 
+                        ? round((($meta['basePrice'] - $plan->price) / $meta['basePrice']) * 100) 
+                        : 0;
+                    $durationMonths = round($plan->duration_days / 30);
+                    if ($durationMonths < 1) $durationMonths = 1;
+                    $perMonth = round($plan->price / $durationMonths);
+                @endphp
 
-                <div class="p-6 sm:p-8 flex-1">
-                    <h3 class="text-2xl font-bold text-white mb-2">{{ $plan->name }}</h3>
-                    <div class="flex items-baseline gap-1 my-4 sm:my-6">
-                        <span class="text-4xl font-extrabold text-white">₹{{ number_format($plan->price, 0) }}</span>
-                        <span class="text-gray-400 font-medium">/ {{ $plan->duration_days }} days</span>
-                    </div>
-                    <p class="text-gray-300 leading-relaxed mb-4 sm:mb-6">
-                        Full access to all language courses, voice matching, and progress tracking for {{ $plan->duration_days }} days.
-                    </p>
-                    <ul class="space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
-                        <li class="flex items-center gap-3 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>Unlimited Access</span>
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>Voice Matching </span>
-                        </li>
-                        <li class="flex items-center gap-3 text-gray-300">
-                            <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                            <span>Certificate of Completion</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="p-6 sm:p-8 bg-white/5 border-t border-gray-600">
-                    @auth
-                        <form action="{{ route('checkout', $plan) }}" method="POST">
-                            @csrf
-                            <div class="mb-4">
-                                <label for="phone_{{ $plan->id }}" class="block text-sm font-medium text-gray-300 mb-1">Mobile Number</label>
-                                <input type="tel" name="phone" id="phone_{{ $plan->id }}" 
-                                    placeholder="10-digit number" 
-                                    maxlength="10" 
-                                    required 
-                                    value="{{ auth()->user()->phone ?? '' }}"
-                                    class="w-full px-4 py-2 border border-gray-600 bg-black/20 text-white rounded-lg focus:ring-2 focus:ring-green-400 focus:border-green-400 outline-none transition-all placeholder-gray-500"
-                                    pattern="[0-9]{10}"
-                                    title="Please enter a valid 10-digit mobile number">
-                            </div>
-                            <button type="submit" class="w-full bg-gradient-to-r from-green-400 to-green-600 text-white font-bold py-3 px-4 rounded-xl hover:scale-105 shadow-xl transition-all duration-200">
-                                Buy Now
-                            </button>
-                        </form>
-                    @else
-                        <div class="text-center">
-                            <p class="text-sm text-gray-400 mb-4">Login or Register to purchase</p>
-                            <a href="{{ route('login') }}" class="block w-full bg-white/10 text-white border border-white/20 font-bold py-3 px-4 rounded-xl hover:bg-white/20 transition-all duration-200 backdrop-blur">
-                                Login to Subscribe
-                            </a>
+                <div class="{{ $meta['isPopular'] ? 'ring-2 ring-indigo-500 lg:scale-105 z-10 bg-slate-800' : 'ring-1 ring-slate-700 bg-slate-800/60 backdrop-blur-sm' }} rounded-3xl p-8 relative flex flex-col justify-between shadow-xl transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 h-full group">
+                    
+                    @if($meta['badge'])
+                        <div class="absolute -top-4 left-0 right-0 flex justify-center">
+                            <span class="{{ $meta['isPopular'] ? 'bg-indigo-500 text-white' : 'bg-gradient-to-r from-amber-300 to-yellow-500 text-yellow-950 ring-1 ring-yellow-400' }} px-4 py-1 text-xs sm:text-sm font-semibold rounded-full shadow-md whitespace-nowrap">
+                                {{ $meta['badge'] }}
+                            </span>
                         </div>
-                    @endauth
+                    @endif
+
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between gap-x-4 mb-2">
+                            <h3 class="text-xl font-bold leading-8 text-white">{{ $plan->name }}</h3>
+                        </div>
+                        
+                        @if($meta['tag'])
+                            <p class="text-sm font-semibold text-indigo-400 mb-2 font-malayalam">{{ $meta['tag'] }}</p>
+                        @endif
+                        
+                        <p class="mt-4 text-sm leading-6 text-gray-300 min-h-[3rem]">{{ $meta['subText'] }}</p>
+                        
+                        <div class="mt-6 flex items-baseline gap-x-1">
+                            <span class="text-4xl font-extrabold tracking-tight text-white">₹{{ number_format($plan->price, 0) }}</span>
+                            <span class="text-sm font-medium leading-6 text-gray-400">/ {{ $durationMonths }} {{ $durationMonths > 1 ? 'Months' : 'Month' }}</span>
+                        </div>
+                        
+                        <div class="mt-2 flex items-center gap-x-2 text-sm min-h-[1.5rem]">
+                            @if($meta['basePrice'] > $plan->price)
+                                <span class="line-through text-gray-500">₹{{ number_format($meta['basePrice'], 0) }}</span>
+                            @endif
+                            @if($discount > 0)
+                                <span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Save {{ $discount }}%</span>
+                            @endif
+                        </div>
+                        
+                        <div class="mt-2 text-sm font-medium border-t border-slate-700 pt-4 mb-8">
+                            <span class="text-white font-semibold">₹{{ number_format($perMonth, 0) }}</span> <span class="text-gray-400">/ month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        @auth
+                            <form action="{{ route('checkout', $plan) }}" method="POST" x-data="{ phone: '{{ auth()->user()->phone ?? '' }}' }">
+                                @csrf
+                                <div class="mb-4">
+                                    <input type="tel" name="phone" id="phone_{{ $plan->id }}" 
+                                        placeholder="10-digit mobile number" 
+                                        maxlength="10" 
+                                        required 
+                                        x-model="phone"
+                                        class="w-full px-4 py-3 border border-slate-600 bg-slate-900/50 text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-gray-500 text-sm text-center"
+                                        pattern="[0-9]{10}">
+                                </div>
+                                <button type="submit" 
+                                    :class="phone.length === 10 ? 'bg-green-500 hover:bg-green-400 shadow-lg shadow-green-500/30 text-white' : '{{ $meta['isPopular'] ? 'bg-indigo-500 hover:bg-indigo-400 shadow-lg shadow-indigo-500/30' : 'bg-white/10 hover:bg-white/20 border border-white/10' }} text-white'"
+                                    class="w-full font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]">
+                                    Buy Now
+                                </button>
+                            </form>
+                        @else
+                            <div class="text-center">
+                                <a href="{{ route('login') }}" class="block w-full {{ $meta['isPopular'] ? 'bg-indigo-500 hover:bg-indigo-400 shadow-lg shadow-indigo-500/30' : 'bg-white/10 hover:bg-white/20 border border-white/10' }} text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 hover:scale-[1.02]">
+                                    Login to Subscribe
+                                </a>
+                            </div>
+                        @endauth
+                    </div>
                 </div>
-            </div>
             @endforeach
         </div>
 
         <div class="mt-10 sm:mt-16 text-center">
-            <p class="text-gray-400">Need help with payments? <a href="{{ route('contact') }}" class="text-green-400 font-medium hover:underline">Contact Support</a></p>
+            <p class="text-gray-400">Need help with payments? <a href="{{ route('contact') }}" class="text-indigo-400 font-medium hover:underline">Contact Support</a></p>
         </div>
-    </div>
-    
-    <!-- Background Blobs (Optional) -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div class="absolute top-[-20%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-gradient-to-br from-green-500/20 to-purple-600/10 blur-3xl mix-blend-screen"></div>
-        <div class="absolute bottom-[-20%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-gradient-to-tl from-pink-500/20 to-orange-600/10 blur-3xl mix-blend-screen"></div>
     </div>
 </div>
 @endsection
