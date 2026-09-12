@@ -311,6 +311,7 @@
                         <li><a href="{{ route('contact') }}" class="hover:text-primary-600">Contact Us</a></li>
                         <li><a href="{{ route('privacy') }}" class="hover:text-primary-600">Privacy Policy</a></li>
                         <li><a href="{{ route('terms') }}" class="hover:text-primary-600">Terms of Service</a></li>
+                        <li><a href="{{ route('refund.policy') }}" class="hover:text-primary-600">Refund Policy</a></li>
                     </ul>
                 </div>
             </div>

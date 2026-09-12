@@ -38,6 +38,7 @@ Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->nam
 Route::get('/terms', [App\Http\Controllers\PageController::class, 'terms'])->name('terms');
 Route::get('/privacy', [App\Http\Controllers\PageController::class, 'privacy'])->name('privacy');
 Route::get('/contact', [App\Http\Controllers\PageController::class, 'contact'])->name('contact');
+Route::get('/refund-policy', [App\Http\Controllers\PageController::class, 'refund'])->name('refund.policy');
 
 // TEMPORARY: Test route to reset progress
 Route::get('/test/reset-progress', function() {

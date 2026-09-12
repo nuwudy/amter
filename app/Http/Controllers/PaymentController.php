@@ -39,8 +39,8 @@ class PaymentController extends Controller
         if (!$razorpay->isConfigured()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Payment gateway is currently not configured. Please contact support.',
-            ], 500);
+                'message' => 'Online card & UPI checkout is currently being activated. Please contact our support team via WhatsApp / Call (+91 98959 40500) or email to activate your plan directly.',
+            ], 200);
         }
 
         try {

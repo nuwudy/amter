@@ -64,7 +64,7 @@
                             <ul class="space-y-3 list-disc list-inside text-gray-600">
                                 <li>No hidden subscription or recurring fees</li>
                                 <li>Refunds are reviewed on a case-by-case basis within 7 days of purchase</li>
-                                <li>Contact <a href="mailto:billing@amter.test" class="text-primary-600">billing@amter.test</a> for any payment queries</li>
+                                <li>Contact <a href="mailto:contact.amterenglis@gmail.com" class="text-primary-600">contact.amterenglis@gmail.com</a> for any payment queries</li>
                             </ul>
                         </div>
                     </section>
