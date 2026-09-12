@@ -54,6 +54,16 @@
             </div>
         @endif
 
+        @if(session('success'))
+            <div x-data="{ show: true }" x-show="show" class="mb-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-6 py-4 rounded-2xl flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="font-semibold text-sm">{{ session('success') }}</span>
+                </div>
+                <button type="button" @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold ml-4">✕</button>
+            </div>
+        @endif
+
         {{-- Custom Hero/Header Section (Inline Styled) --}}
         <div style="display: flex; flex-direction: column; gap: 1.5rem; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9;">
             {{-- Title Section --}}

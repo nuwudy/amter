@@ -55,10 +55,12 @@ Route::get('/student/modules/{module}', [\App\Http\Controllers\LibraryController
 
 // Payment & Pricing Routes
 Route::get('/pricing', [PaymentController::class, 'index'])->name('pricing');
+Route::post('/payment/webhook', [PaymentController::class, 'webhook'])->name('payment.webhook');
 
 Route::middleware(['auth'])->group(function () {
-    Route::post('/checkout/{plan}', [PaymentController::class, 'checkout'])->name('checkout');
-    Route::get('/payment/callback', [PaymentController::class, 'callback'])->name('payment.callback');
+    Route::post('/payment/initiate/{plan}', [PaymentController::class, 'initiate'])->name('payment.initiate');
+    Route::post('/checkout/{plan}', [PaymentController::class, 'initiate'])->name('checkout'); // Backward compatibility
+    Route::post('/payment/verify', [PaymentController::class, 'verify'])->name('payment.verify');
     Route::post('/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
     Route::post('/ai-tutor/chat', [\App\Http\Controllers\AiTutorController::class, 'chat'])->name('ai.chat');
 });

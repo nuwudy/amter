@@ -4,132 +4,251 @@ namespace App\Http\Controllers;
 
 use App\Models\Plan;
 use App\Models\Payment;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Services\RazorpayService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PaymentController extends Controller
 {
+    /**
+     * Display the pricing page.
+     */
     public function index()
     {
         $plans = Plan::where('is_active', true)->get();
-        return view('pricing', compact('plans'));
+        $razorpayKey = config('services.razorpay.key_id');
+
+        return view('pricing', compact('plans', 'razorpayKey'));
     }
 
-    public function checkout(Request $request, Plan $plan)
+    /**
+     * Initiate a Razorpay payment order.
+     */
+    public function initiate(Request $request, Plan $plan, RazorpayService $razorpay): JsonResponse
     {
         $request->validate([
-            'phone' => 'required|digits:10',
+            'phone' => 'nullable|string|max:20',
         ]);
 
         $user = auth()->user();
 
-        // 1. Create a local Payment record with 'pending' status
-        $payment = Payment::create([
-            'user_id' => $user->id,
-            'plan_id' => $plan->id,
-            'amount' => $plan->price,
-            'status' => 'pending',
-        ]);
+        if (!$razorpay->isConfigured()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment gateway is currently not configured. Please contact support.',
+            ], 500);
+        }
 
-        // 2. Prepare Instamojo payload
-        $payload = [
-            'purpose' => $plan->name,
-            'amount' => $plan->price,
-            'buyer_name' => $user->name,
-            'email' => $user->email,
-            'phone' => $request->phone,
-            'redirect_url' => route('payment.callback'),
-            'send_email' => true,
-            'send_sms' => true,
-            'webhook' => '', // Optional if we rely on redirect
-            'allow_repeated_payments' => false,
-        ];
+        try {
+            $receipt = 'rcpt_' . $plan->id . '_' . $user->id . '_' . time();
 
-        Log::info('Instamojo Payload:', $payload);
+            // 1. Create Order with Razorpay
+            $order = $razorpay->createOrder(
+                amountInRupees: $plan->price,
+                receipt: $receipt,
+                notes: [
+                    'user_id' => (string) $user->id,
+                    'user_email' => $user->email,
+                    'plan_id' => (string) $plan->id,
+                    'plan_name' => $plan->name,
+                ]
+            );
 
-        // 3. Call Instamojo API
-        $response = Http::withHeaders([
-            'X-Api-Key' => config('services.instamojo.api_key'),
-            'X-Auth-Token' => config('services.instamojo.auth_token'),
-        ])->post('https://www.instamojo.com/api/1.1/payment-requests/', $payload);
+            // 2. Create pending payment record
+            Payment::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'order_id' => $order['id'],
+                'receipt' => $receipt,
+                'amount' => $plan->price,
+                'currency' => 'INR',
+                'phone' => $request->input('phone'),
+                'status' => 'pending',
+            ]);
 
-        // Note: Using v1.1 endpoint structure which is common. If v2 is preferred: https://api.instamojo.com/v2/payment_requests/
-        // Let's stick to the standard v1.1 for simplicity unless it fails, or check doc.
-        // Actually, let's use the API wrapper or just direct HTTP. Direct HTTP is fine.
-        
-        $json = $response->json();
+            return response()->json([
+                'success' => true,
+                'key' => $razorpay->getKeyId(),
+                'order_id' => $order['id'],
+                'amount' => $order['amount'],
+                'currency' => $order['currency'] ?? 'INR',
+                'name' => config('app.name', 'Amter English'),
+                'description' => $plan->name . ' (' . $plan->duration_days . ' Days)',
+                'prefill' => [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'contact' => $request->input('phone') ?? '',
+                ],
+                'theme' => [
+                    'color' => '#6366f1',
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Razorpay Initiate Error: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
 
-        if ($response->successful() && isset($json['payment_request'])) {
-            $longUrl = $json['payment_request']['longurl'];
-            $paymentRequestId = $json['payment_request']['id'];
-
-            // Update payment record
-            $payment->update(['payment_request_id' => $paymentRequestId]);
-
-            // Redirect user
-            return redirect($longUrl);
-        } else {
-            Log::error('Instamojo Payment Initiation Failed', ['response' => $json]);
-            return back()->with('error', 'Unable to initiate payment. Please try again later.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to initiate payment: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
-    public function callback(Request $request)
+    /**
+     * Verify payment signature and activate user subscription.
+     */
+    public function verify(Request $request, RazorpayService $razorpay): JsonResponse
     {
-        // Instamojo redirects back with ?payment_id=MOJOxxx&payment_request_id=xxx
-        $paymentId = $request->payment_id;
-        $paymentRequestId = $request->payment_request_id;
-        $status = $request->status; // Sometimes 'Credit' or something similar? No, usually check payment details.
+        $request->validate([
+            'razorpay_order_id' => 'required|string',
+            'razorpay_payment_id' => 'required|string',
+            'razorpay_signature' => 'required|string',
+        ]);
 
-        // Find our local payment
-        $payment = Payment::where('payment_request_id', $paymentRequestId)->firstOrFail();
+        $orderId = $request->input('razorpay_order_id');
+        $paymentId = $request->input('razorpay_payment_id');
+        $signature = $request->input('razorpay_signature');
 
-        // Verify with Instamojo API to be sure
-        $response = Http::withHeaders([
-            'X-Api-Key' => config('services.instamojo.api_key'),
-            'X-Auth-Token' => config('services.instamojo.auth_token'),
-        ])->get("https://www.instamojo.com/api/1.1/payment-requests/{$paymentRequestId}/{ $paymentId }/");
-        
-        // Actually, a simpler way is checking the payment details by ID
-        $response = Http::withHeaders([
-            'X-Api-Key' => config('services.instamojo.api_key'),
-            'X-Auth-Token' => config('services.instamojo.auth_token'),
-        ])->get("https://www.instamojo.com/api/1.1/payments/{$paymentId}/");
+        $payment = Payment::where('order_id', $orderId)->first();
 
-        $json = $response->json();
+        if (!$payment) {
+            Log::error('Payment record not found for Order ID: ' . $orderId);
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment transaction record not found.',
+            ], 404);
+        }
 
-        if ($response->successful() && $json['payment']['status'] == 'Credit') {
-            // Payment Successful
+        // Verify cryptographic signature
+        $isSignatureValid = $razorpay->verifyPaymentSignature($orderId, $paymentId, $signature);
+
+        if (!$isSignatureValid) {
             $payment->update([
                 'payment_id' => $paymentId,
-                'status' => 'completed', 
+                'signature' => $signature,
+                'status' => 'failed',
+                'error_reason' => 'Cryptographic signature verification failed.',
             ]);
 
-            // Update User Subscription
-            $user = $payment->user;
-            $plan = $payment->plan;
+            Log::warning('Razorpay signature mismatch for Order: ' . $orderId);
 
-            // Logic: If user already has valid subscription, extend it. If not, start from now.
-            $currentExpiry = $user->subscription_expires_at;
-            
-            if ($currentExpiry && $currentExpiry->isFuture()) {
-                $newExpiry = $currentExpiry->addDays($plan->duration_days);
-            } else {
-                $newExpiry = Carbon::now()->addDays($plan->duration_days);
-            }
-
-            $user->plan_id = $plan->id;
-            $user->subscription_expires_at = $newExpiry;
-            $user->save();
-
-            return redirect()->route('filament.student.pages.dashboard')->with('success', 'Payment successful! Subscription active until ' . $newExpiry->toFormattedDateString());
-
-        } else {
-            // Payment Failed or Pending
-            $payment->update(['status' => 'failed']);
-            return redirect()->route('pricing')->with('error', 'Payment failed or was incomplete.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment verification failed: Invalid payment signature.',
+            ], 400);
         }
+
+        // Fetch payment details to record method (UPI, card, etc.)
+        $details = $razorpay->fetchPayment($paymentId);
+        $method = $details['method'] ?? null;
+
+        // Fulfill subscription inside transaction
+        DB::transaction(function () use ($payment, $paymentId, $signature, $method) {
+            $payment->update([
+                'payment_id' => $paymentId,
+                'signature' => $signature,
+                'method' => $method,
+                'status' => 'completed',
+            ]);
+
+            $this->fulfillSubscription($payment);
+        });
+
+        session()->flash('success', 'Payment successful! Your subscription is now active.');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment successful!',
+            'redirect_url' => route('filament.student.pages.dashboard'),
+        ]);
+    }
+
+    /**
+     * Handle Razorpay Webhook events asynchronously.
+     */
+    public function webhook(Request $request, RazorpayService $razorpay)
+    {
+        $payload = $request->getContent();
+        $signature = $request->header('X-Razorpay-Signature');
+
+        if (!$signature || !$razorpay->verifyWebhookSignature($payload, $signature)) {
+            Log::warning('Razorpay Webhook: Invalid signature');
+            return response()->json(['status' => 'invalid_signature'], 400);
+        }
+
+        $event = json_decode($payload, true);
+        $eventName = $event['event'] ?? '';
+
+        Log::info("Razorpay Webhook received: {$eventName}", ['event_id' => $event['id'] ?? null]);
+
+        if (in_array($eventName, ['payment.captured', 'order.paid'])) {
+            $paymentEntity = $event['payload']['payment']['entity'] ?? null;
+            $orderId = $paymentEntity['order_id'] ?? null;
+            $paymentId = $paymentEntity['id'] ?? null;
+
+            if ($orderId) {
+                $payment = Payment::where('order_id', $orderId)->first();
+
+                if ($payment && $payment->status !== 'completed') {
+                    DB::transaction(function () use ($payment, $paymentEntity, $paymentId) {
+                        $payment->update([
+                            'payment_id' => $paymentId,
+                            'method' => $paymentEntity['method'] ?? $payment->method,
+                            'status' => 'completed',
+                        ]);
+
+                        $this->fulfillSubscription($payment);
+                    });
+
+                    Log::info("Subscription fulfilled via Razorpay Webhook for Order: {$orderId}");
+                }
+            }
+        } elseif ($eventName === 'payment.failed') {
+            $paymentEntity = $event['payload']['payment']['entity'] ?? null;
+            $orderId = $paymentEntity['order_id'] ?? null;
+
+            if ($orderId) {
+                $payment = Payment::where('order_id', $orderId)->first();
+                if ($payment && $payment->status === 'pending') {
+                    $payment->update([
+                        'status' => 'failed',
+                        'error_reason' => $paymentEntity['error_description'] ?? 'Payment failed via webhook notification',
+                    ]);
+                }
+            }
+        }
+
+        return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * Extend or activate user subscription based on purchased plan.
+     */
+    protected function fulfillSubscription(Payment $payment): void
+    {
+        $user = $payment->user;
+        $plan = $payment->plan;
+
+        if (!$user || !$plan) {
+            return;
+        }
+
+        $currentExpiry = $user->subscription_expires_at;
+
+        if ($currentExpiry && $currentExpiry->isFuture()) {
+            $newExpiry = $currentExpiry->copy()->addDays($plan->duration_days);
+        } else {
+            $newExpiry = Carbon::now()->addDays($plan->duration_days);
+        }
+
+        $user->plan_id = $plan->id;
+        $user->subscription_expires_at = $newExpiry;
+        $user->save();
     }
 }
