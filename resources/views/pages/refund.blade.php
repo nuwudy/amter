@@ -62,7 +62,7 @@
                             If you encounter technical issues that prevent you from accessing the lessons or if you believe an accidental duplicate charge occurred, you are eligible to request a refund within <strong>7 days</strong> of your purchase.
                         </p>
                         <p>
-                            To request a refund, please send an email to <a href="mailto:contact.amterenglis@gmail.com" class="text-primary-600 font-semibold hover:underline">contact.amterenglis@gmail.com</a> with:
+                            To request a refund, please send an email to <a href="mailto:amterglobal@gmail.com" class="text-primary-600 font-semibold hover:underline">amterglobal@gmail.com</a> with:
                         </p>
                         <ul class="list-disc list-inside space-y-2">
                             <li>Your registered email address and phone number</li>
@@ -84,7 +84,7 @@
                         <p>If you have any questions or queries regarding payments, cancellations, or refunds, please reach out to us:</p>
                         <ul class="list-none space-y-2 pt-2">
                             <li><strong>Entity:</strong> Amter English</li>
-                            <li><strong>Email:</strong> <a href="mailto:contact.amterenglis@gmail.com" class="text-primary-600 hover:underline">contact.amterenglis@gmail.com</a></li>
+                            <li><strong>Email:</strong> <a href="mailto:amterglobal@gmail.com" class="text-primary-600 hover:underline">amterglobal@gmail.com</a></li>
                             <li><strong>Phone:</strong> +91 98959 40500</li>
                             <li><strong>Location:</strong> Kerala, India</li>
                         </ul>

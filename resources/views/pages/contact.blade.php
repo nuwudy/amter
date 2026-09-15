@@ -20,7 +20,7 @@
             <div class="space-y-4">
                 <div class="flex items-center gap-4">
                     <span class="bg-white/20 p-2 rounded-lg">📧</span>
-                    <span>contact.amterenglis@gmail.com</span>
+                    <span>amterglobal@gmail.com</span>
                 </div>
                 <div class="flex items-center gap-4">
                     <span class="bg-white/20 p-2 rounded-lg">📞</span>

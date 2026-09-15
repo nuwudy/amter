@@ -92,7 +92,7 @@
 
                     <div class="pt-8 border-t border-gray-100">
                         <p class="text-sm text-gray-400">
-                            If you have any questions about this Privacy Policy, please contact us at <a href="mailto:support@amter.test" class="text-primary-600 hover:underline">support@amter.test</a>
+                            If you have any questions about this Privacy Policy, please contact us at <a href="mailto:amterglobal@gmail.com" class="text-primary-600 hover:underline">amterglobal@gmail.com</a>
                         </p>
                     </div>
                 </div>

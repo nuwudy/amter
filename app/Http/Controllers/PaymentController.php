@@ -39,7 +39,7 @@ class PaymentController extends Controller
         if (!$razorpay->isConfigured()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Online card & UPI checkout is currently being activated. Please contact our support team via WhatsApp / Call (+91 98959 40500) or email to activate your plan directly.',
+                'message' => 'Online card & UPI checkout is currently being activated. Please contact our support team via WhatsApp / Call (+91 98959 40500) or email (amterglobal@gmail.com) to activate your plan directly.',
             ], 200);
         }
 
