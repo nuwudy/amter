@@ -40,11 +40,6 @@ return [
         'api_key' => env('BUNNY_API_KEY'),
     ],
 
-    'instamojo' => [
-        'api_key' => env('INSTAMOJO_API_KEY'),
-        'auth_token' => env('INSTAMOJO_AUTH_TOKEN'),
-        'endpoint' => env('INSTAMOJO_ENDPOINT', 'https://www.instamojo.com/api/1.1/'),
-    ],
 
     'razorpay' => [
         'key_id' => env('RAZORPAY_KEY_ID'),
