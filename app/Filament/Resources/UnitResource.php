@@ -419,9 +419,9 @@ class UnitResource extends Resource
                                             ->default('Tap to Speak & Match'),
 
                                         \Filament\Forms\Components\Toggle::make('hide_phrase')
-                                            ->label('Hide phrase from student by default')
-                                            ->helperText('Students will see a blurred box and must tap to reveal.')
-                                            ->default(true),
+                                            ->label('Hide English / phrase by default')
+                                            ->helperText('If enabled, English phrase will be hidden until student taps "See English".')
+                                            ->default(false),
                                     ]),
 
                                 // TEXT TO SPEECH (AI PRONUNCIATION) BLOCK
@@ -457,6 +457,11 @@ class UnitResource extends Resource
                                                 'female' => 'Female',
                                             ])
                                             ->default('any'),
+
+                                        \Filament\Forms\Components\Toggle::make('hide_english')
+                                            ->label('Hide English by default')
+                                            ->helperText('If enabled, English text will be hidden until student taps "See English".')
+                                            ->default(false),
 
                                         \Filament\Forms\Components\Toggle::make('student_input_allowed')
                                             ->label('Allow Students to modify text')

@@ -654,8 +654,9 @@
                             $targets = (array)($data['phrase'] ?? []);
                             $btnLabel = $data['button_label'] ?? 'Tap to Speak';
                             $meaningMalayalam = $data['meaning_malayalam'] ?? '';
+                            $hidePhrase = !empty($data['hide_phrase']);
                         @endphp
-                        <div x-data="voiceMatcher({{ json_encode(array_values(array_unique($targets))) }}, {{ ($data['hide_phrase'] ?? true) ? 'false' : 'true' }})" style="margin: 0.25rem 0; width: 100%; display: flex; justify-content: center;">
+                        <div x-data="voiceMatcher({{ json_encode(array_values(array_unique($targets))) }}, {{ $hidePhrase ? 'false' : 'true' }})" style="margin: 0.25rem 0; width: 100%; display: flex; justify-content: center;">
                             <div class="lego-block" style="gap: 1.5rem; width: 95%; max-width: 550px;">
                                 <div style="text-align: center; position: relative; width: 100%;">
                                     <span style="font-size: 11px; font-weight: 950; color: #6366f1; text-transform: uppercase; letter-spacing: 0.35rem; margin-bottom: 0.75rem; display: block;">Voice Check</span>
@@ -775,9 +776,10 @@
                             $canInput = $data['student_input_allowed'] ?? false;
                             $speechGender = $data['speech_gender'] ?? 'any';
                             $meaningMalayalam = $data['meaning_malayalam'] ?? '';
+                            $hideEnglish = !empty($data['hide_english']);
                         @endphp
 
-                        <div x-data="textToSpeech('{{ addslashes($defaultText) }}', '{{ $accent }}', '{{ $speechGender }}')" 
+                        <div x-data="textToSpeech('{{ addslashes($defaultText) }}', '{{ $accent }}', '{{ $speechGender }}', {{ $hideEnglish ? 'false' : 'true' }})" 
                              style="margin: 0.25rem 0; width: 100%; display: flex; justify-content: center;">
                             <div class="lego-block" style="gap: 1.5rem; width: 95%; max-width: 550px;">
                                 
@@ -1492,13 +1494,13 @@
             }
         }));
 
-        Alpine.data('textToSpeech', (defaultText, defaultAccent, gender = 'any') => ({
+        Alpine.data('textToSpeech', (defaultText, defaultAccent, gender = 'any', defaultShowEnglish = true) => ({
             text: defaultText,
             accent: defaultAccent,
             gender: gender,
             rate: 1.0,
             speaking: false,
-            showEnglish: false,
+            showEnglish: defaultShowEnglish,
             showMalayalam: false,
 
             speakNow() {
