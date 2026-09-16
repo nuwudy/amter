@@ -418,8 +418,8 @@ class UnitResource extends Resource
                                             ->label('Button Text')
                                             ->default('Tap to Speak & Match'),
 
-                                        \Filament\Forms\Components\Toggle::make('hide_phrase')
-                                            ->label('Hide English / phrase by default')
+                                        \Filament\Forms\Components\Toggle::make('hide_english')
+                                            ->label('Hide English by default')
                                             ->helperText('If enabled, English phrase will be hidden until student taps "See English".')
                                             ->default(false),
                                     ]),
