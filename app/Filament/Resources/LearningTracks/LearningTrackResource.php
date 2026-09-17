@@ -5,6 +5,10 @@ namespace App\Filament\Resources\LearningTracks;
 use App\Filament\Resources\LearningTracks\Pages;
 use App\Filament\Resources\LearningTracks\RelationManagers\TrackUnitsRelationManager;
 use App\Models\LearningTrack;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -109,12 +113,12 @@ class LearningTrackResource extends Resource
                     ->color('gray'),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }

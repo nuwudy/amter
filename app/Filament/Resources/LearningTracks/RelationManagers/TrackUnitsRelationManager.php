@@ -5,6 +5,10 @@ namespace App\Filament\Resources\LearningTracks\RelationManagers;
 use App\Models\CourseSession;
 use App\Models\Unit;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -176,13 +180,13 @@ class TrackUnitsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                EditAction::make(),
+                DeleteAction::make()
                     ->after(fn () => $this->getOwnerRecord()->renumberSteps()),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->after(fn () => $this->getOwnerRecord()->renumberSteps()),
                 ]),
             ]);
