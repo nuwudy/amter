@@ -176,7 +176,7 @@
 
     <div class="premium-container" style="width: 100%; margin: 0 auto; display: flex; flex-direction: column; align-items: center;">
         @if(is_array($unit->content_blocks))
-            @include('filament.components.unit-renderer-student', ['blocks' => $unit->content_blocks, 'isPublic' => true, 'unit' => $unit])
+            @include('filament.components.unit-renderer-student', ['blocks' => $unit->content_blocks, 'isPublic' => true, 'unit' => $unit, 'currentTrack' => $currentTrack ?? null])
         @endif
     </div>
 

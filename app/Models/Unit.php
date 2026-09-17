@@ -83,6 +83,18 @@ class Unit extends Model
         return $this->hasMany(Activity::class);
     }
 
+    public function trackUnits(): HasMany
+    {
+        return $this->hasMany(TrackUnit::class);
+    }
+
+    public function learningTracks(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(LearningTrack::class, 'track_units')
+            ->withPivot(['id', 'step_number', 'title_override', 'notes'])
+            ->withTimestamps();
+    }
+
     public function isAccessibleBy(?User $user): bool
     {
         // 0. If unit is not published, nobody can see it
@@ -164,6 +176,36 @@ class Unit extends Model
             return app(\App\Services\BunnyService::class)->getVideoStats($this->video_id) ?? [];
         });
     }
+    /**
+     * Get the next unit in a specific learning track.
+     */
+    public function nextTrackUnit(int $trackId): ?Unit
+    {
+        $currentTrackUnit = TrackUnit::where('learning_track_id', $trackId)
+            ->where('unit_id', $this->id)
+            ->first();
+
+        if (!$currentTrackUnit) return null;
+
+        $nextStep = $currentTrackUnit->nextStep();
+        return $nextStep ? $nextStep->unit : null;
+    }
+
+    /**
+     * Get the previous unit in a specific learning track.
+     */
+    public function previousTrackUnit(int $trackId): ?Unit
+    {
+        $currentTrackUnit = TrackUnit::where('learning_track_id', $trackId)
+            ->where('unit_id', $this->id)
+            ->first();
+
+        if (!$currentTrackUnit) return null;
+
+        $prevStep = $currentTrackUnit->previousStep();
+        return $prevStep ? $prevStep->unit : null;
+    }
+
     /**
      * Get the next unit in the sequence (even across sessions).
      */

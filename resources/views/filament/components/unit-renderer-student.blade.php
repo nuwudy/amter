@@ -3,12 +3,22 @@
 
     // Navigation Logic
     $unit = $unit ?? $record ?? ($getRecord ? $getRecord() : null);
+    $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : null);
+
     if ($unit) {
-        $navNext = $unit->nextUnit();
-        $navPrev = $unit->previousUnit();
+        if ($currentTrack) {
+            $navNext = $unit->nextTrackUnit($currentTrack->id);
+            $navPrev = $unit->previousTrackUnit($currentTrack->id);
+            $trackStepNumber = $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->value('step_number');
+        } else {
+            $navNext = $unit->nextUnit();
+            $navPrev = $unit->previousUnit();
+            $trackStepNumber = null;
+        }
     } else {
         $navNext = null;
         $navPrev = null;
+        $trackStepNumber = null;
     }
     
     $isPublic = $isPublic ?? false;
@@ -21,6 +31,14 @@
 @endphp
 
 <div class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    @if(!empty($trackStepNumber) && !empty($currentTrack))
+        <div style="margin-bottom: 1.25rem; z-index: 10;">
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 0.4rem 1rem; border-radius: 99px; backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 99px; background: #38bdf8;"></span>
+                Step {{ $trackStepNumber }} &bull; {{ $currentTrack->title }}
+            </span>
+        </div>
+    @endif
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
@@ -1076,7 +1094,7 @@
                         MARK AS COMPLETE
                     </button>
                     @if($isPublic)
-                        <form action="{{ route('student.units.complete', $unit) }}" method="POST" style="display:none;">@csrf</form>
+                        <form action="{{ route('student.units.complete', array_filter(['unit' => $unit, 'track_id' => $currentTrack?->id])) }}" method="POST" style="display:none;">@csrf</form>
                     @endif
                 @endif
             </div>
@@ -1090,7 +1108,7 @@
         <div class="nav-pill">
             <div style="flex: 1; display: flex; justify-content: center;">
                 @if($navPrev)
-                    <a href="{{ $isPublic ? route('student.units.show', $navPrev) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navPrev->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navPrev->id])) }}" 
+                    <a href="{{ $isPublic ? route('student.units.show', array_filter(['unit' => $navPrev, 'track_id' => $currentTrack?->id])) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navPrev->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navPrev->id])) }}" 
                        class="nav-link">
                         <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M15 19l-7-7 7-7" /></svg>
                         <span>Prev</span>
@@ -1106,7 +1124,7 @@
 
             <div style="flex: 1; display: flex; justify-content: center;">
                 @if($navNext)
-                    <a href="{{ $isPublic ? route('student.units.show', $navNext) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navNext->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navNext->id])) }}" 
+                    <a href="{{ $isPublic ? route('student.units.show', array_filter(['unit' => $navNext, 'track_id' => $currentTrack?->id])) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navNext->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navNext->id])) }}" 
                        class="nav-link">
                         <span>Next</span>
                         <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M9 5l7 7-7 7" /></svg>

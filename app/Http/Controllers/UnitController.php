@@ -23,8 +23,12 @@ class UnitController extends Controller
             abort(403, 'You do not have access to this lesson.');
         }
         
+        $trackId = request()->query('track_id');
+        $currentTrack = $trackId ? \App\Models\LearningTrack::find($trackId) : null;
+        
         return view('student.units.show', [
             'unit' => $unit,
+            'currentTrack' => $currentTrack,
             'libraryId' => 569307, // Your Bunny Library ID (better to put this in config/services.php)
         ]);
     }
@@ -46,18 +50,37 @@ class UnitController extends Controller
             $milestoneService->checkMilestones($user, $unit);
         }
 
-        // Find next unit
-        $nextUnit = $unit->nextUnit();
+        $trackId = request()->input('track_id');
+        $nextUnit = null;
+
+        if ($trackId) {
+            $nextUnit = $unit->nextTrackUnit((int) $trackId);
+        }
+
+        // Fallback to standard session/module progression if not in a track or end of track
+        if (!$nextUnit && !$trackId) {
+            $nextUnit = $unit->nextUnit();
+        }
 
         if ($nextUnit) {
-            return redirect()->route('student.units.show', $nextUnit)
+            $redirectParams = ['unit' => $nextUnit];
+            if ($trackId) {
+                $redirectParams['track_id'] = $trackId;
+            }
+
+            return redirect()->route('student.units.show', $redirectParams)
                 ->with('success', 'Lesson Mastered! Moving to next lesson.')
                 ->with('lesson_mastered', true)
                 ->with('xp_gained', 100);
         }
 
-        return redirect()->route('student.units.show', $unit)
-            ->with('success', 'Course Completed! Great job!')
+        $redirectParams = ['unit' => $unit];
+        if ($trackId) {
+            $redirectParams['track_id'] = $trackId;
+        }
+
+        return redirect()->route('student.units.show', $redirectParams)
+            ->with('success', $trackId ? 'Track Completed! Incredible job!' : 'Course Completed! Great job!')
             ->with('course_completed', true)
             ->with('xp_gained', 500); // Bonus for course completion
     }
