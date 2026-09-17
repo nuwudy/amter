@@ -23,17 +23,10 @@
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-cyan-300">via amter.</span>
                 </h1>
 
-                <!-- Buttons Moved Up -->
                 <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-8">
-                    @auth
-                        <a href="{{ route('filament.student.pages.dashboard') }}" class="bg-primary-500 text-slate-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-400 transition-all hover:scale-105 shadow-lg shadow-primary-500/20 animate-shine text-center">
-                            Go to Classes
-                        </a>
-                    @else
-                        <a href="{{ route('public.library') }}" class="bg-primary-500 text-slate-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-400 transition-all hover:scale-105 shadow-lg shadow-primary-500/20 animate-shine text-center">
-                            Go to Classes
-                        </a>
-                    @endauth
+                    <a href="{{ route('public.library') }}" class="bg-primary-500 text-slate-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-400 transition-all hover:scale-105 shadow-lg shadow-primary-500/20 animate-shine text-center">
+                        Go to Classes
+                    </a>
                     <a href="{{ route('pricing') }}" class="inline-flex justify-center items-center bg-white/10 text-white border border-white/20 px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition-all hover:scale-105 shadow-lg text-center">
                         See Pricing
                     </a>
@@ -361,18 +354,10 @@
                 </div>
             </div>
 
-            <div class="text-center">
-                @auth
-                    <a href="{{ route('filament.student.pages.dashboard') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:scale-105 shadow-lg shadow-primary-500/20 transition-all">
-                        Start Learning Now
-                        <svg class="w-5 h-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </a>
-                @else
-                    <a href="{{ route('public.library') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:scale-105 shadow-lg shadow-primary-500/20 transition-all">
-                        Start Learning Now
-                        <svg class="w-5 h-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                    </a>
-                @endauth
+                <a href="{{ route('public.library') }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:scale-105 shadow-lg shadow-primary-500/20 transition-all">
+                    Start Learning Now
+                    <svg class="w-5 h-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </a>
             </div>
         </div>
     </section>

@@ -259,17 +259,10 @@
     {{-- Mobile Bottom Navigation Bar --}}
     @if(!request()->routeIs('public.unit.show'))
     <div class="sm:hidden fixed bottom-0 left-0 right-0 z-[60] bg-slate-900/95 backdrop-blur-lg border-t border-white/10 px-4 py-3 flex justify-around items-center pb-safe shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-        @auth
-            <a href="{{ route('filament.student.pages.dashboard') }}" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="text-[10px] font-black uppercase tracking-widest mt-0.5">Classes</span>
-            </a>
-        @else
-            <a href="{{ route('public.library') }}" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="text-[10px] font-black uppercase tracking-widest mt-0.5">Classes</span>
-            </a>
-        @endauth
+        <a href="{{ route('public.library') }}" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            <span class="text-[10px] font-black uppercase tracking-widest mt-0.5">Classes</span>
+        </a>
         <a href="{{ route('pricing') }}" class="flex flex-col items-center gap-1 text-slate-400 hover:text-white transition-colors">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             <span class="text-[10px] font-black uppercase tracking-widest mt-0.5">Plans</span>
