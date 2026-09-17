@@ -180,6 +180,12 @@ class TrackUnitsRelationManager extends RelationManager
                     }),
             ])
             ->actions([
+                Action::make('preview')
+                    ->label('Play')
+                    ->icon('heroicon-o-play')
+                    ->color('success')
+                    ->url(fn ($record) => route('student.units.show', ['unit' => $record->unit_id, 'track_id' => $record->learning_track_id]))
+                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make()
                     ->after(fn () => $this->getOwnerRecord()->renumberSteps()),

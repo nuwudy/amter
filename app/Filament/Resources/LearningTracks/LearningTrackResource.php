@@ -5,6 +5,7 @@ namespace App\Filament\Resources\LearningTracks;
 use App\Filament\Resources\LearningTracks\Pages;
 use App\Filament\Resources\LearningTracks\RelationManagers\TrackUnitsRelationManager;
 use App\Models\LearningTrack;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -113,6 +114,16 @@ class LearningTrackResource extends Resource
                     ->color('gray'),
             ])
             ->actions([
+                Action::make('preview')
+                    ->label('Play ▶')
+                    ->icon('heroicon-o-play')
+                    ->color('success')
+                    ->url(function ($record) {
+                        $firstStep = $record->trackUnits()->orderBy('step_number', 'asc')->first();
+                        return $firstStep ? route('student.units.show', ['unit' => $firstStep->unit_id, 'track_id' => $record->id]) : '#';
+                    })
+                    ->openUrlInNewTab()
+                    ->visible(fn ($record) => $record->trackUnits()->exists()),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

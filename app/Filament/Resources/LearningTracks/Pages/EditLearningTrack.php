@@ -13,6 +13,17 @@ class EditLearningTrack extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('preview_course')
+                ->label('Preview Course ▶')
+                ->icon('heroicon-o-play-circle')
+                ->color('success')
+                ->url(function () {
+                    $firstStep = $this->getRecord()->trackUnits()->orderBy('step_number', 'asc')->first();
+                    return $firstStep ? route('student.units.show', ['unit' => $firstStep->unit_id, 'track_id' => $this->getRecord()->id]) : '#';
+                })
+                ->openUrlInNewTab()
+                ->visible(fn () => $this->getRecord()->trackUnits()->exists()),
+
             Actions\DeleteAction::make(),
         ];
     }
