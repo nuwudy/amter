@@ -48,6 +48,26 @@
     {{-- Main Content Grid --}}
     <div id="courses" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         
+        @if(isset($primaryTrack) && $primaryTrack && $primaryTrack->track_units_count > 0)
+            <div class="mb-8 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-primary-950/80 via-slate-900 to-blue-950/80 border border-primary-500/40 shadow-xl relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-primary-500/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out"></div>
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+                    <div class="text-center sm:text-left">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-500/20 text-primary-300 text-xs font-black uppercase tracking-wider mb-2 border border-primary-500/30">
+                            <span class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+                            Continuous Master Course
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-black text-white">{{ $primaryTrack->title }}</h3>
+                        <p class="text-xs sm:text-sm text-slate-300 mt-1">A step-by-step master journey with {{ $primaryTrack->track_units_count }} curated lessons.</p>
+                    </div>
+                    <a href="{{ $primaryTrack->getFirstStepUrl() }}" class="shrink-0 px-7 py-3.5 bg-gradient-to-r from-primary-500 to-cyan-400 hover:from-primary-400 hover:to-cyan-300 text-slate-950 font-black text-sm uppercase tracking-wider rounded-full shadow-lg shadow-primary-500/25 transition-all hover:scale-105 flex items-center gap-2">
+                        Start Course
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </a>
+                </div>
+            </div>
+        @endif
+
         <div class="mb-6 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center sm:items-end border-b border-slate-700 pb-4 gap-4">
             <div>
                 <h2 class="text-3xl font-black text-white tracking-tight">The Library</h2>

@@ -37,6 +37,33 @@ class LearningTrack extends Model
                 $track->slug = Str::slug($track->title);
             }
         });
+
+        static::saving(function ($track) {
+            if ($track->is_default) {
+                // Ensure only one track is default at any time
+                static::where('id', '!=', $track->id)->update(['is_default' => false]);
+            }
+        });
+    }
+
+    public static function getPrimaryTrack(): ?self
+    {
+        return static::where('is_active', true)
+            ->where('is_default', true)
+            ->first();
+    }
+
+    public function getFirstStepUrl(): ?string
+    {
+        $firstStep = $this->trackUnits()->orderBy('step_number', 'asc')->first();
+        if (!$firstStep) {
+            return null;
+        }
+
+        return route('student.units.show', [
+            'unit' => $firstStep->unit_id,
+            'track_id' => $this->id,
+        ]);
     }
 
     public function trackUnits(): HasMany

@@ -48,6 +48,11 @@ class HomeController extends Controller
                       ->orWhere('is_registered_only', true);
             })->count();
 
-        return view('public.library', compact('sessions', 'freeClassesCount'));
+        $primaryTrack = \App\Models\LearningTrack::getPrimaryTrack();
+        if ($primaryTrack) {
+            $primaryTrack->loadCount('trackUnits');
+        }
+
+        return view('public.library', compact('sessions', 'freeClassesCount', 'primaryTrack'));
     }
 }

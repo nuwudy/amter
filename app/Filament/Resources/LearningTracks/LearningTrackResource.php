@@ -66,12 +66,12 @@ class LearningTrackResource extends Resource
 
                         Toggle::make('is_active')
                             ->label('Active / Visible to Students')
-                            ->helperText('Keep OFF while adding units; turn ON when you are ready to present this path to students!')
+                            ->helperText('Keep OFF while adding units; turn ON when you are ready to present this track.')
                             ->default(false),
 
                         Toggle::make('is_default')
-                            ->label('Primary Master Path')
-                            ->helperText('If enabled, this track will be used as the default continuous learning path.')
+                            ->label('Primary Master Path (Master Switch)')
+                            ->helperText('When turned ON, the website\'s "Go to Classes" button switches from the Library to lead directly into this Master Track!')
                             ->default(false),
                     ])->columns(2),
             ]);
@@ -100,13 +100,19 @@ class LearningTrackResource extends Resource
                     ->color('primary')
                     ->formatStateUsing(fn ($state) => "{$state} Steps"),
 
-                Tables\Columns\IconColumn::make('is_active')
+                Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Active')
-                    ->boolean(),
+                    ->afterStateUpdated(function ($record, $state) {
+                        // Keep state updated
+                    }),
 
-                Tables\Columns\IconColumn::make('is_default')
-                    ->label('Primary')
-                    ->boolean(),
+                Tables\Columns\ToggleColumn::make('is_default')
+                    ->label('Master Switch')
+                    ->afterStateUpdated(function ($record, $state) {
+                        if ($state) {
+                            \App\Models\LearningTrack::where('id', '!=', $record->id)->update(['is_default' => false]);
+                        }
+                    }),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
