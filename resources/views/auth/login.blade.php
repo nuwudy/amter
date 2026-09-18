@@ -57,30 +57,32 @@
             </div>
 
             <!-- Clean Card -->
-            <div class="bg-white/95 backdrop-blur-xl pt-12 px-8 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] rounded-[3rem] border border-white/20 relative overflow-hidden" style="padding-bottom: 7.5rem;">
+            <div class="bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] border border-white/40 overflow-hidden relative" style="padding: 2rem 1.75rem 7.5rem 1.75rem;">
                 <!-- Subtle Top Gradient Bar -->
-                <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-pink-500 to-primary-500"></div>
-                
-                <!-- Tab Switcher: Login / Register -->
-                <div class="flex items-center p-1 bg-slate-100 rounded-2xl mb-8 border border-slate-200">
-                    <span class="w-1/2 py-2.5 text-center text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-orange-500 to-pink-600 rounded-xl shadow-md">
-                        Login / ലോഗിൻ
-                    </span>
-                    <a href="{{ route('register') }}" class="w-1/2 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-500 hover:text-slate-900 rounded-xl transition-all">
-                        Register / രജിസ്റ്റർ
-                    </a>
-                </div>
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-pink-500 to-primary-500"></div>
 
-                <div class="sm:mx-auto sm:w-full sm:max-w-md mb-8 text-center">
-                    <a href="{{ route('home') }}" class="inline-block mb-4 group">
-                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" class="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 mx-auto">
+                <!-- Cute Logo & Header -->
+                <div class="text-center mb-5">
+                    <a href="{{ route('home') }}" class="inline-block mb-3 group">
+                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" class="h-11 w-auto object-contain mx-auto transition-transform duration-300 group-hover:scale-105">
                     </a>
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+
+                    <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                         Welcome Back!
                     </h1>
-                    <p class="mt-2 text-slate-500 font-medium text-sm italic">
+                    <p class="mt-1 text-slate-500 font-medium text-xs sm:text-sm italic">
                         "Your journey to fluency continues here."
                     </p>
+                </div>
+
+                <!-- Cute Segmented Tab Switcher -->
+                <div style="display: flex; gap: 4px; padding: 4px; background-color: #f1f5f9; border-radius: 1rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem;">
+                    <span style="flex: 1; text-align: center; padding: 0.5rem 0.25rem; font-size: 12px; font-weight: 800; color: #ffffff; background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); border-radius: 0.75rem; box-shadow: 0 2px 6px rgba(249,115,22,0.3);">
+                        🔑 Login
+                    </span>
+                    <a href="{{ route('register') }}" style="flex: 1; text-align: center; padding: 0.5rem 0.25rem; font-size: 12px; font-weight: 700; color: #64748b; text-decoration: none; border-radius: 0.75rem; transition: all 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'">
+                        ✨ Register
+                    </a>
                 </div>
 
                 @if(session('info'))

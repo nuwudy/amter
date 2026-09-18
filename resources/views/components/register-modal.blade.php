@@ -91,22 +91,18 @@
                 </div>
             </div>
 
-            {{-- Two Buttons: Register & Login (As requested) --}}
-            <div class="flex flex-col gap-3">
+            {{-- Two Buttons: Register & Login (Side-by-side matching user mockup) --}}
+            <div class="flex flex-col sm:flex-row gap-3 mt-2">
                 {{-- Primary Register Button --}}
                 <a :href="'{{ route('register') }}' + (targetUrl ? '?intended=' + encodeURIComponent(targetUrl) : '')"
-                   class="w-full relative overflow-hidden group py-3.5 px-6 rounded-2xl bg-gradient-to-r from-primary-500 via-cyan-400 to-blue-500 shadow-[0_10px_25px_-5px_rgba(6,182,212,0.4)] text-base font-black text-slate-950 transition-all duration-300 hover:shadow-[0_15px_30px_-5px_rgba(6,182,212,0.6)] hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
-                    <span>റജിസ്റ്റർ ചെയ്യൂ (Register Free)</span>
-                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
+                   class="sm:flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-primary-500 shadow-[0_8px_20px_-4px_rgba(249,115,22,0.5)] text-sm font-extrabold text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5">
+                    <span>✨ Register</span>
                 </a>
 
                 {{-- Secondary Login Button --}}
                 <a :href="'{{ route('login') }}' + (targetUrl ? '?intended=' + encodeURIComponent(targetUrl) : '')"
-                   class="w-full py-3 px-6 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2">
-                    <span class="text-slate-300">ഇതിനകം അക്കൗണ്ട് ഉണ്ടോ?</span>
-                    <span class="text-primary-400 font-black underline underline-offset-2">Login ചെയ്യുക</span>
+                   class="sm:flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm font-bold text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5">
+                    <span>🔑 Login</span>
                 </a>
             </div>
 
