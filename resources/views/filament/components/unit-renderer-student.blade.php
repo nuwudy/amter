@@ -46,6 +46,7 @@
     @endif
     
     <style>
+        [x-cloak] { display: none !important; }
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
         :root {
@@ -330,100 +331,108 @@
         }
     </style>
 
-    {{-- Top Action Bar: Search & Jump Modal Trigger + Dashboard Link --}}
-    <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; position: relative; z-index: 80;">
+    {{-- Top Action Bar: Search & Jump Trigger + Dashboard Link --}}
+    <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 50;">
         <button type="button" 
                 @click="searchModalOpen = true; $nextTick(() => $refs.trackSearchInput && $refs.trackSearchInput.focus())"
-                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
-                onmouseover="this.style.transform='translateY(-2px)'"
-                onmouseout="this.style.transform='translateY(0)'">
-            <div style="width: 26px; height: 26px; background: #e0e7ff; color: #4338ca; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
-                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.4rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px -5px rgba(0,0,0,0.3)';"
+                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.2)';">
+            <div style="width: 24px; height: 24px; background: #e0e7ff; color: #4338ca; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 13px; height: 13px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
-            <span style="font-weight: 800; color: #1e293b; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;">Search & Jump</span>
+            <span style="font-weight: 800; color: #1e293b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;">Search & Jump</span>
         </button>
 
         @auth
             <a href="{{ route('filament.student.pages.dashboard') }}" 
-               style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; background: rgba(15,23,42,0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 9999px; color: #e2e8f0; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: background 0.2s;"
-               onmouseover="this.style.background='rgba(15,23,42,0.9)'"
-               onmouseout="this.style.background='rgba(15,23,42,0.65)'">
+               style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.25rem; background: rgba(15,23,42,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 9999px; color: #f1f5f9; text-decoration: none; font-size: 0.8rem; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+               onmouseover="this.style.background='rgba(15,23,42,0.95)'; this.style.transform='translateY(-2px)';"
+               onmouseout="this.style.background='rgba(15,23,42,0.75)'; this.style.transform='translateY(0)';">
                 <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
                 <span>Dashboard</span>
             </a>
         @endauth
     </div>
 
-    {{-- Instant Search & Jump Modal --}}
-    <div x-show="searchModalOpen" 
-         x-cloak
-         @keydown.escape.window="searchModalOpen = false"
-         class="fixed inset-0 z-[120] flex items-start justify-center pt-16 px-4"
-         style="display: none;">
-        {{-- Backdrop --}}
-        <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity" 
-             @click="searchModalOpen = false"></div>
+    {{-- Instant Search & Jump Modal Teleported to Body --}}
+    <template x-teleport="body">
+        <div x-show="searchModalOpen" 
+             x-cloak
+             @keydown.escape.window="searchModalOpen = false"
+             style="position: fixed; inset: 0; z-index: 9999999; display: flex; align-items: flex-start; justify-content: center; padding: 3.5rem 1rem 2rem 1rem;">
+            {{-- Dimmed Backdrop --}}
+            <div style="position: fixed; inset: 0; background: rgba(10, 15, 29, 0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);" 
+                 @click="searchModalOpen = false"></div>
 
-        {{-- Modal Box --}}
-        <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-10 flex flex-col max-h-[80vh]">
-            {{-- Header & Search Input --}}
-            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.75rem;">
-                <svg style="width: 20px; height: 20px; color: #6366f1; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-                <input type="text" 
-                       x-ref="trackSearchInput"
-                       x-model="searchTrackQuery" 
-                       placeholder="Search title, unit, or step (e.g. Day 1, Pronunciation, 5)..."
-                       style="width: 100%; border: none; outline: none; font-size: 1rem; font-weight: 600; color: #0f172a; background: transparent;">
-                <button type="button" @click="searchModalOpen = false" style="background: transparent; border: none; font-size: 1.25rem; color: #94a3b8; cursor: pointer; padding: 0.25rem;">✕</button>
-            </div>
+            {{-- Spotlight Modal Container --}}
+            <div style="position: relative; width: 100%; max-width: 38rem; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 1.5rem; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.15); overflow: hidden; z-index: 10; display: flex; flex-direction: column; max-height: 82vh;">
+                {{-- Header & Search Input --}}
+                <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; gap: 0.85rem; background: rgba(30, 41, 59, 0.6);">
+                    <div style="width: 32px; height: 32px; background: rgba(99, 102, 241, 0.2); color: #818cf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <input type="text" 
+                           x-ref="trackSearchInput"
+                           x-model="searchTrackQuery" 
+                           placeholder="Search by title, unit, or step number (e.g. Day 1, 5)..."
+                           style="width: 100%; border: none; outline: none; font-size: 1.05rem; font-weight: 600; color: #ffffff; background: transparent;">
+                    <button type="button" @click="searchModalOpen = false" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.color='#94a3b8'; this.style.background='rgba(255,255,255,0.08)';">
+                        ✕
+                    </button>
+                </div>
 
-            {{-- Step List --}}
-            <div style="overflow-y: auto; padding: 0.75rem 1rem; flex: 1;" class="space-y-2">
-                <template x-for="step in trackSteps.filter(s => {
-                    if (!searchTrackQuery.trim()) return true;
-                    const q = searchTrackQuery.toLowerCase().trim();
-                    return String(step.step).includes(q) || 
-                           (step.title && step.title.toLowerCase().includes(q)) || 
-                           (step.session && step.session.toLowerCase().includes(q));
-                })" :key="step.step">
-                    <a :href="step.url" 
-                       class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all text-decoration-none group"
-                       :style="step.step === {{ $trackStepNumber ?? -1 }} ? 'background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25);' : 'border: 1px solid rgba(0,0,0,0.04);'">
-                        <div class="flex items-center gap-3.5 min-w-0">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0"
-                                 :style="step.completed ? 'background: #d1fae5; color: #059669;' : (step.step === {{ $trackStepNumber ?? -1 }} ? 'background: #4f46e5; color: white;' : 'background: #f1f5f9; color: #64748b;')">
-                                <span x-show="step.completed">✓</span>
-                                <span x-show="!step.completed" x-text="step.step"></span>
+                {{-- Step List (Scrollable) --}}
+                <div style="overflow-y: auto; padding: 1rem; flex: 1;" class="space-y-2">
+                    <template x-for="step in trackSteps.filter(s => {
+                        if (!searchTrackQuery.trim()) return true;
+                        const q = searchTrackQuery.toLowerCase().trim();
+                        return String(step.step).includes(q) || 
+                               (step.title && step.title.toLowerCase().includes(q)) || 
+                               (step.session && step.session.toLowerCase().includes(q));
+                    })" :key="step.step">
+                        <a :href="step.url" 
+                           style="display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.1rem; border-radius: 1rem; text-decoration: none; transition: all 0.2s; gap: 1rem;"
+                           :style="step.step === {{ $trackStepNumber ?? -1 }} ? 'background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4);' : 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);'"
+                           onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(-1px)';"
+                           onmouseout="this.style.transform='translateY(0)';"
+                           class="group">
+                            <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
+                                <div style="width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; flex-shrink: 0;"
+                                     :style="step.completed ? 'background: #059669; color: white;' : (step.step === {{ $trackStepNumber ?? -1 }} ? 'background: #6366f1; color: white;' : 'background: rgba(255,255,255,0.1); color: #cbd5e1;')">
+                                    <span x-show="step.completed">✓</span>
+                                    <span x-show="!step.completed" x-text="step.step"></span>
+                                </div>
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #38bdf8;" x-text="step.session"></div>
+                                    <div style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.1rem;" x-text="step.title"></div>
+                                </div>
                             </div>
-                            <div class="min-w-0">
-                                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600 transition-colors" x-text="step.session"></div>
-                                <div class="text-sm font-black text-slate-800 dark:text-white truncate" x-text="step.title"></div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                                <span x-show="step.completed" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">Mastered</span>
+                                <span x-show="step.step === {{ $trackStepNumber ?? -1 }}" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.3); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">Current</span>
+                                <svg style="width: 14px; height: 14px; color: #64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
                             </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0 ml-3">
-                            <span x-show="step.completed" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Mastered</span>
-                            <span x-show="step.step === {{ $trackStepNumber ?? -1 }}" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Current</span>
-                            <svg class="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
-                        </div>
-                    </a>
-                </template>
+                        </a>
+                    </template>
 
-                <div x-show="trackSteps.filter(s => {
-                    if (!searchTrackQuery.trim()) return true;
-                    const q = searchTrackQuery.toLowerCase().trim();
-                    return String(s.step).includes(q) || (s.title && s.title.toLowerCase().includes(q)) || (s.session && s.session.toLowerCase().includes(q));
-                }).length === 0" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; font-weight: 600;">
-                    No lessons match "<span x-text="searchTrackQuery"></span>"
+                    <div x-show="trackSteps.filter(s => {
+                        if (!searchTrackQuery.trim()) return true;
+                        const q = searchTrackQuery.toLowerCase().trim();
+                        return String(s.step).includes(q) || (s.title && s.title.toLowerCase().includes(q)) || (s.session && s.session.toLowerCase().includes(q));
+                    }).length === 0" style="text-align: center; padding: 3rem 1rem; color: #64748b; font-weight: 600;">
+                        No lessons match "<span x-text="searchTrackQuery" style="color: #94a3b8;"></span>"
+                    </div>
+                </div>
+                
+                {{-- Footer info --}}
+                <div style="padding: 0.85rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Total <strong x-text="trackSteps.length" style="color: #ffffff;"></strong> steps in Master Track</span>
+                    <span style="font-size: 0.7rem; color: #64748b;">Press ESC or click outside to close</span>
                 </div>
             </div>
-            
-            {{-- Footer info --}}
-            <div style="padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; display: flex; justify-content: space-between; align-items: center;">
-                <span>Total <strong x-text="trackSteps.length"></strong> lessons in Master Track</span>
-                <span class="text-[11px] font-semibold">Press ESC to close</span>
-            </div>
         </div>
-    </div>
+    </template>
 
     <div class="lesson-master-card mx-auto">
         
@@ -438,7 +447,11 @@
                         <span>{{ $sessionTitle }}</span>
                     </div>
                 @endif
-                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">{{ $unit->title ?? ($record->title ?? 'Untitled Lesson') }}</h1>
+                @php
+                    $rawTitle = $unit->title ?? ($record->title ?? 'Untitled Lesson');
+                    $displayTitle = (is_numeric(trim($rawTitle))) ? 'Lesson ' . trim($rawTitle) : $rawTitle;
+                @endphp
+                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">{{ $displayTitle }}</h1>
                 <div style="height: 5px; width: 80px; background: linear-gradient(90deg, #6366f1, #a855f7); margin: 0.75rem auto 0 auto; border-radius: 99px; opacity: 0.4;"></div>
             </div>
             @foreach($contentBlocks as $index => $block)
