@@ -31,6 +31,50 @@ Route::middleware('web')->group(function () {
 Route::get('/units/{unit}', [UnitController::class, 'show'])->name('student.units.show');
 Route::post('/units/{unit}/complete', [UnitController::class, 'complete'])->name('student.units.complete');
 
+// Master Track Jump & Search Routes
+Route::get('/tracks/{track}/jump/{step}', function (\App\Models\LearningTrack $track, $step) {
+    $trackUnit = $track->trackUnits()
+        ->where('step_number', (int) $step)
+        ->first();
+
+    if (!$trackUnit) {
+        return back()->with('warning', "Step {$step} not found in this track.");
+    }
+
+    return redirect()->route('student.units.show', [
+        'unit' => $trackUnit->unit_id,
+        'track_id' => $track->id,
+    ]);
+})->name('tracks.jump');
+
+Route::get('/tracks/{track}/search', function (\App\Models\LearningTrack $track, \Illuminate\Http\Request $request) {
+    $query = trim($request->query('q', ''));
+    if (empty($query)) {
+        $steps = $track->trackUnits()
+            ->with(['unit', 'unit.courseSession'])
+            ->limit(25)
+            ->get();
+    } else {
+        $steps = $track->searchSteps($query);
+    }
+
+    $completedUnitIds = auth()->check() ? auth()->user()->completedUnits()->pluck('units.id')->flip()->toArray() : [];
+
+    return response()->json($steps->map(function ($step) use ($track, $completedUnitIds) {
+        $unit = $step->unit;
+        return [
+            'step' => $step->step_number,
+            'title' => (string) ($step->title_override ?: ($unit?->title ?? 'Untitled Lesson')),
+            'session' => (string) ($unit?->courseSession?->title ?? 'Amter Module'),
+            'completed' => isset($completedUnitIds[$step->unit_id]),
+            'url' => route('student.units.show', [
+                'unit' => $step->unit_id,
+                'track_id' => $track->id,
+            ]),
+        ];
+    }));
+})->name('tracks.search');
+
 // Public Course Routes
 Route::get('/courses/{course}', [App\Http\Controllers\PublicCourseController::class, 'show'])->name('public.course.show');
 Route::get('/courses/{course}/units/{unit}', [App\Http\Controllers\PublicCourseController::class, 'showUnit'])->name('public.unit.show');

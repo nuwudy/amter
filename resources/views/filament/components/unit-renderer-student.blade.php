@@ -32,10 +32,11 @@
         : route('filament.student.pages.dashboard');
 
     $sessionTitle = $unit?->courseSession?->title ?? $unit?->courseSession?->name ?? null;
-    $trackIndexData = $currentTrack ? $currentTrack->getTrackIndexData(auth()->user()) : [];
+    $trackSearchUrl = $currentTrack ? route('tracks.search', ['track' => $currentTrack->id]) : '';
+    $trackJumpBaseUrl = $currentTrack ? url('/tracks/' . $currentTrack->id . '/jump') : '';
 @endphp
 
-<div x-data="{ searchModalOpen: false, searchTrackQuery: '', trackSteps: {{ \Illuminate\Support\Js::from($trackIndexData) }} }" class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+<div x-data="trackSearchHandler({ trackId: {{ $currentTrack?->id ?? 1 }}, currentStep: {{ $trackStepNumber ?? 1 }}, searchUrl: '{{ $trackSearchUrl }}', jumpBaseUrl: '{{ $trackJumpBaseUrl }}', totalSteps: {{ $totalTrackSteps ?? 0 }} })" class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
     @if(!empty($trackStepNumber) && !empty($currentTrack))
         <div style="margin-bottom: 0.75rem; z-index: 10;">
             <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 0.4rem 1rem; border-radius: 99px; backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 6px;">
@@ -334,7 +335,7 @@
     {{-- Top Action Bar: Search & Jump Trigger + Dashboard Link --}}
     <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 50;">
         <button type="button" 
-                @click="searchModalOpen = true; $nextTick(() => $refs.trackSearchInput && $refs.trackSearchInput.focus())"
+                @click="openModal()"
                 style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.4rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s;"
                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 15px 30px -5px rgba(0,0,0,0.3)';"
                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.2)';">
@@ -374,23 +375,42 @@
                     </div>
                     <input type="text" 
                            x-ref="trackSearchInput"
-                           x-model="searchTrackQuery" 
-                           placeholder="Search by title, unit, or step number (e.g. Day 1, 5)..."
+                           x-model="query" 
+                           @keydown.enter.prevent="if (isNumberQuery) { jumpToStep(); } else if (results.length > 0) { window.location.href = results[0].url; }"
+                           placeholder="Type a step number (e.g. 2500) or topic..."
                            style="width: 100%; border: none; outline: none; font-size: 1.05rem; font-weight: 600; color: #ffffff; background: transparent;">
                     <button type="button" @click="searchModalOpen = false" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.color='#94a3b8'; this.style.background='rgba(255,255,255,0.08)';">
                         ✕
                     </button>
                 </div>
 
+                {{-- Direct Number Jump Action (Instantly visible when user types 2500, etc.) --}}
+                <div x-show="isNumberQuery" 
+                     x-cloak
+                     style="padding: 0.85rem 1.25rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%); border-bottom: 1px solid rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <span style="font-size: 1.2rem;">⚡</span>
+                        <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem;">
+                            Go straight to <span style="color: #38bdf8; text-decoration: underline;" x-text="'Step ' + targetStepNumber"></span>
+                        </span>
+                    </div>
+                    <button type="button" 
+                            @click="jumpToStep()"
+                            style="background: #4f46e5; color: white; border: none; border-radius: 9999px; padding: 0.4rem 1.1rem; font-weight: 900; font-size: 0.78rem; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.5); transition: transform 0.2s; white-space: nowrap;"
+                            onmouseover="this.style.transform='scale(1.05)'"
+                            onmouseout="this.style.transform='scale(1)'">
+                        <span>Jump Now (Enter ↵)</span>
+                    </button>
+                </div>
+
+                {{-- Loading Indicator --}}
+                <div x-show="loading" style="padding: 2rem; text-align: center; color: #818cf8; font-size: 0.9rem; font-weight: 700;">
+                    Searching lessons...
+                </div>
+
                 {{-- Step List (Scrollable) --}}
-                <div style="overflow-y: auto; padding: 1rem; flex: 1;" class="space-y-2">
-                    <template x-for="step in trackSteps.filter(s => {
-                        if (!searchTrackQuery.trim()) return true;
-                        const q = searchTrackQuery.toLowerCase().trim();
-                        return String(step.step).includes(q) || 
-                               (step.title && step.title.toLowerCase().includes(q)) || 
-                               (step.session && step.session.toLowerCase().includes(q));
-                    })" :key="step.step">
+                <div x-show="!loading" style="overflow-y: auto; padding: 1rem; flex: 1;" class="space-y-2">
+                    <template x-for="step in results" :key="step.step">
                         <a :href="step.url" 
                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.1rem; border-radius: 1rem; text-decoration: none; transition: all 0.2s; gap: 1rem;"
                            :style="step.step === {{ $trackStepNumber ?? -1 }} ? 'background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4);' : 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);'"
@@ -416,18 +436,14 @@
                         </a>
                     </template>
 
-                    <div x-show="trackSteps.filter(s => {
-                        if (!searchTrackQuery.trim()) return true;
-                        const q = searchTrackQuery.toLowerCase().trim();
-                        return String(s.step).includes(q) || (s.title && s.title.toLowerCase().includes(q)) || (s.session && s.session.toLowerCase().includes(q));
-                    }).length === 0" style="text-align: center; padding: 3rem 1rem; color: #64748b; font-weight: 600;">
-                        No lessons match "<span x-text="searchTrackQuery" style="color: #94a3b8;"></span>"
+                    <div x-show="results.length === 0 && !isNumberQuery" style="text-align: center; padding: 3rem 1rem; color: #64748b; font-weight: 600;">
+                        No lessons match "<span x-text="query" style="color: #94a3b8;"></span>"
                     </div>
                 </div>
                 
                 {{-- Footer info --}}
                 <div style="padding: 0.85rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Total <strong x-text="trackSteps.length" style="color: #ffffff;"></strong> steps in Master Track</span>
+                    <span>Total <strong style="color: #ffffff;">{{ $totalTrackSteps ?? 0 }}</strong> steps in Master Track</span>
                     <span style="font-size: 0.7rem; color: #64748b;">Press ESC or click outside to close</span>
                 </div>
             </div>
@@ -1729,5 +1745,81 @@
         };
         document.addEventListener('click', preWarm);
         document.addEventListener('touchstart', preWarm);
+    })();
+
+    // Track Step Search & Navigation Handler
+    (function() {
+        const registerTrackSearch = () => {
+            if (!window.Alpine) return;
+            if (window.Alpine.data && window.Alpine.data('trackSearchHandler')) return;
+
+            window.Alpine.data('trackSearchHandler', (config) => ({
+                searchModalOpen: false,
+                query: '',
+                results: [],
+                loading: false,
+                debounceTimer: null,
+
+                init() {
+                    this.$watch('query', (val) => this.handleSearch(val));
+                },
+
+                openModal() {
+                    this.searchModalOpen = true;
+                    this.query = '';
+                    this.fetchSteps('');
+                    this.$nextTick(() => {
+                        if (this.$refs.trackSearchInput) {
+                            this.$refs.trackSearchInput.focus();
+                        }
+                    });
+                },
+
+                get isNumberQuery() {
+                    const clean = (this.query || '').trim().replace(/^step\s*/i, '');
+                    return /^\d+$/.test(clean) && parseInt(clean, 10) > 0;
+                },
+
+                get targetStepNumber() {
+                    const clean = (this.query || '').trim().replace(/^step\s*/i, '');
+                    return this.isNumberQuery ? parseInt(clean, 10) : null;
+                },
+
+                jumpToStep(stepNum) {
+                    const target = stepNum || this.targetStepNumber;
+                    if (target && config.jumpBaseUrl) {
+                        window.location.href = `${config.jumpBaseUrl}/${target}`;
+                    }
+                },
+
+                handleSearch(val) {
+                    clearTimeout(this.debounceTimer);
+                    this.debounceTimer = setTimeout(() => {
+                        this.fetchSteps(val);
+                    }, 200);
+                },
+
+                async fetchSteps(q) {
+                    if (!config.searchUrl) return;
+                    this.loading = true;
+                    try {
+                        const res = await fetch(`${config.searchUrl}?q=${encodeURIComponent(q || '')}`);
+                        if (res.ok) {
+                            this.results = await res.json();
+                        }
+                    } catch (e) {
+                        console.error('Track search error:', e);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }));
+        };
+
+        if (window.Alpine) {
+            registerTrackSearch();
+        } else {
+            document.addEventListener('alpine:init', registerTrackSearch);
+        }
     })();
 </script>

@@ -183,6 +183,9 @@ class LearningTrack extends Model
                           });
                     });
             })
+            ->when($stepNumber !== null, function ($q) use ($stepNumber) {
+                $q->orderByRaw('CASE WHEN step_number = ' . (int) $stepNumber . ' THEN 0 ELSE 1 END');
+            })
             ->orderBy('step_number', 'asc')
             ->limit(40)
             ->get();
