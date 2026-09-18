@@ -34,15 +34,16 @@
         .animation-delay-4000 { animation-delay: 4s; }
     </style>
 </head>
-<body class="min-h-full antialiased text-slate-600 flex flex-col justify-center py-10 sm:py-16">
+<body class="h-full antialiased text-slate-600 overflow-x-hidden">
     <!-- Ambient Background Glows -->
-    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+    <div class="fixed inset-0 -z-10 h-full w-full pointer-events-none">
         <div class="absolute top-10 left-10 w-80 h-80 bg-purple-600/25 rounded-full blur-3xl animate-blob"></div>
         <div class="absolute top-32 right-10 w-80 h-80 bg-cyan-500/25 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
         <div class="absolute bottom-10 left-1/3 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-blob animation-delay-4000"></div>
     </div>
 
-    <div class="w-full max-w-[440px] mx-auto px-4">
+    <div class="min-h-full flex flex-col justify-start pt-16 pb-12 sm:px-6 lg:px-8 relative">
+        <div class="mx-auto w-full px-4" style="max-width: 440px;">
         
         <!-- Top Navigation -->
         <div class="mb-5 flex justify-between items-center">
@@ -197,6 +198,7 @@
         <p class="mt-5 text-center text-xs text-white/50 font-medium">
             🔒 100% സുരക്ഷിതം • ക്രെഡിറ്റ് കാർഡോ പേയ്‌മെന്റോ ആവശ്യമില്ല
         </p>
+        </div>
     </div>
 </body>
 </html>
