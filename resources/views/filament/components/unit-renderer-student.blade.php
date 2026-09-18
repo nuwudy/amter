@@ -441,17 +441,31 @@
         <div class="flex flex-col" style="padding-top: 1.5rem;">
             {{-- Lesson Title & Session/Chapter Title --}}
             <div style="text-align: center; margin-bottom: 2rem; padding: 0 1.5rem;">
-                @if($sessionTitle)
-                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.35rem 1rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); color: #4f46e5; font-weight: 800; font-size: 0.825rem; letter-spacing: 0.04em;">
-                        <svg style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                        <span>{{ $sessionTitle }}</span>
-                    </div>
-                @endif
+                <div style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 0.85rem;">
+                    @if(!empty($trackStepNumber))
+                        <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.4);">
+                            <span>Step {{ $trackStepNumber }}@if(!empty($totalTrackSteps)) of {{ $totalTrackSteps }}@endif</span>
+                        </div>
+                    @endif
+
+                    @if($sessionTitle)
+                        <div style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.35rem 1rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); color: #4f46e5; font-weight: 800; font-size: 0.825rem; letter-spacing: 0.04em;">
+                            <svg style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            <span>{{ $sessionTitle }}</span>
+                        </div>
+                    @endif
+                </div>
+
                 @php
                     $rawTitle = $unit->title ?? ($record->title ?? 'Untitled Lesson');
                     $displayTitle = (is_numeric(trim($rawTitle))) ? 'Lesson ' . trim($rawTitle) : $rawTitle;
                 @endphp
-                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">{{ $displayTitle }}</h1>
+                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">
+                    @if(!empty($trackStepNumber))
+                        <span style="color: #6366f1;">Step {{ $trackStepNumber }}:</span>
+                    @endif
+                    {{ $displayTitle }}
+                </h1>
                 <div style="height: 5px; width: 80px; background: linear-gradient(90deg, #6366f1, #a855f7); margin: 0.75rem auto 0 auto; border-radius: 99px; opacity: 0.4;"></div>
             </div>
             @foreach($contentBlocks as $index => $block)
