@@ -61,9 +61,19 @@
                 <!-- Subtle Top Gradient Bar -->
                 <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-pink-500 to-primary-500"></div>
                 
-                <div class="sm:mx-auto sm:w-full sm:max-w-md mb-10 text-center">
-                    <a href="{{ route('home') }}" class="inline-block mb-6 group">
-                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" class="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
+                <!-- Tab Switcher: Login / Register -->
+                <div class="flex items-center p-1 bg-slate-100 rounded-2xl mb-8 border border-slate-200">
+                    <span class="w-1/2 py-2.5 text-center text-xs sm:text-sm font-extrabold text-white bg-gradient-to-r from-orange-500 to-pink-600 rounded-xl shadow-md">
+                        Login / ലോഗിൻ
+                    </span>
+                    <a href="{{ route('register') }}" class="w-1/2 py-2.5 text-center text-xs sm:text-sm font-bold text-slate-500 hover:text-slate-900 rounded-xl transition-all">
+                        Register / രജിസ്റ്റർ
+                    </a>
+                </div>
+
+                <div class="sm:mx-auto sm:w-full sm:max-w-md mb-8 text-center">
+                    <a href="{{ route('home') }}" class="inline-block mb-4 group">
+                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" class="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105 mx-auto">
                     </a>
                     <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
                         Welcome Back!
@@ -72,6 +82,13 @@
                         "Your journey to fluency continues here."
                     </p>
                 </div>
+
+                @if(session('info'))
+                    <div class="mb-6 p-4 rounded-2xl bg-primary-50 border-2 border-primary-100 text-primary-900 text-xs sm:text-sm font-semibold flex items-center gap-3">
+                        <span class="text-xl">🎁</span>
+                        <span>{{ session('info') }}</span>
+                    </div>
+                @endif
 
                 @if(session('error'))
                     <div class="mb-6 p-4 rounded-2xl bg-red-50 border-2 border-red-100 text-red-700 text-sm font-semibold flex items-center gap-3">
@@ -156,7 +173,7 @@
                             <span class="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm animate-pulse">FREE</span>
                             <span class="text-slate-700 font-bold tracking-wide text-xs">Want more free classes?</span>
                         </div>
-                        <a href="{{ route('filament.student.auth.register') }}" 
+                        <a href="{{ route('register') }}" 
                            class="text-pink-600 font-extrabold hover:text-pink-700 transition-all flex items-center gap-1 group/link bg-white px-5 py-2 rounded-full shadow-sm hover:shadow-md border border-pink-200">
                             Become a Member!
                             <svg class="w-4 h-4 transition-transform group-hover/link:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

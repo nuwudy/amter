@@ -99,8 +99,8 @@
                              if ($firstUnit->is_free_sample) {
                                  $targetUrl = route('public.unit.show', ['course' => $session->module->course_id ?? 1, 'unit' => $firstUnit]);
                              } elseif ($firstUnit->is_registered_only) {
-                                 $targetUrl = route('login');
-                                 $onclick = "if(!confirm('Please create an account to get more free classes.')) return false;";
+                                 $targetUrl = 'javascript:void(0)';
+                                 $onclick = 'openRegisterModal(); return false;';
                              } else {
                                  $targetUrl = route('pricing');
                                  $onclick = "if(!confirm('Select a plan and Get unlimited access to the classes.')) return false;";
@@ -208,11 +208,12 @@
                                             <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                         </a>
                                     @elseif($firstUnit->is_registered_only)
-                                        {{-- Free Login Required --}}
-                                        <a href="{{ $targetUrl }}" @if($onclick) onclick="{!! $onclick !!}" @endif
-                                            class="inline-flex justify-center items-center gap-1.5 w-full py-2 sm:py-2.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-widest hover:border-primary-500 hover:text-primary-600 transition-all text-center">
-                                            Login For Access
-                                        </a>
+                                        {{-- Free Sign-Up Required --}}
+                                        <button type="button" @click="openRegisterModal()"
+                                            class="inline-flex justify-center items-center gap-1.5 w-full py-2 sm:py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold rounded-xl text-[9px] sm:text-xs uppercase tracking-widest hover:from-emerald-400 hover:to-teal-500 shadow-md shadow-emerald-500/25 transition-all transform active:scale-95 group/btn text-center cursor-pointer border border-emerald-400/40">
+                                            <span>കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾ</span>
+                                            <svg class="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                        </button>
                                     @else
                                         {{-- Paid Login Required --}}
                                         <a href="{{ $targetUrl }}" @if($onclick) onclick="{!! $onclick !!}" @endif

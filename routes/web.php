@@ -17,6 +17,8 @@ Route::redirect('/student', '/app'); // Redirect legacy path
 Route::middleware('web')->group(function () {
     Route::get('/login', [LoginController::class, 'show'])->name('login');
     Route::post('/authenticate', [LoginController::class, 'authenticate'])->name('authenticate');
+    Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'show'])->name('register');
+    Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.submit');
     Route::redirect('/admin/login', '/login');
     Route::get('/logout', function () {
         auth()->logout();

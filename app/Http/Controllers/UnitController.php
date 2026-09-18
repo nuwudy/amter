@@ -13,6 +13,9 @@ class UnitController extends Controller
 
         if (!$unit->isAccessibleBy($user)) {
             if (!$user) {
+                if ($unit->is_registered_only) {
+                    return redirect()->route('register')->with('info', 'കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾക്കായി സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ (Register for more free classes)');
+                }
                 return redirect()->route('login')->with('info', 'Please sign in to access this lesson.');
             }
 
@@ -38,7 +41,7 @@ class UnitController extends Controller
         $user = auth()->user();
         
         if (!$user) {
-            return redirect()->route('login');
+            return redirect()->route('register')->with('info', 'നിങ്ങളുടെ പുരോഗതി രേഖപ്പെടുത്താനും കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾ കാണാനും സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ!');
         }
 
         // Mark as complete (avoid duplicates)

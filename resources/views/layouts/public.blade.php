@@ -317,5 +317,8 @@
             </div>
         </div>
     </footer>
+
+    {{-- Cute Registration & Login Popup Modal --}}
+    <x-register-modal />
 </body>
 </html>

@@ -165,14 +165,17 @@
                                     @foreach($session->units as $unit)
                                         @php
                                             $isFree = $unit->is_free_sample;
+                                            $isRegisteredOnly = $unit->is_registered_only;
                                         @endphp
 
-                                        <div class="group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 border {{ $isFree ? 'bg-white hover:border-primary-200 border-gray-100 hover:shadow-md cursor-pointer' : 'bg-gray-50/50 border-transparent opacity-80 hover:opacity-100' }}">
+                                        <div class="group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-200 border {{ ($isFree || $isRegisteredOnly) ? 'bg-white hover:border-primary-200 border-gray-100 hover:shadow-md cursor-pointer' : 'bg-gray-50/50 border-transparent opacity-80 hover:opacity-100' }}">
                                             
                                             {{-- Status Icon / Number --}}
-                                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl {{ $isFree ? 'bg-primary-50 text-primary-600' : 'bg-gray-200 text-gray-400' }}">
+                                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl {{ $isFree ? 'bg-primary-50 text-primary-600' : ($isRegisteredOnly ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-200 text-gray-400') }}">
                                                 @if($isFree)
                                                     <svg class="w-6 h-6 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                @elseif($isRegisteredOnly)
+                                                    <span class="text-xl">🎁</span>
                                                 @else
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                                 @endif
@@ -187,6 +190,10 @@
                                                     @if($isFree)
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-green-100 text-green-700">
                                                             Free Preview
+                                                        </span>
+                                                    @elseif($isRegisteredOnly)
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-emerald-100 text-emerald-700">
+                                                            Free with Sign-up
                                                         </span>
                                                     @endif
                                                 </div>
@@ -208,15 +215,24 @@
                                             {{-- Action --}}
                                             <div class="flex-shrink-0">
                                                 {{-- Link logic --}}
-                                                <a href="{{ route('public.unit.show', [$course, $unit]) }}" class="absolute inset-0 z-10 focus:outline-none">
-                                                    <span class="sr-only">{{ $isFree ? 'Watch Preview' : 'View Lesson' }}</span>
-                                                </a>
-
-                                                @if($isFree)
+                                                @if($isFree || auth()->check())
+                                                    <a href="{{ route('public.unit.show', [$course, $unit]) }}" class="absolute inset-0 z-10 focus:outline-none">
+                                                        <span class="sr-only">View Lesson</span>
+                                                    </a>
                                                     <div class="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 group-hover:bg-primary-600 group-hover:text-white transition-colors">
                                                         <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                                     </div>
+                                                @elseif($isRegisteredOnly)
+                                                    <a href="javascript:void(0)" onclick="openRegisterModal('{{ route('public.unit.show', [$course, $unit]) }}')" class="absolute inset-0 z-10 focus:outline-none">
+                                                        <span class="sr-only">Register to Unlock</span>
+                                                    </a>
+                                                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider px-3 py-1 bg-emerald-50 rounded-lg flex items-center gap-1 border border-emerald-200">
+                                                        <span>🎁 Free</span>
+                                                    </span>
                                                 @else
+                                                    <a href="{{ route('pricing') }}" class="absolute inset-0 z-10 focus:outline-none">
+                                                        <span class="sr-only">Premium Only</span>
+                                                    </a>
                                                     <span class="text-xs font-bold text-gray-400 uppercase tracking-wider px-3 py-1 bg-gray-100 rounded-lg flex items-center gap-1">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                                                         Locked

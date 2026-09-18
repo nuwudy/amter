@@ -30,7 +30,7 @@ class PublicCourseController extends Controller
         // If unit is NOT free and user is NOT logged in/subscribed
         if (!$unit->is_free_sample && !auth()->check()) {
             if ($unit->is_registered_only) {
-                return redirect()->route('login')->with('info', 'Please create a free account to access this lesson.');
+                return redirect()->route('register')->with('info', 'കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾക്കായി സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ (Register for more free classes)');
             }
             return redirect()->route('pricing')->with('warning', 'This premium lesson requires a subscription. Check out our plans below!');
         }
