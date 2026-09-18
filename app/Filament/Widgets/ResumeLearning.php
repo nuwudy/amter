@@ -44,7 +44,7 @@ class ResumeLearning extends Widget implements HasForms, HasSchemas
                                 ->label('Resume Learning')
                                 ->color('primary')
                                 ->icon('heroicon-m-play-circle')
-                                ->url(fn () => $nextUnit ? route('student.units.show', ['unit' => $nextUnit->id]) : '#')
+                                ->url(fn () => auth()->user()->getNextIncompleteTrackUnitUrl() ?: '#')
                                 ->visible(fn () => $nextUnit !== null),
                         ]),
                     ])->columns(2),

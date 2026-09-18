@@ -89,22 +89,69 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Milestone::class);
     }
 
+    public function getNextIncompleteTrackUnit(?LearningTrack $track = null): ?TrackUnit
+    {
+        $track = $track ?? LearningTrack::getPrimaryTrack() ?? LearningTrack::where('is_active', true)->first();
+        if (!$track) {
+            return null;
+        }
+
+        $completedUnitIds = $this->completedUnits()->pluck('units.id')->toArray();
+
+        // 1. Find first step in this track that is not completed
+        $nextStep = $track->trackUnits()
+            ->with(['unit', 'unit.courseSession'])
+            ->whereNotIn('unit_id', $completedUnitIds)
+            ->orderBy('step_number', 'asc')
+            ->first();
+
+        if ($nextStep) {
+            return $nextStep;
+        }
+
+        // 2. If all steps completed, return the last step so user can review
+        return $track->trackUnits()
+            ->with(['unit', 'unit.courseSession'])
+            ->orderBy('step_number', 'desc')
+            ->first();
+    }
+
+    public function getNextIncompleteTrackUnitUrl(?LearningTrack $track = null): ?string
+    {
+        $step = $this->getNextIncompleteTrackUnit($track);
+        if ($step && $step->unit_id) {
+            return route('student.units.show', [
+                'unit' => $step->unit_id,
+                'track_id' => $step->learning_track_id,
+            ]);
+        }
+
+        $primaryTrack = $track ?? LearningTrack::getPrimaryTrack() ?? LearningTrack::where('is_active', true)->first();
+        if ($primaryTrack && $firstUrl = $primaryTrack->getFirstStepUrl()) {
+            return $firstUrl;
+        }
+
+        $fallbackUnit = $this->getNextIncompleteUnit();
+        return $fallbackUnit ? route('student.units.show', ['unit' => $fallbackUnit->id]) : null;
+    }
+
     public function getNextIncompleteUnit()
     {
-        // 1. Get the ID of the last completed unit
-        // We use the relationship to handle the join, getting the 'unit_id' from the pivot or the related model ID
-        // strict ordering by 'completed_at' desc
+        // 1. Check Master Track first
+        $trackStep = $this->getNextIncompleteTrackUnit();
+        if ($trackStep && $trackStep->unit) {
+            return $trackStep->unit;
+        }
+
+        // 2. Fallback to historical progression
         $lastCompletedId = $this->completedUnits()
             ->orderBy('completed_units.completed_at', 'desc')
             ->value('units.id');
 
         if (!$lastCompletedId) {
-            // 2. If nothing completed, get the first unit of their first enrolled course
-            // Note: This picks the first unit in the DB. Logic might need refinement for multiple courses.
             return \App\Models\Unit::where('is_published', true)->orderBy('id', 'asc')->first();
         }
 
-        // 3. Find the unit with the next ID
         return \App\Models\Unit::where('id', '>', $lastCompletedId)
             ->where('is_published', true)
             ->orderBy('id', 'asc')

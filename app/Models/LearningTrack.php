@@ -150,4 +150,77 @@ class LearningTrack extends Model
 
         return $added;
     }
+
+    /**
+     * Search steps in this track by step number, title override, unit title, session title, or module name.
+     */
+    public function searchSteps(string $keyword)
+    {
+        $keyword = trim($keyword);
+        if (empty($keyword)) {
+            return collect();
+        }
+
+        $stepNumber = null;
+        if (preg_match('/^(?:step\s*)?(\d+)$/i', $keyword, $m)) {
+            $stepNumber = (int) $m[1];
+        }
+
+        return $this->trackUnits()
+            ->with(['unit', 'unit.courseSession', 'unit.courseSession.module'])
+            ->where(function ($query) use ($keyword, $stepNumber) {
+                if ($stepNumber !== null) {
+                    $query->orWhere('step_number', $stepNumber);
+                }
+                $query->orWhere('title_override', 'like', "%{$keyword}%")
+                    ->orWhereHas('unit', function ($q) use ($keyword) {
+                        $q->where('title', 'like', "%{$keyword}%")
+                          ->orWhereHas('courseSession', function ($sq) use ($keyword) {
+                              $sq->where('title', 'like', "%{$keyword}%")
+                                ->orWhereHas('module', function ($mq) use ($keyword) {
+                                    $mq->where('name', 'like', "%{$keyword}%");
+                                });
+                          });
+                    });
+            })
+            ->orderBy('step_number', 'asc')
+            ->limit(40)
+            ->get();
+    }
+
+    /**
+     * Return a lightweight array of all steps in this track for client-side search & navigation.
+     */
+    public function getTrackIndexData(?User $user = null): array
+    {
+        $completedUnitIds = $user ? $user->completedUnits()->pluck('units.id')->flip()->toArray() : [];
+
+        $steps = $this->trackUnits()
+            ->with(['unit', 'unit.courseSession'])
+            ->orderBy('step_number', 'asc')
+            ->get();
+
+        return $steps->map(function ($step) use ($completedUnitIds, $user) {
+            $unit = $step->unit;
+            $session = $unit?->courseSession;
+            $unitTitle = $step->title_override ?: ($unit?->title ?? 'Untitled Lesson');
+            $sessionTitle = $session?->title ?? $session?->name ?? 'Course Track';
+            $isCompleted = isset($completedUnitIds[$step->unit_id]);
+            $isAccessible = $unit ? $unit->isAccessibleBy($user) : true;
+
+            return [
+                'step' => $step->step_number,
+                'unit_id' => $step->unit_id,
+                'title' => $unitTitle,
+                'session' => $sessionTitle,
+                'url' => route('student.units.show', [
+                    'unit' => $step->unit_id,
+                    'track_id' => $this->id,
+                ]),
+                'completed' => $isCompleted,
+                'accessible' => $isAccessible,
+            ];
+        })->toArray();
+    }
 }
+

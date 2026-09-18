@@ -3,39 +3,44 @@
 
     // Navigation Logic
     $unit = $unit ?? $record ?? ($getRecord ? $getRecord() : null);
-    $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : null);
+    $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : (\App\Models\LearningTrack::getPrimaryTrack() ?? \App\Models\LearningTrack::where('is_active', true)->first()));
 
     if ($unit) {
         if ($currentTrack) {
             $navNext = $unit->nextTrackUnit($currentTrack->id);
             $navPrev = $unit->previousTrackUnit($currentTrack->id);
             $trackStepNumber = $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->value('step_number');
+            $totalTrackSteps = $currentTrack->trackUnits()->count();
         } else {
             $navNext = $unit->nextUnit();
             $navPrev = $unit->previousUnit();
             $trackStepNumber = null;
+            $totalTrackSteps = null;
         }
     } else {
         $navNext = null;
         $navPrev = null;
         $trackStepNumber = null;
+        $totalTrackSteps = null;
     }
     
     $isPublic = $isPublic ?? false;
     $isStudentPanel = request()->is('student/*') || request()->routeIs('filament.student.*');
-    $libraryRoute = $isPublic 
-        ? route('public.library') 
-        : (\Illuminate\Support\Facades\Route::has('filament.student.pages.library') 
-            ? route('filament.student.pages.library') 
-            : route('filament.student.pages.dashboard'));
+    $isAdmin = auth()->check() && auth()->user()->isAdmin();
+    $libraryRoute = $isAdmin 
+        ? ($isPublic ? route('public.library') : route('filament.student.pages.library'))
+        : route('filament.student.pages.dashboard');
+
+    $sessionTitle = $unit?->courseSession?->title ?? $unit?->courseSession?->name ?? null;
+    $trackIndexData = $currentTrack ? $currentTrack->getTrackIndexData(auth()->user()) : [];
 @endphp
 
-<div class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+<div x-data="{ searchModalOpen: false, searchTrackQuery: '', trackSteps: {{ \Illuminate\Support\Js::from($trackIndexData) }} }" class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
     @if(!empty($trackStepNumber) && !empty($currentTrack))
-        <div style="margin-bottom: 1.25rem; z-index: 10;">
+        <div style="margin-bottom: 0.75rem; z-index: 10;">
             <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 0.4rem 1rem; border-radius: 99px; backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 6px;">
                 <span style="width: 6px; height: 6px; border-radius: 99px; background: #38bdf8;"></span>
-                Step {{ $trackStepNumber }} &bull; {{ $currentTrack->title }}
+                Step {{ $trackStepNumber }}@if(!empty($totalTrackSteps)) of {{ $totalTrackSteps }}@endif &bull; {{ $currentTrack->title }}
             </span>
         </div>
     @endif
@@ -325,27 +330,115 @@
         }
     </style>
 
-    {{-- All Classes Navigation Button (Top) --}}
-    @if(!request()->is('student/*'))
-        <div style="display: flex; justify-content: center; margin-bottom: -0.75rem; position: relative; z-index: 100;">
-            <a href="{{ $libraryRoute }}" 
-               style="display: inline-flex; align-items: center; gap: 0.625rem; padding: 0.5rem 1.5rem 0.5rem 0.6rem; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); text-decoration: none;">
-                <div style="width: 32px; height: 32px; background: #eef2ff; color: #4f46e5; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
-                    <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
-                </div>
-                <span style="font-weight: 800; color: #1f2937; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap;">All Classes</span>
+    {{-- Top Action Bar: Search & Jump Modal Trigger + Dashboard Link --}}
+    <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; position: relative; z-index: 80;">
+        <button type="button" 
+                @click="searchModalOpen = true; $nextTick(() => $refs.trackSearchInput && $refs.trackSearchInput.focus())"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;"
+                onmouseover="this.style.transform='translateY(-2px)'"
+                onmouseout="this.style.transform='translateY(0)'">
+            <div style="width: 26px; height: 26px; background: #e0e7ff; color: #4338ca; border-radius: 9999px; display: flex; align-items: center; justify-content: center;">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            </div>
+            <span style="font-weight: 800; color: #1e293b; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;">Search & Jump</span>
+        </button>
+
+        @auth
+            <a href="{{ route('filament.student.pages.dashboard') }}" 
+               style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1.1rem; background: rgba(15,23,42,0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.15); border-radius: 9999px; color: #e2e8f0; text-decoration: none; font-size: 0.78rem; font-weight: 700; transition: background 0.2s;"
+               onmouseover="this.style.background='rgba(15,23,42,0.9)'"
+               onmouseout="this.style.background='rgba(15,23,42,0.65)'">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                <span>Dashboard</span>
             </a>
+        @endauth
+    </div>
+
+    {{-- Instant Search & Jump Modal --}}
+    <div x-show="searchModalOpen" 
+         x-cloak
+         @keydown.escape.window="searchModalOpen = false"
+         class="fixed inset-0 z-[120] flex items-start justify-center pt-16 px-4"
+         style="display: none;">
+        {{-- Backdrop --}}
+        <div class="fixed inset-0 bg-slate-950/75 backdrop-blur-md transition-opacity" 
+             @click="searchModalOpen = false"></div>
+
+        {{-- Modal Box --}}
+        <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-10 flex flex-col max-h-[80vh]">
+            {{-- Header & Search Input --}}
+            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.75rem;">
+                <svg style="width: 20px; height: 20px; color: #6366f1; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input type="text" 
+                       x-ref="trackSearchInput"
+                       x-model="searchTrackQuery" 
+                       placeholder="Search title, unit, or step (e.g. Day 1, Pronunciation, 5)..."
+                       style="width: 100%; border: none; outline: none; font-size: 1rem; font-weight: 600; color: #0f172a; background: transparent;">
+                <button type="button" @click="searchModalOpen = false" style="background: transparent; border: none; font-size: 1.25rem; color: #94a3b8; cursor: pointer; padding: 0.25rem;">✕</button>
+            </div>
+
+            {{-- Step List --}}
+            <div style="overflow-y: auto; padding: 0.75rem 1rem; flex: 1;" class="space-y-2">
+                <template x-for="step in trackSteps.filter(s => {
+                    if (!searchTrackQuery.trim()) return true;
+                    const q = searchTrackQuery.toLowerCase().trim();
+                    return String(step.step).includes(q) || 
+                           (step.title && step.title.toLowerCase().includes(q)) || 
+                           (step.session && step.session.toLowerCase().includes(q));
+                })" :key="step.step">
+                    <a :href="step.url" 
+                       class="flex items-center justify-between p-3.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all text-decoration-none group"
+                       :style="step.step === {{ $trackStepNumber ?? -1 }} ? 'background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.25);' : 'border: 1px solid rgba(0,0,0,0.04);'">
+                        <div class="flex items-center gap-3.5 min-w-0">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0"
+                                 :style="step.completed ? 'background: #d1fae5; color: #059669;' : (step.step === {{ $trackStepNumber ?? -1 }} ? 'background: #4f46e5; color: white;' : 'background: #f1f5f9; color: #64748b;')">
+                                <span x-show="step.completed">✓</span>
+                                <span x-show="!step.completed" x-text="step.step"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-indigo-600 transition-colors" x-text="step.session"></div>
+                                <div class="text-sm font-black text-slate-800 dark:text-white truncate" x-text="step.title"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 ml-3">
+                            <span x-show="step.completed" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Mastered</span>
+                            <span x-show="step.step === {{ $trackStepNumber ?? -1 }}" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Current</span>
+                            <svg class="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
+                        </div>
+                    </a>
+                </template>
+
+                <div x-show="trackSteps.filter(s => {
+                    if (!searchTrackQuery.trim()) return true;
+                    const q = searchTrackQuery.toLowerCase().trim();
+                    return String(s.step).includes(q) || (s.title && s.title.toLowerCase().includes(q)) || (s.session && s.session.toLowerCase().includes(q));
+                }).length === 0" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; font-weight: 600;">
+                    No lessons match "<span x-text="searchTrackQuery"></span>"
+                </div>
+            </div>
+            
+            {{-- Footer info --}}
+            <div style="padding: 0.75rem 1.25rem; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 0.75rem; color: #64748b; display: flex; justify-content: space-between; align-items: center;">
+                <span>Total <strong x-text="trackSteps.length"></strong> lessons in Master Track</span>
+                <span class="text-[11px] font-semibold">Press ESC to close</span>
+            </div>
         </div>
-    @endif
+    </div>
 
     <div class="lesson-master-card mx-auto">
         
         <div class="iridescent-border"></div>
 
         <div class="flex flex-col" style="padding-top: 1.5rem;">
-            {{-- Lesson Title --}}
-            <div style="text-align: center; margin-bottom: 2rem; padding: 0 2rem;">
-                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.1; letter-spacing: -0.05em; margin: 0;">{{ $unit->title ?? ($record->title ?? 'Untitled Lesson') }}</h1>
+            {{-- Lesson Title & Session/Chapter Title --}}
+            <div style="text-align: center; margin-bottom: 2rem; padding: 0 1.5rem;">
+                @if($sessionTitle)
+                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding: 0.35rem 1rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2); color: #4f46e5; font-weight: 800; font-size: 0.825rem; letter-spacing: 0.04em;">
+                        <svg style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        <span>{{ $sessionTitle }}</span>
+                    </div>
+                @endif
+                <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">{{ $unit->title ?? ($record->title ?? 'Untitled Lesson') }}</h1>
                 <div style="height: 5px; width: 80px; background: linear-gradient(90deg, #6366f1, #a855f7); margin: 0.75rem auto 0 auto; border-radius: 99px; opacity: 0.4;"></div>
             </div>
             @foreach($contentBlocks as $index => $block)
@@ -1130,10 +1223,17 @@
                         <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M9 5l7 7-7 7" /></svg>
                     </a>
                 @else
-                    <a href="{{ $libraryRoute }}" class="nav-link">
-                        <span>Library</span>
-                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 12h16M4 18h7" /></svg>
-                    </a>
+                    @if($isAdmin)
+                        <a href="{{ $libraryRoute }}" class="nav-link">
+                            <span>Library</span>
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                        </a>
+                    @else
+                        <a href="{{ route('filament.student.pages.dashboard') }}" class="nav-link">
+                            <span>Dashboard</span>
+                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                        </a>
+                    @endif
                 @endif
             </div>
         </div>

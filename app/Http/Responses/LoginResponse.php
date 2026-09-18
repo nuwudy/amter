@@ -24,8 +24,8 @@ class LoginResponse implements LoginResponseContract
             return redirect()->to(Filament::getPanel('admin')->getUrl());
         }
 
-        // Otherwise, send to the student dashboard or intended URL
-        // If the user came from a specific page (like checkout), send them back there
-        return redirect()->intended(Filament::getPanel('student')->getUrl());
+        // Otherwise, send to Master Track resume point, intended URL, or student dashboard
+        $resumeUrl = $user->getNextIncompleteTrackUnitUrl();
+        return redirect()->intended($resumeUrl ?: Filament::getPanel('student')->getUrl());
     }
 }

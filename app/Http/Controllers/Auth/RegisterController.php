@@ -14,7 +14,8 @@ class RegisterController extends Controller
     public function show()
     {
         if (Auth::check()) {
-            return redirect()->route('public.library');
+            $resumeUrl = Auth::user()->getNextIncompleteTrackUnitUrl();
+            return redirect($resumeUrl ?: route('filament.student.pages.dashboard'));
         }
 
         return response()
@@ -53,8 +54,10 @@ class RegisterController extends Controller
             $request->session()->regenerate();
             session()->flash('just_logged_in', true);
 
-            // Redirect back to intended page (e.g. library or unit) or student dashboard
-            return redirect()->intended(route('public.library'))
+            $resumeUrl = $user->getNextIncompleteTrackUnitUrl();
+
+            // Redirect back to intended page (e.g. unit) or Master Track resume step
+            return redirect()->intended($resumeUrl ?: route('filament.student.pages.dashboard'))
                 ->with('success', 'സ്വാഗതം! നിങ്ങളുടെ ഫ്രീ അക്കൗണ്ട് വിജയകരമായി തയ്യാറായി. ഇപ്പോൾ കൂടുതൽ ക്ലാസ്സുകൾ ആസ്വദിക്കാം!');
         } catch (\Exception $e) {
             Log::error('Registration Error', ['error' => $e->getMessage()]);

@@ -14,6 +14,19 @@ class Library extends Page
     protected static ?string $slug = 'library';
     protected static ?string $title = 'My Course Library';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->isAdmin();
+    }
+
+    public function mount(): void
+    {
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            $resumeUrl = auth()->check() ? auth()->user()->getNextIncompleteTrackUnitUrl() : null;
+            $this->redirect($resumeUrl ?: route('filament.student.pages.dashboard'));
+        }
+    }
+
     // Fetch data for the view
     public $search = '';
 
@@ -34,8 +47,7 @@ class Library extends Page
 
     public function getResumeUrl(): ?string
     {
-        $nextUnit = auth()->user()->getNextIncompleteUnit();
-        return $nextUnit ? route('student.units.show', ['unit' => $nextUnit->id]) : null;
+        return auth()->check() ? auth()->user()->getNextIncompleteTrackUnitUrl() : null;
     }
 
     protected function getViewData(): array

@@ -30,7 +30,23 @@ class HomeController extends Controller
 
     public function library()
     {
-        // Fetch sessions (modules) matches Student Library view
+        $primaryTrack = \App\Models\LearningTrack::getPrimaryTrack() ?? \App\Models\LearningTrack::where('is_active', true)->first();
+
+        // Only Admin can see the Library. All other users and visitors are directed to the Master Track.
+        if (!auth()->check() || !auth()->user()->isAdmin()) {
+            if (auth()->check()) {
+                $resumeUrl = auth()->user()->getNextIncompleteTrackUnitUrl($primaryTrack);
+                return redirect($resumeUrl ?: route('filament.student.pages.dashboard'));
+            }
+
+            if ($primaryTrack && $firstUrl = $primaryTrack->getFirstStepUrl()) {
+                return redirect($firstUrl);
+            }
+
+            return redirect()->route('home');
+        }
+
+        // Fetch sessions (modules) matches Student Library view (for Admin only)
         $sessions = \App\Models\CourseSession::with(['module', 'units' => function ($query) {
                         $query->orderBy('sort_order', 'asc');
                     }])
