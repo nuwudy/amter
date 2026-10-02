@@ -24,6 +24,12 @@
         </div>
     </div>
 
+    @php
+        $lowestDailyRate = $plans->count() > 0 
+            ? round($plans->min(fn($p) => $p->price / max(1, $p->duration_days)), 2) 
+            : 6.00;
+    @endphp
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {{-- Header --}}
         <div class="max-w-3xl mx-auto text-center mb-8 sm:mb-12">
@@ -32,7 +38,7 @@
                 Progressive Fee Reduction Framework
             </div>
             <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white font-sans">
-                Learn English from <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">₹4.93 / day</span>
+                Learn English from <span style="color: #34d399; text-shadow: 0 0 20px rgba(52, 211, 153, 0.4);">₹{{ number_format($lowestDailyRate, $lowestDailyRate < 10 ? 2 : 0) }} / day</span>
             </h1>
             <p class="mx-auto mt-3 max-w-xl text-center text-sm sm:text-base text-slate-300">
                 Anchored to a baseline <strong class="text-white">₹10/day</strong> fee. The longer you commit to your practice, the bigger your daily savings!
@@ -137,7 +143,7 @@
                     'label' => '6 Months',
                     'tag' => 'Most Popular',
                     'badge' => '🔥 MOST POPULAR',
-                    'sub' => 'Conversational pro (<₹1,000)',
+                    'sub' => 'Conversational pro habit',
                     'isPopular' => true,
                     'isBestValue' => false,
                     'accent' => 'border-indigo-500/80 bg-gradient-to-b from-indigo-950/60 to-slate-900 ring-2 ring-indigo-500/50 shadow-xl shadow-indigo-500/20',
@@ -154,10 +160,14 @@
                     'badgeClass' => 'bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30',
                 ],
             ];
+            
+            $gridColsClass = count($plans) <= 4 
+                ? 'grid-cols-2 sm:grid-cols-2 lg:grid-cols-4' 
+                : (count($plans) === 5 ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6');
         @endphp
 
         {{-- Small Cute Boxy Grid --}}
-        <div class="isolate mx-auto grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 items-stretch">
+        <div class="isolate mx-auto grid w-full {{ $gridColsClass }} gap-3 sm:gap-4 items-stretch">
             @foreach($plans as $plan)
                 @php
                     $days = max(1, (int) $plan->duration_days);
@@ -177,10 +187,10 @@
                     ];
                 @endphp
 
-                <div class="relative rounded-2xl p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl border backdrop-blur-md group {{ $meta['accent'] }}">
+                <div class="relative rounded-2xl p-4 sm:p-4 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl border backdrop-blur-md group {{ $meta['accent'] }}" style="min-height: 220px;">
                     
                     {{-- Cute Micro Badge --}}
-                    <div class="flex items-center justify-between gap-1 mb-2.5">
+                    <div class="flex items-center justify-between gap-1 mb-2">
                         <span class="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border {{ $meta['badgeClass'] }}">
                             {{ $meta['badge'] }}
                         </span>
@@ -198,7 +208,7 @@
                         </h3>
 
                         {{-- Per-day Pill (Hero Presentation Anchor) --}}
-                        <div class="my-2.5 py-1.5 px-2.5 rounded-xl bg-slate-900/90 border border-slate-700/70 flex items-baseline justify-center gap-1 shadow-inner">
+                        <div class="my-2 py-1.5 px-2 rounded-xl bg-slate-900/90 border border-slate-700/70 flex items-baseline justify-center gap-1 shadow-inner">
                             <span class="text-base sm:text-lg font-black text-emerald-400 font-mono">
                                 ₹{{ number_format($perDay, $perDay < 10 ? 2 : 0) }}
                             </span>
@@ -220,13 +230,13 @@
                         </div>
 
                         {{-- Subtext / Tagline --}}
-                        <p class="mt-2 text-[11px] sm:text-xs text-slate-300 leading-snug text-center min-h-[2rem] flex items-center justify-center">
+                        <p class="mt-1.5 text-[11px] sm:text-xs text-slate-300 leading-snug text-center min-h-[1.8rem] flex items-center justify-center">
                             {{ $meta['sub'] }}
                         </p>
                     </div>
 
                     {{-- CTA Button --}}
-                    <div class="mt-4 pt-2 border-t border-white/5">
+                    <div class="mt-3 pt-2 border-t border-white/5">
                         @auth
                             <button type="button" 
                                     @click="startCheckout({{ $plan->id }}, '{{ addslashes($plan->name) }}')"

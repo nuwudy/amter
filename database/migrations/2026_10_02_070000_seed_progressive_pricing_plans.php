@@ -11,62 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $tiers = [
-            [
-                'name' => '1 Day Pass',
-                'duration_days' => 1,
-                'price' => 10.00,
-                'is_active' => true,
-                'is_best_value' => false,
-            ],
-            [
-                'name' => '1 Week Pass',
-                'duration_days' => 7,
-                'price' => 59.00,
-                'is_active' => true,
-                'is_best_value' => false,
-            ],
-            [
-                'name' => '1 Month Fluency',
-                'duration_days' => 30,
-                'price' => 249.00,
-                'is_active' => true,
-                'is_best_value' => false,
-            ],
-            [
-                'name' => '3 Months Mastery',
-                'duration_days' => 90,
-                'price' => 599.00,
-                'is_active' => true,
-                'is_best_value' => false,
-            ],
-            [
-                'name' => '6 Months Pro Speaker',
-                'duration_days' => 180,
-                'price' => 999.00,
-                'is_active' => true,
-                'is_best_value' => false,
-            ],
-            [
-                'name' => '1 Year All-Access',
-                'duration_days' => 365,
-                'price' => 1799.00,
-                'is_active' => true,
-                'is_best_value' => true,
-            ],
-        ];
+        // Deactivate all legacy plans first
+        Plan::query()->update(['is_active' => false]);
 
-        // Upsert the 6 progressive tiers by duration_days
-        foreach ($tiers as $tier) {
-            Plan::updateOrCreate(
-                ['duration_days' => $tier['duration_days']],
-                $tier
-            );
-        }
-
-        // Deactivate any legacy plans that don't match the new 6 tiers
-        Plan::whereNotIn('duration_days', [1, 7, 30, 90, 180, 365])
-            ->update(['is_active' => false]);
+        // Sync the 5 progressive fee reduction tiers based on ₹10/day base rate
+        // 1 Day (₹10), 1 Week (₹60), 1 Month (₹225), 3 Months (₹600), 6 Months (₹1,080)
+        Plan::syncProgressivePlans(baseDailyRate: 10.0, includeOneYear: false);
     }
 
     /**
@@ -74,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Re-enable legacy plans if needed
-        Plan::whereNotIn('duration_days', [1, 7, 30, 90, 180, 365])
-            ->update(['is_active' => true]);
+        //
     }
 };
