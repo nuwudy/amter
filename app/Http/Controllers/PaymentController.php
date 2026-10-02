@@ -19,7 +19,9 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $plans = Plan::where('is_active', true)->get();
+        $plans = Plan::where('is_active', true)
+            ->orderBy('duration_days', 'asc')
+            ->get();
         $razorpayKey = config('services.razorpay.key_id');
 
         return view('pricing', compact('plans', 'razorpayKey'));
