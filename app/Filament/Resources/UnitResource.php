@@ -80,24 +80,47 @@ class UnitResource extends Resource
                             ->placeholder('e.g., Lesson 1: The Hook')
                             ->maxLength(255)
                             ->default(function ($get) {
+                                if ($insertOrder = request()->query('insert_order')) {
+                                    return (int) $insertOrder;
+                                }
                                 $sessionId = $get('course_session_id') ?: request()->query('session_id');
                                 if ($sessionId) {
                                     $maxOrder = \App\Models\Unit::where('course_session_id', $sessionId)->max('sort_order');
                                     return ($maxOrder ?? 0) + 1;
                                 }
                                 return 1;
+                            })
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $order = \App\Models\Unit::extractOrderFromTitle($state);
+                                if ($order !== null) {
+                                    $set('sort_order', $order);
+                                }
                             }),
 
                         \Filament\Forms\Components\TextInput::make('sort_order')
                             ->label('Order')
                             ->numeric()
+                            ->required()
+                            ->minValue(1)
+                            ->helperText('Set any position (e.g. 56) to insert in between; existing units from that number onward shift automatically.')
                             ->default(function ($get) {
+                                if ($insertOrder = request()->query('insert_order')) {
+                                    return (int) $insertOrder;
+                                }
                                 $sessionId = $get('course_session_id') ?: request()->query('session_id');
                                 if ($sessionId) {
                                     $maxOrder = \App\Models\Unit::where('course_session_id', $sessionId)->max('sort_order');
                                     return ($maxOrder ?? 0) + 1;
                                 }
                                 return 1;
+                            })
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                $currentTitle = trim((string) $get('title'));
+                                if ($state && ($currentTitle === '' || \App\Models\Unit::extractOrderFromTitle($currentTitle) !== null)) {
+                                    $set('title', \App\Models\Unit::formatTitleForOrder($currentTitle, (int) $state));
+                                }
                             }),
 
                         \Filament\Forms\Components\Toggle::make('is_free_sample')
@@ -610,6 +633,12 @@ class UnitResource extends Resource
                     ->default(fn () => request()->query('session_id') ?: null),
             ])
             ->actions([
+                Action::make('insert_below')
+                    ->label('Insert Below')
+                    ->icon('heroicon-o-plus-circle')
+                    ->color('success')
+                    ->tooltip(fn ($record) => 'Insert a new unit at #' . ((int) $record->sort_order + 1) . ' and shift subsequent units')
+                    ->url(fn ($record) => static::getUrl('create') . '?session_id=' . $record->course_session_id . '&insert_order=' . ((int) $record->sort_order + 1)),
                 ViewAction::make()
                     ->url(function ($record, $livewire) {
                         $sessionId = $livewire->tableFilters['course_session_id']['value'] ?? request()->query('session_id');

@@ -6,7 +6,8 @@
     $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : (\App\Models\LearningTrack::getPrimaryTrack() ?? \App\Models\LearningTrack::where('is_active', true)->first()));
 
     if ($unit) {
-        if ($currentTrack) {
+        $inCurrentTrack = $currentTrack && $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->exists();
+        if ($inCurrentTrack) {
             $navNext = $unit->nextTrackUnit($currentTrack->id);
             $navPrev = $unit->previousTrackUnit($currentTrack->id);
             $trackStepNumber = $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->value('step_number');

@@ -13,6 +13,9 @@ class CreateUnit extends CreateRecord
     #[Url]
     public ?string $session_id = null;
 
+    #[Url]
+    public ?int $insert_order = null;
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);

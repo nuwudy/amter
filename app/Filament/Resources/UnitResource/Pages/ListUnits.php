@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\UnitResource\Pages;
 
 use App\Filament\Resources\UnitResource;
+use App\Models\Unit;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
-use Livewire\Attributes\Url;
 
 class ListUnits extends ListRecords
 {
@@ -22,5 +22,19 @@ class ListUnits extends ListRecords
                         : static::getResource()::getUrl('create');
                 }),
         ];
+    }
+
+    public function reorderTable(array $order, int | string | null $draggedRecordKey = null): void
+    {
+        parent::reorderTable($order, $draggedRecordKey);
+
+        $sessionIds = Unit::whereIn('id', $order)
+            ->pluck('course_session_id')
+            ->filter()
+            ->unique();
+
+        foreach ($sessionIds as $sessionId) {
+            Unit::resequenceSession((int) $sessionId);
+        }
     }
 }

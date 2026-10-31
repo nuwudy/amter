@@ -17,10 +17,17 @@ class ViewUnit extends ViewRecord
             // Fixes the Edit button
             Actions\EditAction::make(),
 
+            Actions\Action::make('insert_after')
+                ->label('Insert Next Unit')
+                ->icon('heroicon-o-plus-circle')
+                ->color('success')
+                ->url(fn () => UnitResource::getUrl('create') . '?session_id=' . $this->record->course_session_id . '&insert_order=' . ((int) $this->record->sort_order + 1)),
+
             // Add New Unit Button
             Actions\CreateAction::make()
                 ->label('Add New Unit')
-                ->icon('heroicon-o-plus'),
+                ->icon('heroicon-o-plus')
+                ->url(fn () => UnitResource::getUrl('create') . '?session_id=' . $this->record->course_session_id),
 
         ];
     }
@@ -49,14 +56,8 @@ class ViewUnit extends ViewRecord
         // 1. Save Progress
         $user->completedUnits()->syncWithoutDetaching([$this->record->id]);
 
-        // 2. Find the Next Unit (same module, next ID)
-        // We use whereHas since module_id is on the courseSession
-        $nextUnit = Unit::whereHas('courseSession', function ($query) {
-                $query->where('module_id', $this->record->courseSession->module_id);
-            })
-            ->where('id', '>', $this->record->id)
-            ->orderBy('id', 'asc')
-            ->first();
+        // 2. Find the Next Unit by sort_order
+        $nextUnit = $this->record->nextUnit();
 
         if ($nextUnit) {
             \Filament\Notifications\Notification::make()

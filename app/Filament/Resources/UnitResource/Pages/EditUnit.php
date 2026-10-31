@@ -40,4 +40,9 @@ class EditUnit extends EditRecord
         return $breadcrumbs;
     }
 
+    protected function afterSave(): void
+    {
+        $this->record->refresh();
+        $this->fillForm();
+    }
 }
