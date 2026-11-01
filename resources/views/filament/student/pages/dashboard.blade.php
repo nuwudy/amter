@@ -7,6 +7,12 @@
         $sessionsModalData = $movieData['sessionsModalData'] ?? [];
         $user = auth()->user();
         $isPaid = $user->isPaid();
+
+        $moduleNames = $sessions
+            ->map(fn($s) => $s->module->name ?? 'Course')
+            ->filter()
+            ->unique()
+            ->values();
     @endphp
 
     <div x-data="dashboardMovieHandler(@js($sessionsModalData))">
@@ -16,12 +22,155 @@
             svg { max-width: 100%; height: auto; }
             .fi-wi-stats-overview-stat-icon svg,
             .fi-wi-stats-overview-stat-description-icon svg,
-            .fi-ta-icon svg, 
+            .fi-ta-icon svg,
             .fi-icon svg {
                 width: 1.5rem !important;
                 height: 1.5rem !important;
                 max-width: 1.5rem !important;
                 max-height: 1.5rem !important;
+            }
+
+            /* Hero Spotlight Layout */
+            .amter-dash-hero {
+                background: linear-gradient(135deg, #0f172a 0%, #1e293b 65%, #0f172a 100%);
+                border-radius: 1.75rem;
+                padding: 1.5rem;
+                border: 2px solid rgba(56, 189, 248, 0.4);
+                box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.45);
+                margin-bottom: 2rem;
+                color: #ffffff;
+                position: relative;
+                overflow: hidden;
+            }
+            .amter-dash-hero-inner {
+                display: flex;
+                flex-direction: column;
+                gap: 1.35rem;
+            }
+            @media (min-width: 768px) {
+                .amter-dash-hero {
+                    padding: 1.85rem 2rem;
+                }
+                .amter-dash-hero-inner {
+                    flex-direction: row !important;
+                    align-items: center !important;
+                    gap: 2rem;
+                }
+            }
+            .amter-dash-hero-poster {
+                display: block;
+                width: 100%;
+                height: 180px;
+                border-radius: 1.25rem;
+                overflow: hidden;
+                position: relative;
+                flex-shrink: 0;
+                background: #090d16;
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            }
+            @media (min-width: 768px) {
+                .amter-dash-hero-poster {
+                    width: 290px !important;
+                    height: 170px !important;
+                }
+            }
+            .amter-dash-hero-poster picture,
+            .amter-dash-hero-poster img,
+            .amter-dash-card-poster picture,
+            .amter-dash-card-poster img {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+                display: block !important;
+                transition: transform 0.45s ease;
+            }
+            .amter-dash-hero-poster:hover img,
+            .amter-dash-card:hover .amter-dash-card-poster img {
+                transform: scale(1.06);
+            }
+
+            /* Course Sessions Library Grid */
+            .amter-dash-library {
+                background: #0f172a;
+                border-radius: 1.85rem;
+                padding: 1.65rem 1.5rem;
+                border: 1px solid #1e293b;
+                margin-bottom: 2rem;
+            }
+            .amter-dash-pills {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.45rem;
+                margin-bottom: 1.35rem;
+            }
+            .amter-dash-pill {
+                padding: 0.4rem 0.9rem;
+                border-radius: 9999px;
+                font-size: 0.74rem;
+                font-weight: 800;
+                cursor: pointer;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                background: rgba(30, 41, 59, 0.8);
+                color: #cbd5e1;
+                transition: all 0.2s;
+            }
+            .amter-dash-pill:hover {
+                background: rgba(51, 65, 85, 0.95);
+                color: #ffffff;
+            }
+            .amter-dash-pill-active {
+                background: linear-gradient(90deg, #00c2e8, #38bdf8) !important;
+                color: #0f172a !important;
+                border-color: transparent !important;
+            }
+            .amter-dash-grid {
+                display: grid !important;
+                grid-template-columns: repeat(1, minmax(0, 1fr));
+                gap: 1.15rem;
+            }
+            @media (min-width: 540px) {
+                .amter-dash-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                }
+            }
+            @media (min-width: 900px) {
+                .amter-dash-grid {
+                    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                }
+            }
+            @media (min-width: 1200px) {
+                .amter-dash-grid {
+                    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                }
+            }
+            .amter-dash-card {
+                background: #1e293b;
+                border-radius: 1.25rem;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35);
+                transition: transform 0.25s ease, border-color 0.25s ease;
+            }
+            .amter-dash-card:hover {
+                transform: translateY(-4px);
+                border-color: rgba(56, 189, 248, 0.5);
+            }
+            .amter-dash-card-featured {
+                border: 2px solid #00c2e8 !important;
+                box-shadow: 0 12px 30px -6px rgba(0, 194, 232, 0.3);
+            }
+            .amter-dash-card-poster {
+                display: block;
+                position: relative;
+                width: 100%;
+                height: 150px;
+                overflow: hidden;
+                background: #090d16;
+                text-decoration: none;
             }
         </style>
 
@@ -54,23 +203,22 @@
         @endif
 
         @if(session('success'))
-            <div x-data="{ show: true }" x-show="show" class="mb-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-6 py-4 rounded-2xl flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-3">
-                    <svg class="w-6 h-6 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="font-semibold text-sm">{{ session('success') }}</span>
+            <div x-data="{ show: true }" x-show="show" style="margin-bottom: 1.5rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: #065f46; padding: 1rem 1.25rem; border-radius: 1rem; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <span style="font-weight: 700; font-size: 0.9rem;">✓ {{ session('success') }}</span>
                 </div>
-                <button type="button" @click="show = false" class="text-emerald-500 hover:text-emerald-700 font-bold ml-4">✕</button>
+                <button type="button" @click="show = false" style="background: transparent; border: none; color: #059669; font-weight: 800; cursor: pointer;">✕</button>
             </div>
         @endif
 
         {{-- Top Membership & Milestones Bar --}}
-        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem;">
             <div>
                 @if(!$isPaid)
-                    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 0.75rem 1.25rem; border-radius: 9999px; color: #92400e; display: inline-flex; align-items: center; gap: 0.75rem; border: 1px solid #fcd34d;">
-                        <span style="font-weight: 800; font-size: 0.85rem;">Free Member</span>
-                        <a href="{{ route('pricing') }}" style="background-color: #0f172a; color: white; padding: 0.35rem 0.9rem; border-radius: 9999px; font-weight: 800; font-size: 0.75rem; text-decoration: none;">
-                            Unlock Premium ➜
+                    <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 0.6rem 1.1rem; border-radius: 9999px; color: #92400e; display: inline-flex; align-items: center; gap: 0.75rem; border: 1px solid #fcd34d;">
+                        <span style="font-weight: 800; font-size: 0.82rem;">Free Member</span>
+                        <a href="{{ route('pricing') }}" style="background-color: #0f172a; color: white; padding: 0.35rem 0.9rem; border-radius: 9999px; font-weight: 800; font-size: 0.74rem; text-decoration: none;">
+                            Unlock All Classes ➜
                         </a>
                     </div>
                 @else
@@ -83,9 +231,13 @@
                 @endif
             </div>
 
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <a href="{{ route('public.library') }}"
+                   style="display: inline-flex; align-items: center; gap: 0.4rem; color: #334155; font-weight: 700; font-size: 0.8rem; text-decoration: none; padding: 0.5rem 0.95rem; border-radius: 9999px; background: white; border: 1px solid #e2e8f0;">
+                    <span>🎬 Full Cinema View</span>
+                </a>
                 <a href="{{ route('filament.student.pages.milestones') }}"
-                   style="display: inline-flex; align-items: center; gap: 0.45rem; color: #334155; font-weight: 700; font-size: 0.825rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 9999px; background: white; border: 1px solid #e2e8f0;">
+                   style="display: inline-flex; align-items: center; gap: 0.45rem; color: #334155; font-weight: 700; font-size: 0.8rem; text-decoration: none; padding: 0.5rem 0.95rem; border-radius: 9999px; background: white; border: 1px solid #e2e8f0;">
                     <svg style="width: 15px; height: 15px; color: #f59e0b;" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                     <span>My Trophies</span>
                 </a>
@@ -93,7 +245,7 @@
         </div>
 
         {{-- 1. STREAK & MASTERY STATS --}}
-        <div style="margin-bottom: 2rem;">
+        <div style="margin-bottom: 1.75rem;">
             @livewire(\App\Filament\Widgets\MasteryStats::class)
         </div>
 
@@ -104,18 +256,18 @@
                 $heroRawTitle = trim((string) ($heroUnit?->title ?? '1'));
                 $heroLessonLabel = ctype_digit($heroRawTitle) ? "Lesson {$heroRawTitle}" : $heroRawTitle;
             @endphp
-            <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 1.75rem; padding: 1.75rem; border: 2px solid rgba(56, 189, 248, 0.35); box-shadow: 0 20px 45px -15px rgba(15, 23, 42, 0.4); margin-bottom: 2.25rem; color: white; position: relative; overflow: hidden;">
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;" class="md:flex-row md:items-center">
+            <div class="amter-dash-hero">
+                <div class="amter-dash-hero-inner">
                     {{-- Poster Thumbnail --}}
                     <a href="{{ $heroSession->target_url }}" @if($heroSession->target_onclick) onclick="{!! $heroSession->target_onclick !!}" @endif
-                       style="display: block; width: 100%; max-width: 260px; height: 155px; border-radius: 1.25rem; overflow: hidden; position: relative; flex-shrink: 0; background: #1e293b; border: 1px solid rgba(255,255,255,0.15);">
+                       class="amter-dash-hero-poster">
                         @if($heroSession->thumbnail_path)
-                            <x-image :src="$heroSession->thumbnail_path" :width="400" :height="240" alt="{{ $heroSession->title }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                            <x-image :src="$heroSession->thumbnail_path" :width="400" :height="240" alt="{{ $heroSession->title }}" />
                         @else
                             <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 900; text-transform: uppercase;">amter</div>
                         @endif
-                        <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center;">
-                            <div style="width: 48px; height: 48px; border-radius: 9999px; background: #00c2e8; color: #0f172a; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,194,232,0.5);">
+                        <div style="position: absolute; inset: 0; background: rgba(9, 13, 22, 0.28); display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 50px; height: 50px; border-radius: 9999px; background: #00c2e8; color: #0f172a; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,194,232,0.5);">
                                 <svg style="width: 22px; height: 22px; margin-left: 2px;" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
                             </div>
                         </div>
@@ -162,7 +314,7 @@
                             <button type="button"
                                     @click="openSessionModal({{ $heroSession->id }})"
                                     style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 9999px; cursor: pointer;">
-                                <span>All {{ $heroSession->units_count }} Lessons</span>
+                                <span>☰ All {{ $heroSession->units_count }} Lessons</span>
                             </button>
                         </div>
                     </div>
@@ -171,42 +323,74 @@
         @endif
 
         {{-- 3. MOVIE-PLATFORM COURSE SESSIONS GRID --}}
-        <div style="background: #0f172a; border-radius: 2rem; padding: 1.75rem 1.5rem; border: 1px solid #1e293b; margin-bottom: 2rem;">
-            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <div class="amter-dash-library">
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
                 <div>
                     <span style="font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #38bdf8; display: block;">Your Course Library</span>
-                    <h2 style="font-size: 1.5rem; font-weight: 900; color: white; margin: 0.15rem 0 0 0;">All Course Sessions</h2>
+                    <h2 style="font-size: 1.45rem; font-weight: 900; color: white; margin: 0.15rem 0 0 0;">All Course Sessions</h2>
+                </div>
+
+                {{-- Search Input --}}
+                <div style="position: relative; min-width: 210px;">
+                    <input type="text"
+                           x-model="searchQuery"
+                           placeholder="Search sessions..."
+                           style="width: 100%; padding: 0.45rem 0.85rem; border-radius: 9999px; background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; font-size: 0.8rem; outline: none;">
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+            {{-- Filter Pills --}}
+            <div class="amter-dash-pills">
+                <button type="button" @click="selectedCategory = 'all'"
+                        class="amter-dash-pill"
+                        :class="selectedCategory === 'all' ? 'amter-dash-pill-active' : ''">
+                    All Sessions ({{ $sessions->count() }})
+                </button>
+                <button type="button" @click="selectedCategory = 'started'"
+                        class="amter-dash-pill"
+                        :class="selectedCategory === 'started' ? 'amter-dash-pill-active' : ''">
+                    ▶ In Progress
+                </button>
+                @foreach($moduleNames as $modName)
+                    <button type="button" @click="selectedCategory = @js($modName)"
+                            class="amter-dash-pill"
+                            :class="selectedCategory === @js($modName) ? 'amter-dash-pill-active' : ''">
+                        {{ $modName }}
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Responsive 4-Column Card Grid --}}
+            <div class="amter-dash-grid">
                 @foreach($sessions as $session)
                     @php
                         $resumeUnit = $session->resume_unit;
                         $resumeRawTitle = trim((string) ($resumeUnit?->title ?? '1'));
                         $resumeLessonText = ctype_digit($resumeRawTitle) ? "Lesson {$resumeRawTitle}" : $resumeRawTitle;
+                        $modTitle = $session->module->name ?? 'Course';
                     @endphp
-                    <div style="background: #1e293b; border-radius: 1.25rem; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; border: {{ $session->is_last_attended ? '2px solid #00c2e8' : '1px solid rgba(255,255,255,0.1)' }}; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);">
+                    <div class="amter-dash-card {{ $session->is_last_attended ? 'amter-dash-card-featured' : '' }}"
+                         x-show="matchesFilter(@js($session->title), @js($modTitle), {{ $session->is_started ? 'true' : 'false' }})">
                         {{-- Poster --}}
                         <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif
-                           style="display: block; position: relative; height: 145px; overflow: hidden; background: #0f172a;">
+                           class="amter-dash-card-poster">
                             @if($session->thumbnail_path)
-                                <x-image :src="$session->thumbnail_path" :width="360" :height="200" alt="{{ $session->title }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                                <x-image :src="$session->thumbnail_path" :width="360" :height="200" alt="{{ $session->title }}" />
                             @else
                                 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #475569; font-weight: 900; text-transform: uppercase;">amter</div>
                             @endif
                             <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15,23,42,0.95), rgba(15,23,42,0.2), transparent);"></div>
 
                             @if($session->is_last_attended)
-                                <div style="position: absolute; top: 0.6rem; left: 0.6rem; background: #00c2e8; color: #0f172a; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 9999px;">
+                                <div style="position: absolute; top: 0.6rem; left: 0.6rem; background: #00c2e8; color: #0f172a; font-size: 0.62rem; font-weight: 900; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 9999px;">
                                     ● Last Attended
                                 </div>
                             @endif
 
                             <div style="position: absolute; bottom: 0.55rem; left: 0.6rem; right: 0.6rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; font-weight: 800; color: white;">
-                                <span>{{ $session->is_started ? "Next: {$resumeLessonText}" : "{$session->units_count} Lessons" }}</span>
+                                <span style="background: rgba(9, 13, 22, 0.65); padding: 0.15rem 0.45rem; border-radius: 0.35rem;">{{ $session->is_started ? "Next: {$resumeLessonText}" : "{$session->units_count} Lessons" }}</span>
                                 @if($session->completed_count > 0)
-                                    <span style="color: #34d399;">{{ $session->completed_count }}/{{ $session->units_count }}</span>
+                                    <span style="color: #34d399; background: rgba(6, 78, 59, 0.85); padding: 0.12rem 0.45rem; border-radius: 0.35rem;">{{ $session->completed_count }}/{{ $session->units_count }}</span>
                                 @endif
                             </div>
 
@@ -218,10 +402,10 @@
                         </a>
 
                         {{-- Body --}}
-                        <div style="padding: 0.9rem; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; gap: 0.75rem;">
+                        <div style="padding: 0.95rem; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between; gap: 0.75rem;">
                             <div>
                                 <div style="font-size: 0.65rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">
-                                    {{ $session->module->name ?? 'Course' }}
+                                    {{ $modTitle }}
                                 </div>
                                 <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
                                     <h3 style="font-size: 0.95rem; font-weight: 800; color: white; margin: 0; line-height: 1.3;">
@@ -232,14 +416,14 @@
 
                             <div style="display: flex; flex-direction: column; gap: 0.45rem;">
                                 <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif
-                                   style="display: inline-flex; justify-content: center; align-items: center; gap: 0.4rem; width: 100%; padding: 0.55rem 0.75rem; background: #00c2e8; color: #0f172a; border-radius: 0.75rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; text-decoration: none;">
+                                   style="display: inline-flex; justify-content: center; align-items: center; gap: 0.4rem; width: 100%; padding: 0.55rem 0.75rem; background: linear-gradient(90deg, #00c2e8, #38bdf8); color: #0f172a; border-radius: 0.75rem; font-size: 0.72rem; font-weight: 900; text-transform: uppercase; text-decoration: none;">
                                     <span>▶ {{ $session->cta_label }}</span>
                                 </a>
 
                                 <button type="button"
                                         @click="openSessionModal({{ $session->id }})"
                                         style="display: inline-flex; justify-content: center; align-items: center; gap: 0.35rem; width: 100%; padding: 0.45rem 0.75rem; background: rgba(255,255,255,0.08); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.75rem; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; cursor: pointer;">
-                                    <span>All {{ $session->units_count }} Lessons</span>
+                                    <span>☰ All {{ $session->units_count }} Lessons</span>
                                 </button>
                             </div>
                         </div>
@@ -324,6 +508,22 @@
                 modalOpen: false,
                 activeSession: null,
                 episodeFilter: '',
+                selectedCategory: 'all',
+                searchQuery: '',
+
+                matchesFilter(title, modName, isStarted) {
+                    if (this.selectedCategory === 'started' && !isStarted) {
+                        return false;
+                    }
+                    if (this.selectedCategory !== 'all' && this.selectedCategory !== 'started' && modName !== this.selectedCategory) {
+                        return false;
+                    }
+                    const q = this.searchQuery.trim().toLowerCase();
+                    if (q && !String(title).toLowerCase().includes(q) && !String(modName).toLowerCase().includes(q)) {
+                        return false;
+                    }
+                    return true;
+                },
 
                 openSessionModal(sessionId) {
                     this.activeSession = this.sessions[sessionId] || null;

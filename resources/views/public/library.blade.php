@@ -3,329 +3,604 @@
 @section('meta_description', 'Unlock the power of spoken English with amter\'s library of interactive video lessons, AI roleplay, and voice-matching challenges.')
 
 @section('content')
-<div x-data="movieLibraryHandler(@js($sessionsModalData ?? []))" class="bg-slate-950 min-h-screen pb-20" style="background: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 70%);">
+@php
+    $moduleNames = $sessions
+        ->map(fn($s) => $s->module->name ?? 'Course')
+        ->filter()
+        ->unique()
+        ->values();
+@endphp
 
-    {{-- 1. MOVIE-PLATFORM HERO SPOTLIGHT: Last Class Attended (or Featured Free Session for First-Comers) --}}
-    <div class="relative pt-8 pb-6 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<style>
+    .amter-lib-page {
+        background-color: #090d16;
+        background-image:
+            radial-gradient(circle at 20% 0%, rgba(0, 194, 232, 0.14) 0%, transparent 45%),
+            radial-gradient(circle at 80% 5%, rgba(99, 102, 241, 0.14) 0%, transparent 45%),
+            linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+        min-height: 100vh;
+        padding-top: 5.75rem;
+        padding-bottom: 5rem;
+        color: #f8fafc;
+    }
+    .amter-lib-container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    @media (min-width: 640px) {
+        .amter-lib-container { padding: 0 1.5rem; }
+    }
+    @media (min-width: 1024px) {
+        .amter-lib-container { padding: 0 2rem; }
+    }
 
-            @if(isset($heroSession) && $heroSession)
-                @php
-                    $heroUnit = $heroSession->resume_unit;
-                    $heroRawTitle = trim((string) ($heroUnit?->title ?? '1'));
-                    $heroLessonLabel = ctype_digit($heroRawTitle) ? "Lesson {$heroRawTitle}" : $heroRawTitle;
-                @endphp
-                <div class="relative rounded-3xl overflow-hidden border {{ $hasHistory ? 'border-cyan-400/40 shadow-[0_20px_60px_-15px_rgba(0,194,232,0.25)]' : 'border-white/15 shadow-2xl' }} bg-slate-900/90">
-                    {{-- Ambient Backdrop Image --}}
-                    @if($heroSession->thumbnail_path)
-                        <div class="absolute inset-0 opacity-25 pointer-events-none">
-                            <x-image :src="$heroSession->thumbnail_path" :width="800" :height="400" alt="{{ $heroSession->title }}" class="w-full h-full object-cover blur-md scale-110" />
+    /* Hero Spotlight Card */
+    .amter-lib-hero {
+        position: relative;
+        border-radius: 1.75rem;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 65%, #0f172a 100%);
+        border: 1.5px solid rgba(56, 189, 248, 0.35);
+        box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px -10px rgba(0, 194, 232, 0.2);
+        margin-bottom: 2.25rem;
+    }
+    .amter-lib-hero-inner {
+        position: relative;
+        z-index: 2;
+        padding: 1.35rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.35rem;
+    }
+    @media (min-width: 768px) {
+        .amter-lib-hero-inner {
+            flex-direction: row;
+            align-items: center;
+            padding: 2rem 2.25rem;
+            gap: 2.25rem;
+        }
+    }
+    .amter-lib-hero-poster {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 190px;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #090d16;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.65);
+        text-decoration: none;
+    }
+    @media (min-width: 768px) {
+        .amter-lib-hero-poster {
+            width: 320px;
+            height: 185px;
+        }
+    }
+    @media (min-width: 1024px) {
+        .amter-lib-hero-poster {
+            width: 350px;
+            height: 200px;
+        }
+    }
+    .amter-lib-hero-poster picture,
+    .amter-lib-hero-poster img,
+    .amter-lib-card-poster picture,
+    .amter-lib-card-poster img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+        transition: transform 0.5s ease;
+    }
+    .amter-lib-hero-poster:hover img,
+    .amter-lib-card:hover .amter-lib-card-poster img {
+        transform: scale(1.06);
+    }
+    .amter-lib-play-circle {
+        width: 54px;
+        height: 54px;
+        border-radius: 9999px;
+        background: linear-gradient(135deg, #00c2e8 0%, #38bdf8 100%);
+        color: #090d16;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 25px rgba(0, 194, 232, 0.55);
+        transition: transform 0.25s ease;
+    }
+    .amter-lib-hero-poster:hover .amter-lib-play-circle {
+        transform: scale(1.1);
+    }
+
+    /* Filter Pills & Toolbar */
+    .amter-lib-toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    @media (min-width: 768px) {
+        .amter-lib-toolbar {
+            flex-direction: row;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+    }
+    .amter-lib-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1.35rem;
+    }
+    .amter-lib-pill {
+        padding: 0.45rem 0.95rem;
+        border-radius: 9999px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(30, 41, 59, 0.7);
+        color: #cbd5e1;
+        transition: all 0.2s;
+    }
+    .amter-lib-pill:hover {
+        background: rgba(51, 65, 85, 0.9);
+        color: #ffffff;
+    }
+    .amter-lib-pill-active {
+        background: linear-gradient(90deg, #00c2e8, #38bdf8) !important;
+        color: #090d16 !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 14px rgba(0, 194, 232, 0.35);
+    }
+
+    /* Responsive 2 / 3 / 4 Column Movie Poster Grid */
+    .amter-lib-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.85rem;
+    }
+    @media (min-width: 640px) {
+        .amter-lib-grid {
+            gap: 1.25rem;
+        }
+    }
+    @media (min-width: 768px) {
+        .amter-lib-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+    @media (min-width: 1100px) {
+        .amter-lib-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 1.35rem;
+        }
+    }
+
+    /* Movie Card */
+    .amter-lib-card {
+        background: #131c2e;
+        border-radius: 1.25rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .amter-lib-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56, 189, 248, 0.5);
+        box-shadow: 0 18px 38px -10px rgba(0, 194, 232, 0.22);
+    }
+    .amter-lib-card-featured {
+        border: 2px solid #00c2e8;
+        box-shadow: 0 14px 35px -8px rgba(0, 194, 232, 0.3);
+    }
+    .amter-lib-card-poster {
+        display: block;
+        position: relative;
+        width: 100%;
+        height: 130px;
+        overflow: hidden;
+        background: #090d16;
+        text-decoration: none;
+    }
+    @media (min-width: 640px) {
+        .amter-lib-card-poster {
+            height: 158px;
+        }
+    }
+    .amter-lib-card-body {
+        padding: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+    @media (min-width: 640px) {
+        .amter-lib-card-body {
+            padding: 1rem 1.05rem;
+        }
+    }
+    .amter-lib-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(90deg, #00c2e8 0%, #38bdf8 100%);
+        color: #090d16;
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        transition: filter 0.2s, transform 0.15s;
+    }
+    .amter-lib-btn-primary:hover {
+        filter: brightness(1.08);
+    }
+    .amter-lib-btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        width: 100%;
+        padding: 0.48rem 0.75rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #e2e8f0;
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .amter-lib-btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.14);
+    }
+</style>
+
+<div x-data="movieLibraryHandler(@js($sessionsModalData ?? []))" class="amter-lib-page">
+    <div class="amter-lib-container">
+
+        {{-- 1. HERO SPOTLIGHT BANNER: Last Class Attended (or Featured Free Session for First-Comers) --}}
+        @if(isset($heroSession) && $heroSession)
+            @php
+                $heroUnit = $heroSession->resume_unit;
+                $heroRawTitle = trim((string) ($heroUnit?->title ?? '1'));
+                $heroLessonLabel = ctype_digit($heroRawTitle) ? "Lesson {$heroRawTitle}" : $heroRawTitle;
+            @endphp
+            <div class="amter-lib-hero">
+                <div class="amter-lib-hero-inner">
+                    {{-- Compact 16:9 Widescreen Poster --}}
+                    <a href="{{ $heroSession->target_url }}" @if($heroSession->target_onclick) onclick="{!! $heroSession->target_onclick !!}" @endif class="amter-lib-hero-poster">
+                        @if($heroSession->thumbnail_path)
+                            <x-image :src="$heroSession->thumbnail_path" :width="480" :height="270" alt="{{ $heroSession->title }}" />
+                        @else
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #475569; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 1.5rem;">amter</div>
+                        @endif
+
+                        {{-- Play Button Overlay --}}
+                        <div style="position: absolute; inset: 0; background: rgba(9, 13, 22, 0.28); display: flex; align-items: center; justify-content: center;">
+                            <div class="amter-lib-play-circle">
+                                <svg style="width: 24px; height: 24px; margin-left: 2px;" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                            </div>
                         </div>
-                    @endif
-                    <div class="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/90 to-slate-900/60 pointer-events-none"></div>
 
-                    <div class="relative z-10 p-6 sm:p-8 lg:p-10 flex flex-col md:flex-row items-center gap-6 lg:gap-10">
-                        {{-- Poster Card --}}
-                        <a href="{{ $heroSession->target_url }}" @if($heroSession->target_onclick) onclick="{!! $heroSession->target_onclick !!}" @endif class="w-full md:w-72 lg:w-80 shrink-0 rounded-2xl overflow-hidden border border-white/15 shadow-2xl relative group block aspect-video md:aspect-[16/10] bg-slate-800">
-                            @if($heroSession->thumbnail_path)
-                                <x-image :src="$heroSession->thumbnail_path" :width="480" :height="300" alt="{{ $heroSession->title }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                        {{-- Bottom Progress Strip --}}
+                        @if($heroSession->progress_percent > 0)
+                            <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 5px; background: rgba(9, 13, 22, 0.85);">
+                                <div style="height: 100%; width: {{ max(6, $heroSession->progress_percent) }}%; background: linear-gradient(90deg, #00c2e8, #10b981);"></div>
+                            </div>
+                        @endif
+                    </a>
+
+                    {{-- Spotlight Details --}}
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.65rem;">
+                            @if($hasHistory)
+                                <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.8rem; border-radius: 9999px; background: rgba(0, 194, 232, 0.18); border: 1px solid rgba(56, 189, 248, 0.45); color: #38bdf8; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;">
+                                    <span style="width: 7px; height: 7px; border-radius: 9999px; background: #00c2e8;"></span>
+                                    Continue Where You Left Off
+                                </span>
                             @else
-                                <div class="w-full h-full flex items-center justify-center text-slate-400 font-black uppercase tracking-widest text-2xl">amter</div>
-                            @endif
-                            <div class="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                <div class="w-14 h-14 rounded-full bg-primary-500 text-slate-950 flex items-center justify-center shadow-lg shadow-primary-500/50 transform group-hover:scale-110 transition-transform">
-                                    <svg class="w-7 h-7 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                                </div>
-                            </div>
-                            @if($heroSession->progress_percent > 0)
-                                <div class="absolute bottom-0 inset-x-0 h-1.5 bg-slate-950/80">
-                                    <div class="h-full bg-gradient-to-r from-primary-400 to-emerald-400" style="width: {{ $heroSession->progress_percent }}%;"></div>
-                                </div>
-                            @endif
-                        </a>
-
-                        {{-- Spotlight Details --}}
-                        <div class="flex-1 text-center md:text-left min-w-0">
-                            <div class="inline-flex flex-wrap items-center justify-center md:justify-start gap-2 mb-3">
-                                @if($hasHistory)
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-500/20 border border-primary-400/40 text-primary-300 text-xs font-black uppercase tracking-wider">
-                                        <span class="w-2 h-2 rounded-full bg-primary-400 animate-ping"></span>
-                                        Continue Where You Left Off
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-black uppercase tracking-wider">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                        Featured Free Session &bull; Start Here
-                                    </span>
-                                @endif
-                                <span class="px-2.5 py-1 rounded-full bg-white/10 text-slate-300 text-xs font-bold uppercase tracking-wider">
-                                    {{ $heroSession->module->name ?? 'Course Session' }}
+                                <span style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.8rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.18); border: 1px solid rgba(52, 211, 153, 0.45); color: #6ee7b7; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em;">
+                                    <span style="width: 7px; height: 7px; border-radius: 9999px; background: #10b981;"></span>
+                                    Featured Free Session &bull; Start Here
                                 </span>
-                            </div>
-
-                            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight mb-2">
-                                {{ $heroSession->title }}
-                            </h1>
-
-                            <p class="text-sm sm:text-base text-primary-300 font-bold mb-3">
-                                Up Next: <span class="text-white">{{ $heroLessonLabel }}</span>
-                                <span class="text-slate-400 font-medium">&bull; {{ $heroSession->units_count }} Interactive Lessons</span>
-                            </p>
-
-                            @if($heroSession->description)
-                                <p class="text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-2xl mb-4">
-                                    {{ $heroSession->description }}
-                                </p>
                             @endif
 
-                            {{-- Progress Bar if started --}}
-                            @if($heroSession->is_started)
-                                <div class="max-w-md mx-auto md:mx-0 mb-5">
-                                    <div class="flex justify-between text-xs font-bold text-slate-300 mb-1.5">
-                                        <span>Session Progress</span>
-                                        <span class="text-primary-400">{{ $heroSession->completed_count }} / {{ $heroSession->units_count }} Mastered ({{ $heroSession->progress_percent }}%)</span>
-                                    </div>
-                                    <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden border border-white/10">
-                                        <div class="h-full bg-gradient-to-r from-primary-500 to-emerald-400 rounded-full transition-all duration-500" style="width: {{ max(4, $heroSession->progress_percent) }}%;"></div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Action Buttons --}}
-                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
-                                <a href="{{ $heroSession->target_url }}" @if($heroSession->target_onclick) onclick="{!! $heroSession->target_onclick !!}" @endif
-                                   class="px-7 py-3.5 bg-gradient-to-r from-primary-500 to-cyan-400 hover:from-primary-400 hover:to-cyan-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider rounded-full shadow-lg shadow-primary-500/30 transition-all transform hover:-translate-y-0.5 flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                                    <span>{{ $heroSession->cta_label }}</span>
-                                </a>
-
-                                <button type="button"
-                                        @click="openSessionModal({{ $heroSession->id }})"
-                                        class="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs sm:text-sm uppercase tracking-wider rounded-full transition-all flex items-center gap-2 cursor-pointer">
-                                    <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                    <span>All {{ $heroSession->units_count }} Lessons</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-        </div>
-    </div>
-
-    {{-- 2. ALL COURSE SESSIONS GRID (Netflix / Movie Platform Style) --}}
-    <div id="courses" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="mb-6 flex flex-col sm:flex-row justify-between items-center sm:items-end border-b border-slate-800 pb-4 gap-4">
-            <div class="text-center sm:text-left">
-                <span class="text-xs font-black uppercase tracking-widest text-primary-400 block mb-1">Choose Any Session or Topic</span>
-                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">Course Sessions Library</h2>
-            </div>
-
-            <div class="flex items-center gap-3">
-                @auth
-                    <a href="{{ route('filament.student.pages.dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/90 text-slate-200 rounded-full font-bold text-xs sm:text-sm border border-slate-700 hover:bg-slate-700 transition-colors">
-                        <span>My Dashboard</span>
-                    </a>
-                @endauth
-                <a href="{{ url('/?review=1#reviews') }}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-slate-800/90 text-slate-300 rounded-full font-bold text-xs sm:text-sm border border-slate-700 hover:bg-slate-700 transition-colors">
-                    <span class="text-primary-400">★</span> Reviews
-                </a>
-            </div>
-        </div>
-
-        {{-- Sessions Grid: 2 columns on mobile, 4 on desktop --}}
-        <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">
-            @forelse($sessions as $session)
-                @php
-                    $sessionFreeCount = $session->units->filter(fn($u) => $u->is_published && ($u->is_free_sample || $u->is_registered_only))->count();
-                    $hasGuestFree = $session->units->contains('is_free_sample', true);
-                    $resumeUnit = $session->resume_unit;
-                    $resumeRawTitle = trim((string) ($resumeUnit?->title ?? '1'));
-                    $resumeLessonText = ctype_digit($resumeRawTitle) ? "Lesson {$resumeRawTitle}" : $resumeRawTitle;
-                @endphp
-                <div class="group relative rounded-2xl transition-all duration-300 hover:-translate-y-1.5 overflow-hidden flex flex-col w-full backdrop-blur h-auto {{ $session->is_last_attended ? 'bg-slate-900/95 border-2 border-primary-400/70 shadow-[0_12px_35px_-10px_rgba(0,194,232,0.35)]' : 'bg-white/5 border border-gray-700/60 hover:border-primary-500/40 shadow-lg' }}">
-
-                    {{-- Poster Thumbnail Section --}}
-                    <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif class="block relative h-32 sm:h-44 overflow-hidden bg-slate-800">
-                        @if($session->thumbnail_path)
-                            <x-image :src="$session->thumbnail_path"
-                                     :width="360"
-                                     :height="200"
-                                     alt="{{ $session->title }}"
-                                     class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-slate-500 font-black tracking-widest uppercase text-xl opacity-30">
-                                amter
-                            </div>
-                        @endif
-
-                        {{-- Dark Cinema Gradient Overlay --}}
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
-
-                        {{-- Hover Play Icon --}}
-                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/25">
-                            <div class="w-11 h-11 rounded-full bg-primary-500 text-slate-950 flex items-center justify-center shadow-lg transform scale-90 group-hover:scale-100 transition-transform">
-                                <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                            </div>
-                        </div>
-
-                        {{-- Top Left Badge: Last Attended OR Free/Premium --}}
-                        @if($session->is_last_attended)
-                            <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5 bg-primary-500 text-slate-950 px-2.5 py-0.5 rounded-full shadow-md text-[8px] sm:text-[10px] font-black uppercase tracking-wider z-10">
-                                <span class="w-1.5 h-1.5 rounded-full bg-slate-950 animate-ping"></span>
-                                Last Attended
-                            </div>
-                        @elseif($sessionFreeCount > 0)
-                            <div class="absolute top-2.5 left-2.5 flex items-center gap-1 {{ $hasGuestFree ? 'bg-emerald-500' : 'bg-blue-600' }} px-2 py-0.5 rounded-full shadow-md border border-white/80 z-10">
-                                <span class="bg-white {{ $hasGuestFree ? 'text-emerald-600' : 'text-blue-700' }} px-1 rounded text-[9px] font-black leading-none">
-                                    {{ $sessionFreeCount }}
-                                </span>
-                                <span class="text-white text-[8px] sm:text-[9px] font-black uppercase tracking-wider leading-none">
-                                    Free
-                                </span>
-                            </div>
-                        @else
-                            <div class="absolute top-2.5 left-2.5 bg-slate-900/85 backdrop-blur-sm px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black tracking-widest text-amber-300 uppercase border border-amber-400/30 flex items-center gap-1">
-                                <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                                Premium
-                            </div>
-                        @endif
-
-                        {{-- Top Right Module Badge --}}
-                        <div class="absolute top-2.5 right-2.5 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold tracking-wider text-slate-200 uppercase border border-white/15">
-                            {{ $session->module->name ?? 'Course' }}
-                        </div>
-
-                        {{-- Bottom Left Current Lesson Indicator --}}
-                        <div class="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1 text-[10px] sm:text-xs font-extrabold text-white">
-                            <span class="truncate bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded-md border border-white/10">
-                                {{ $session->is_started ? "Next: {$resumeLessonText}" : "{$session->units_count} Lessons" }}
+                            <span style="padding: 0.28rem 0.75rem; border-radius: 9999px; background: rgba(255, 255, 255, 0.09); color: #cbd5e1; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                                {{ $heroSession->module->name ?? 'Course Session' }}
                             </span>
-                            @if($session->completed_count > 0)
-                                <span class="shrink-0 text-[9px] sm:text-[10px] font-black text-emerald-300 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-500/30">
-                                    {{ $session->completed_count }}/{{ $session->units_count }}
-                                </span>
-                            @endif
                         </div>
 
-                        {{-- Netflix-Style Bottom Progress Bar on Poster --}}
-                        @if($session->is_started)
-                            <div class="absolute bottom-0 inset-x-0 h-1 bg-slate-950">
-                                <div class="h-full bg-gradient-to-r from-primary-400 to-emerald-400" style="width: {{ max(6, $session->progress_percent) }}%;"></div>
+                        <h1 style="font-size: clamp(1.45rem, 3vw, 2.25rem); font-weight: 900; color: #ffffff; margin: 0 0 0.35rem 0; line-height: 1.2;">
+                            {{ $heroSession->title }}
+                        </h1>
+
+                        <p style="font-size: 0.92rem; color: #38bdf8; font-weight: 700; margin: 0 0 0.65rem 0;">
+                            Up Next: <span style="color: #ffffff;">{{ $heroLessonLabel }}</span>
+                            <span style="color: #94a3b8; font-weight: 600;">&bull; {{ $heroSession->units_count }} Interactive Lessons</span>
+                        </p>
+
+                        @if($heroSession->description)
+                            <p style="font-size: 0.84rem; color: #cbd5e1; margin: 0 0 1rem 0; max-width: 640px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ $heroSession->description }}
+                            </p>
+                        @endif
+
+                        @if($heroSession->is_started)
+                            <div style="max-width: 380px; margin-bottom: 1.1rem;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 800; color: #cbd5e1; margin-bottom: 0.35rem;">
+                                    <span>Your Progress</span>
+                                    <span style="color: #38bdf8;">{{ $heroSession->completed_count }} / {{ $heroSession->units_count }} Mastered ({{ $heroSession->progress_percent }}%)</span>
+                                </div>
+                                <div style="height: 7px; background: rgba(255,255,255,0.1); border-radius: 9999px; overflow: hidden;">
+                                    <div style="height: 100%; width: {{ max(5, $heroSession->progress_percent) }}%; background: linear-gradient(90deg, #00c2e8, #10b981); border-radius: 9999px;"></div>
+                                </div>
                             </div>
                         @endif
-                    </a>
 
-                    {{-- Card Content Section --}}
-                    <div class="p-3 sm:p-4 flex flex-col flex-grow justify-between">
-                        <div class="mb-3">
-                            <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif>
-                                <h3 class="text-xs sm:text-base font-extrabold text-white leading-snug mb-1.5 line-clamp-2 group-hover:text-primary-400 transition-colors">
-                                    {{ $session->title }}
-                                </h3>
-                            </a>
-
-                            @if($session->description)
-                                <p class="text-[10px] sm:text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                                    {{ $session->description }}
-                                </p>
-                            @endif
-                        </div>
-
-                        {{-- Card Actions: Smart Resume Button + All Lessons Modal Trigger --}}
-                        <div class="mt-auto pt-1 flex flex-col gap-1.5">
-                            <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif
-                               class="inline-flex justify-center items-center gap-1.5 w-full py-2 sm:py-2.5 rounded-xl text-[9px] sm:text-xs font-black uppercase tracking-wider shadow-md transition-all transform active:scale-95 {{ $session->is_last_attended ? 'bg-gradient-to-r from-primary-500 to-cyan-400 text-slate-950 hover:from-primary-400 hover:to-cyan-300' : 'bg-primary-500/90 hover:bg-primary-400 text-slate-950' }}">
-                                <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
-                                <span class="truncate">{{ $session->cta_label }}</span>
+                        {{-- Action Buttons --}}
+                        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;">
+                            <a href="{{ $heroSession->target_url }}" @if($heroSession->target_onclick) onclick="{!! $heroSession->target_onclick !!}" @endif
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.65rem; border-radius: 9999px; background: linear-gradient(90deg, #00c2e8 0%, #38bdf8 100%); color: #090d16; font-size: 0.82rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; box-shadow: 0 10px 25px rgba(0, 194, 232, 0.35);">
+                                <svg style="width: 15px; height: 15px;" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+                                <span>{{ $heroSession->cta_label }}</span>
                             </a>
 
                             <button type="button"
-                                    @click="openSessionModal({{ $session->id }})"
-                                    class="inline-flex justify-center items-center gap-1.5 w-full py-1.5 sm:py-2 bg-slate-800/80 hover:bg-slate-700/90 text-slate-200 border border-slate-700 rounded-xl text-[9px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer">
-                                <svg class="w-3 h-3 text-primary-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                                <span>All {{ $session->units_count }} Lessons</span>
+                                    @click="openSessionModal({{ $heroSession->id }})"
+                                    style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.8rem 1.3rem; border-radius: 9999px; background: rgba(255, 255, 255, 0.09); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer;">
+                                <svg style="width: 15px; height: 15px; color: #38bdf8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                                <span>All {{ $heroSession->units_count }} Lessons</span>
                             </button>
                         </div>
                     </div>
                 </div>
-            @empty
-                <div class="col-span-full py-24 text-center bg-white/5 rounded-3xl border border-slate-800">
-                    <h3 class="text-2xl font-black text-white">New Courses Incoming</h3>
-                    <p class="mt-2 text-slate-400 text-sm">We are preparing new interactive sessions. Check back shortly!</p>
+            </div>
+        @endif
+
+        {{-- 2. LIBRARY HEADER, SEARCH & CATEGORY FILTER PILLS --}}
+        <div id="courses">
+            <div class="amter-lib-toolbar">
+                <div>
+                    <span style="font-size: 0.72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #38bdf8; display: block; margin-bottom: 0.2rem;">Choose Any Session or Topic</span>
+                    <h2 style="font-size: 1.65rem; font-weight: 900; color: #ffffff; margin: 0;">Course Sessions Library</h2>
                 </div>
-            @endforelse
+
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem;">
+                    {{-- Quick Search Box --}}
+                    <div style="position: relative; min-width: 210px;">
+                        <input type="text"
+                               x-model="searchQuery"
+                               placeholder="Search sessions..."
+                               style="width: 100%; padding: 0.5rem 0.9rem 0.5rem 2.1rem; border-radius: 9999px; background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255,255,255,0.14); color: #ffffff; font-size: 0.8rem; outline: none;">
+                        <svg style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: #94a3b8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+
+                    @auth
+                        <a href="{{ route('filament.student.pages.dashboard') }}" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border-radius: 9999px; font-weight: 800; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+                            <span>My Dashboard</span>
+                        </a>
+                    @endauth
+
+                    <a href="{{ url('/?review=1#reviews') }}" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1rem; background: rgba(30, 41, 59, 0.9); color: #cbd5e1; border-radius: 9999px; font-weight: 800; font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.15); text-decoration: none;">
+                        <span style="color: #fbbf24;">★</span> Reviews
+                    </a>
+                </div>
+            </div>
+
+            {{-- Category Filter Pills --}}
+            <div class="amter-lib-pills">
+                <button type="button" @click="selectedCategory = 'all'"
+                        class="amter-lib-pill"
+                        :class="selectedCategory === 'all' ? 'amter-lib-pill-active' : ''">
+                    All Sessions ({{ $sessions->count() }})
+                </button>
+                <button type="button" @click="selectedCategory = 'free'"
+                        class="amter-lib-pill"
+                        :class="selectedCategory === 'free' ? 'amter-lib-pill-active' : ''">
+                    🎁 Free Classes
+                </button>
+                @foreach($moduleNames as $modName)
+                    <button type="button" @click="selectedCategory = @js($modName)"
+                            class="amter-lib-pill"
+                            :class="selectedCategory === @js($modName) ? 'amter-lib-pill-active' : ''">
+                        {{ $modName }}
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- 3. SESSIONS GRID (2 columns mobile, 3 tablet, 4 desktop) --}}
+            <div class="amter-lib-grid">
+                @forelse($sessions as $session)
+                    @php
+                        $sessionFreeCount = $session->units->filter(fn($u) => $u->is_published && ($u->is_free_sample || $u->is_registered_only))->count();
+                        $hasGuestFree = $session->units->contains('is_free_sample', true);
+                        $resumeUnit = $session->resume_unit;
+                        $resumeRawTitle = trim((string) ($resumeUnit?->title ?? '1'));
+                        $resumeLessonText = ctype_digit($resumeRawTitle) ? "Lesson {$resumeRawTitle}" : $resumeRawTitle;
+                        $modTitle = $session->module->name ?? 'Course';
+                    @endphp
+                    <div class="amter-lib-card {{ $session->is_last_attended ? 'amter-lib-card-featured' : '' }}"
+                         x-show="matchesFilter(@js($session->title), @js($modTitle), {{ $sessionFreeCount > 0 ? 'true' : 'false' }})">
+
+                        {{-- Poster Thumbnail --}}
+                        <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif class="amter-lib-card-poster">
+                            @if($session->thumbnail_path)
+                                <x-image :src="$session->thumbnail_path"
+                                         :width="360"
+                                         :height="200"
+                                         alt="{{ $session->title }}" />
+                            @else
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #475569; font-weight: 900; text-transform: uppercase;">
+                                    amter
+                                </div>
+                            @endif
+
+                            {{-- Gradient Overlay --}}
+                            <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(9, 13, 22, 0.92) 0%, rgba(9, 13, 22, 0.25) 55%, rgba(9, 13, 22, 0.15) 100%);"></div>
+
+                            {{-- Top Left Badge --}}
+                            @if($session->is_last_attended)
+                                <div style="position: absolute; top: 0.55rem; left: 0.55rem; background: #00c2e8; color: #090d16; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.62rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+                                    ● Last Attended
+                                </div>
+                            @elseif($sessionFreeCount > 0)
+                                <div style="position: absolute; top: 0.55rem; left: 0.55rem; display: inline-flex; align-items: center; gap: 0.25rem; background: {{ $hasGuestFree ? '#10b981' : '#2563eb' }}; color: #ffffff; padding: 0.18rem 0.55rem; border-radius: 9999px; font-size: 0.62rem; font-weight: 900; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+                                    <span style="background: #ffffff; color: {{ $hasGuestFree ? '#047857' : '#1d4ed8' }}; padding: 0 0.3rem; border-radius: 9999px; font-weight: 900;">{{ $sessionFreeCount }}</span>
+                                    <span>Free</span>
+                                </div>
+                            @else
+                                <div style="position: absolute; top: 0.55rem; left: 0.55rem; background: rgba(15, 23, 42, 0.88); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35); padding: 0.18rem 0.55rem; border-radius: 9999px; font-size: 0.62rem; font-weight: 800; text-transform: uppercase;">
+                                    ★ Premium
+                                </div>
+                            @endif
+
+                            {{-- Top Right Module Badge --}}
+                            <div style="position: absolute; top: 0.55rem; right: 0.55rem; background: rgba(9, 13, 22, 0.8); border: 1px solid rgba(255,255,255,0.16); color: #e2e8f0; padding: 0.18rem 0.55rem; border-radius: 9999px; font-size: 0.58rem; font-weight: 800; text-transform: uppercase;">
+                                {{ $modTitle }}
+                            </div>
+
+                            {{-- Bottom Lesson Count / Next Lesson --}}
+                            <div style="position: absolute; bottom: 0.5rem; left: 0.6rem; right: 0.6rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; font-weight: 800; color: #ffffff;">
+                                <span style="background: rgba(9, 13, 22, 0.65); padding: 0.15rem 0.5rem; border-radius: 0.4rem; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    {{ $session->is_started ? "Next: {$resumeLessonText}" : "{$session->units_count} Lessons" }}
+                                </span>
+                                @if($session->completed_count > 0)
+                                    <span style="color: #34d399; background: rgba(6, 78, 59, 0.85); padding: 0.12rem 0.45rem; border-radius: 0.4rem; font-size: 0.64rem;">
+                                        {{ $session->completed_count }}/{{ $session->units_count }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Progress Bar --}}
+                            @if($session->is_started)
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: #090d16;">
+                                    <div style="height: 100%; width: {{ max(6, $session->progress_percent) }}%; background: linear-gradient(90deg, #00c2e8, #10b981);"></div>
+                                </div>
+                            @endif
+                        </a>
+
+                        {{-- Card Content --}}
+                        <div class="amter-lib-card-body">
+                            <div>
+                                <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
+                                    <h3 style="font-size: 0.95rem; font-weight: 800; color: #ffffff; margin: 0 0 0.3rem 0; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ $session->title }}
+                                    </h3>
+                                </a>
+
+                                @if($session->description)
+                                    <p style="font-size: 0.73rem; color: #94a3b8; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ $session->description }}
+                                    </p>
+                                @endif
+                            </div>
+
+                            <div style="display: flex; flex-direction: column; gap: 0.42rem;">
+                                <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif class="amter-lib-btn-primary">
+                                    <span>▶ {{ $session->cta_label }}</span>
+                                </a>
+
+                                <button type="button"
+                                        @click="openSessionModal({{ $session->id }})"
+                                        class="amter-lib-btn-secondary">
+                                    <span>☰ All {{ $session->units_count }} Lessons</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div style="grid-column: 1 / -1; padding: 4rem 1.5rem; text-align: center; background: rgba(255,255,255,0.03); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.08);">
+                        <h3 style="font-size: 1.35rem; font-weight: 900; color: #ffffff; margin: 0;">New Courses Incoming</h3>
+                        <p style="margin-top: 0.5rem; color: #94a3b8; font-size: 0.88rem;">We are preparing new interactive sessions. Check back shortly!</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
 
-    {{-- 3. NETFLIX-STYLE EPISODES / LESSONS MODAL DRAWER --}}
+    {{-- 4. NETFLIX-STYLE EPISODES / LESSONS MODAL DRAWER --}}
     <template x-teleport="body">
         <div x-show="modalOpen"
              x-cloak
              @keydown.escape.window="modalOpen = false"
-             class="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6">
+             style="position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem;">
             {{-- Backdrop --}}
-            <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-md" @click="modalOpen = false"></div>
+            <div style="position: fixed; inset: 0; background: rgba(9, 13, 22, 0.86); backdrop-filter: blur(10px);" @click="modalOpen = false"></div>
 
             {{-- Modal Box --}}
             <div x-show="activeSession"
-                 x-transition
-                 class="relative z-10 w-full max-w-2xl bg-slate-900 border border-white/15 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                 style="position: relative; z-index: 10; width: 100%; max-width: 620px; background: #0f172a; border: 1px solid rgba(255,255,255,0.16); border-radius: 1.5rem; box-shadow: 0 25px 60px rgba(0,0,0,0.85); overflow: hidden; display: flex; flex-direction: column; max-height: 84vh; color: #ffffff;">
 
                 {{-- Modal Header --}}
-                <div class="p-5 sm:p-6 bg-slate-950/80 border-b border-white/10 flex items-start justify-between gap-4">
+                <div style="padding: 1.25rem 1.5rem; background: #090d16; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;">
                     <div>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-primary-400 block mb-1" x-text="activeSession?.module"></span>
-                        <h3 class="text-xl sm:text-2xl font-black text-white leading-tight" x-text="activeSession?.title"></h3>
-                        <p class="text-xs text-slate-400 mt-1">
+                        <span style="font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: #38bdf8; display: block;" x-text="activeSession?.module"></span>
+                        <h3 style="font-size: 1.3rem; font-weight: 900; color: #ffffff; margin: 0.15rem 0;" x-text="activeSession?.title"></h3>
+                        <p style="font-size: 0.76rem; color: #94a3b8; margin: 0;">
                             <span x-text="activeSession?.completed"></span> of <span x-text="activeSession?.total"></span> lessons completed (<span x-text="activeSession?.percent"></span>%)
                         </p>
                     </div>
-                    <button type="button" @click="modalOpen = false" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 flex items-center justify-center font-bold cursor-pointer">
+                    <button type="button" @click="modalOpen = false" style="width: 34px; height: 34px; border-radius: 9999px; background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; font-weight: 800; cursor: pointer;">
                         ✕
                     </button>
                 </div>
 
                 {{-- Filter / Jump Input --}}
-                <div class="px-5 py-3 bg-slate-900 border-b border-white/10 flex items-center gap-3">
-                    <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <div style="padding: 0.75rem 1.5rem; background: rgba(30, 41, 59, 0.55); border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 0.6rem;">
+                    <svg style="width: 15px; height: 15px; color: #94a3b8; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input type="text"
                            x-model="episodeFilter"
                            placeholder="Jump to lesson number (e.g. 56) or title..."
-                           class="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none">
-                    <button x-show="episodeFilter" type="button" @click="episodeFilter = ''" class="text-xs text-slate-400 hover:text-white">Clear</button>
+                           style="width: 100%; background: transparent; border: none; outline: none; font-size: 0.88rem; color: #ffffff;">
+                    <button x-show="episodeFilter" type="button" @click="episodeFilter = ''" style="background: transparent; border: none; font-size: 0.75rem; color: #38bdf8; cursor: pointer; font-weight: 700;">Clear</button>
                 </div>
 
                 {{-- Episodes List --}}
-                <div class="p-4 sm:p-5 overflow-y-auto space-y-2 flex-1">
+                <div style="padding: 1rem 1.25rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 0.5rem;">
                     <template x-for="ep in filteredEpisodes" :key="ep.id">
                         <div @click="handleEpisodeClick(ep)"
-                             class="flex items-center justify-between gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer"
-                             :class="ep.current ? 'bg-primary-500/15 border-primary-400/50 hover:bg-primary-500/25' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/15'">
-                            <div class="flex items-center gap-3.5 min-w-0">
-                                <div class="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs shrink-0"
-                                     :class="ep.completed ? 'bg-emerald-500 text-slate-950' : (ep.current ? 'bg-primary-500 text-slate-950' : 'bg-slate-800 text-slate-300')">
+                             style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.8rem 1rem; border-radius: 1rem; cursor: pointer; transition: background 0.15s;"
+                             :style="ep.current ? 'background: rgba(0, 194, 232, 0.15); border: 1px solid rgba(56, 189, 248, 0.5);' : 'background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);'">
+                            <div style="display: flex; align-items: center; gap: 0.8rem; min-width: 0;">
+                                <div style="width: 34px; height: 34px; border-radius: 0.65rem; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.76rem; flex-shrink: 0;"
+                                     :style="ep.completed ? 'background: #10b981; color: #090d16;' : (ep.current ? 'background: #00c2e8; color: #090d16;' : 'background: #1e293b; color: #cbd5e1;')">
                                     <span x-show="ep.completed">✓</span>
                                     <span x-show="!ep.completed" x-text="ep.order"></span>
                                 </div>
-                                <div class="min-w-0">
-                                    <div class="text-sm font-bold text-white truncate" x-text="ep.title"></div>
-                                    <div class="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                                        <span x-show="ep.current" class="text-primary-400 font-bold">● Up Next</span>
-                                        <span x-show="ep.completed" class="text-emerald-400 font-bold">Mastered</span>
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.9rem; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" x-text="ep.title"></div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 0.1rem;">
+                                        <span x-show="ep.current" style="color: #38bdf8; font-weight: 800;">● Up Next</span>
+                                        <span x-show="ep.completed" style="color: #34d399; font-weight: 800;">Mastered</span>
                                         <span x-show="!ep.completed && !ep.current">Interactive Lesson</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span x-show="ep.free_guest" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-black uppercase">Free</span>
-                                <span x-show="!ep.free_guest && ep.free_registered" class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-black uppercase">Free Account</span>
-                                <span x-show="!ep.accessible" class="text-amber-400 text-xs font-bold flex items-center gap-1">
-                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
-                                </span>
-                                <span class="px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider"
-                                      :class="ep.current ? 'bg-primary-500 text-slate-950' : 'bg-white/10 text-white'">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                                <span x-show="ep.free_guest" style="padding: 0.18rem 0.5rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.62rem; font-weight: 900; text-transform: uppercase;">Free</span>
+                                <span x-show="!ep.free_guest && ep.free_registered" style="padding: 0.18rem 0.5rem; border-radius: 9999px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.62rem; font-weight: 900; text-transform: uppercase;">Free Account</span>
+                                <span style="padding: 0.4rem 0.8rem; border-radius: 0.65rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;"
+                                      :style="ep.current ? 'background: #00c2e8; color: #090d16;' : 'background: rgba(255,255,255,0.1); color: #ffffff;'">
                                     Play ▶
                                 </span>
                             </div>
@@ -344,6 +619,22 @@
             modalOpen: false,
             activeSession: null,
             episodeFilter: '',
+            selectedCategory: 'all',
+            searchQuery: '',
+
+            matchesFilter(title, modName, hasFree) {
+                if (this.selectedCategory === 'free' && !hasFree) {
+                    return false;
+                }
+                if (this.selectedCategory !== 'all' && this.selectedCategory !== 'free' && modName !== this.selectedCategory) {
+                    return false;
+                }
+                const q = this.searchQuery.trim().toLowerCase();
+                if (q && !String(title).toLowerCase().includes(q) && !String(modName).toLowerCase().includes(q)) {
+                    return false;
+                }
+                return true;
+            },
 
             openSessionModal(sessionId) {
                 this.activeSession = this.sessions[sessionId] || null;

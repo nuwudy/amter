@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
 class RegisterController extends Controller
@@ -27,11 +26,17 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:6', 'confirmed'],
-        ], [
+            'password' => ['required', 'string', 'min:6'],
+        ];
+
+        if ($request->filled('password_confirmation')) {
+            $rules['password'][] = 'confirmed';
+        }
+
+        $validated = $request->validate($rules, [
             'name.required' => 'ദയവായി നിങ്ങളുടെ പേര് നൽകുക (Please enter your name).',
             'email.required' => 'ദയവായി സാധുവായ ഇമെയിൽ നൽകുക (Please enter your email).',
             'email.unique' => 'ഈ ഇമെയിൽ ഇതിനകം രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട് (This email is already registered).',

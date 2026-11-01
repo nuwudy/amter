@@ -24,90 +24,82 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md"
+         style="position: fixed; inset: 0; z-index: 99990; background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(10px);"
          @click="closeModal()">
     </div>
 
     {{-- Modal Dialog --}}
     <div x-show="open" 
-         class="fixed inset-0 z-[101] flex items-center justify-center p-4 sm:p-6 pointer-events-none"
+         style="position: fixed; inset: 0; z-index: 99991; display: flex; align-items: center; justify-content: center; padding: 1rem; pointer-events: none;"
          role="dialog" 
          aria-modal="true">
 
         <div x-show="open"
-             x-transition:enter="transition cubic-bezier(0.16, 1, 0.3, 1) duration-350"
-             x-transition:enter-start="opacity-0 scale-90 translate-y-6"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-             x-transition:leave-end="opacity-0 scale-90 translate-y-6"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
              @click.outside="closeModal()"
-             class="pointer-events-auto relative w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border border-white/15 rounded-[2.5rem] p-6 sm:p-8 shadow-[0_25px_70px_-15px_rgba(0,0,0,0.9)] overflow-hidden text-center">
+             style="pointer-events: auto; position: relative; width: 100%; max-width: 420px; background: linear-gradient(180deg, #0f172a 0%, #090d16 100%); border: 1px solid rgba(255,255,255,0.18); border-radius: 2rem; padding: 2rem 1.75rem 1.65rem; box-shadow: 0 25px 70px -15px rgba(0,0,0,0.9); overflow: hidden; text-align: center; color: #ffffff;">
 
             {{-- Top Rainbow Accent --}}
-            <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-400 via-pink-500 to-amber-400"></div>
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, #00c2e8 0%, #ec4899 50%, #f59e0b 100%);"></div>
 
             {{-- Close Button --}}
             <button @click="closeModal()" 
-                    class="absolute top-4 right-4 sm:top-5 sm:right-5 w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-colors focus:outline-none"
+                    style="position: absolute; top: 1rem; right: 1rem; width: 34px; height: 34px; border-radius: 9999px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; display: flex; align-items: center; justify-content: center; cursor: pointer;"
                     aria-label="Close modal">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                ✕
             </button>
 
             {{-- Cute Floating Gift / Sparkle Badge --}}
-            <div class="mx-auto mb-4 w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-primary-500/20 via-pink-500/20 to-amber-500/20 border border-white/20 flex items-center justify-center shadow-[0_0_30px_rgba(6,182,212,0.35)] relative">
-                <span class="text-3xl sm:text-4xl animate-bounce">🎁</span>
-                <span class="absolute -top-1.5 -right-1.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[9px] font-black uppercase tracking-wider shadow-sm animate-pulse">
+            <div style="margin: 0 auto 1rem; width: 68px; height: 68px; border-radius: 1.4rem; background: rgba(0, 194, 232, 0.14); border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 0 30px rgba(0, 194, 232, 0.25);">
+                <span style="font-size: 2rem;">🎁</span>
+                <span style="position: absolute; top: -6px; right: -8px; padding: 2px 7px; border-radius: 9999px; background: linear-gradient(90deg, #f97316, #ec4899); color: #fff; font-size: 9px; font-weight: 900; text-transform: uppercase;">
                     FREE
                 </span>
             </div>
 
-            {{-- Malayalam Main Text (Requested by user) --}}
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug">
+            {{-- Malayalam Main Text --}}
+            <h2 style="font-size: 1.5rem; font-weight: 900; color: #ffffff; line-height: 1.35; margin: 0;">
                 കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾക്കായി<br/>
-                <span class="bg-gradient-to-r from-primary-400 via-cyan-300 to-pink-400 bg-clip-text text-transparent">റജിസ്റ്റർ ചെയ്യൂ</span>
+                <span style="background: linear-gradient(90deg, #38bdf8 0%, #f472b6 55%, #fbbf24 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">റജിസ്റ്റർ ചെയ്യൂ</span>
             </h2>
 
-            {{-- English Subtitle (Requested by user) --}}
-            <p class="mt-2 text-sm sm:text-base font-bold text-slate-300">
+            {{-- English Subtitle --}}
+            <p style="margin: 0.35rem 0 0; font-size: 0.88rem; font-weight: 700; color: #cbd5e1;">
                 Register for more free classes
             </p>
 
             {{-- Friendly Benefit Bullets --}}
-            <div class="mt-5 mb-6 p-4 rounded-2xl bg-white/5 border border-white/10 text-left space-y-2.5">
-                <div class="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
-                    <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">✓</span>
+            <div style="margin: 1.15rem 0 1.35rem; padding: 0.95rem 1rem; border-radius: 1.15rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); text-align: left; display: flex; flex-direction: column; gap: 0.55rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: #e2e8f0;">
+                    <span style="width: 20px; height: 20px; border-radius: 9999px; background: rgba(16,185,129,0.2); color: #34d399; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.7rem; flex-shrink: 0;">✓</span>
                     <span>കൂടുതൽ സംഭാഷണ പാഠങ്ങൾ സൗജന്യമായി കേൾക്കാം</span>
                 </div>
-                <div class="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
-                    <span class="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">✓</span>
+                <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.8rem; color: #e2e8f0;">
+                    <span style="width: 20px; height: 20px; border-radius: 9999px; background: rgba(16,185,129,0.2); color: #34d399; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.7rem; flex-shrink: 0;">✓</span>
                     <span>പഠന പുരോഗതി (Progress) കൃത്യമായി അറിയാം</span>
                 </div>
-                <div class="flex items-center gap-2.5 text-xs sm:text-sm text-slate-300">
-                    <span class="flex-shrink-0 w-5 h-5 rounded-full bg-primary-500/20 text-primary-400 flex items-center justify-center font-bold text-xs">⚡</span>
-                    <span class="text-xs text-primary-300 font-semibold">100% സൗജന്യം • കാർഡോ പേയ്‌മെന്റോ ആവശ്യമില്ല</span>
+                <div style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.78rem; color: #38bdf8; font-weight: 700;">
+                    <span style="width: 20px; height: 20px; border-radius: 9999px; background: rgba(0,194,232,0.2); color: #38bdf8; display: inline-flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.7rem; flex-shrink: 0;">⚡</span>
+                    <span>100% സൗജന്യം • കാർഡോ പേയ്‌മെന്റോ ആവശ്യമില്ല</span>
                 </div>
             </div>
 
-            {{-- Two Buttons: Register & Login (Side-by-side matching user mockup) --}}
-            <div class="flex flex-col sm:flex-row gap-3 mt-2">
-                {{-- Primary Register Button --}}
+            {{-- Two Buttons: Register & Login --}}
+            <div style="display: flex; gap: 0.65rem;">
                 <a :href="'{{ route('register') }}' + (targetUrl ? '?intended=' + encodeURIComponent(targetUrl) : '')"
-                   class="sm:flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-500 via-pink-500 to-primary-500 shadow-[0_8px_20px_-4px_rgba(249,115,22,0.5)] text-sm font-extrabold text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5">
+                   style="flex: 1; padding: 0.85rem 1rem; border-radius: 1rem; background: linear-gradient(135deg, #f97316 0%, #ec4899 100%); box-shadow: 0 8px 20px -4px rgba(236,72,153,0.5); font-size: 0.88rem; font-weight: 800; color: #ffffff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                     <span>✨ Register</span>
                 </a>
 
-                {{-- Secondary Login Button --}}
                 <a :href="'{{ route('login') }}' + (targetUrl ? '?intended=' + encodeURIComponent(targetUrl) : '')"
-                   class="sm:flex-1 py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-sm font-bold text-white transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5">
+                   style="flex: 1; padding: 0.85rem 1rem; border-radius: 1rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); font-size: 0.88rem; font-weight: 700; color: #ffffff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                     <span>🔑 Login</span>
                 </a>
             </div>
 
-            {{-- Close / Maybe Later --}}
-            <button @click="closeModal()" class="mt-4 text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors">
+            <button @click="closeModal()" style="margin-top: 0.9rem; background: transparent; border: none; font-size: 0.75rem; font-weight: 600; color: #94a3b8; cursor: pointer;">
                 ഒരുപക്ഷേ പിന്നീട് (Maybe later)
             </button>
         </div>
@@ -115,7 +107,6 @@
 </div>
 
 <script>
-    // Global helper so ANY button/link can trigger the cute popup
     window.openRegisterModal = function(targetUrl = '') {
         window.dispatchEvent(new CustomEvent('open-register-modal', { 
             detail: { targetUrl: targetUrl } 
