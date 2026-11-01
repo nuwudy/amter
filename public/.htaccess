@@ -22,6 +22,15 @@
 
     RewriteEngine On
 
+    # 1. Canonical Domain 301 Redirect: www.amter.in & amterenglish.com -> https://amter.in
+    RewriteCond %{HTTP_HOST} ^(www\.amter\.in|(www\.)?amterenglish\.com)$ [NC]
+    RewriteRule ^(.*)$ https://amter.in/$1 [L,R=301]
+
+    # 2. Canonical HTTPS 301 Redirect: http://amter.in -> https://amter.in
+    RewriteCond %{HTTP_HOST} ^amter\.in$ [NC]
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^(.*)$ https://amter.in/$1 [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

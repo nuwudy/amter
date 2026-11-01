@@ -13,29 +13,36 @@
     <meta name="geo.region" content="IN-KL">
     <meta name="geo.placename" content="Kerala, India">
 
+    @php
+        $reqPath = request()->getPathInfo();
+        $canonicalUrl = app()->environment('local')
+            ? url()->current()
+            : 'https://amter.in' . ($reqPath === '/' ? '' : rtrim($reqPath, '/'));
+    @endphp
+
     <!-- Language & Regional Targeting -->
-    <link rel="alternate" hreflang="en-in" href="{{ url()->current() }}">
-    <link rel="alternate" hreflang="ml-in" href="{{ url()->current() }}">
-    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="en-in" href="{{ $canonicalUrl }}">
+    <link rel="alternate" hreflang="ml-in" href="{{ $canonicalUrl }}">
+    <link rel="alternate" hreflang="x-default" href="{{ $canonicalUrl }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Amter Spoken English">
     <meta property="og:locale" content="en_IN">
     <meta property="og:locale:alternate" content="ml_IN">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:title" content="@yield('title', 'Amter | Spoken English Course in Malayalam')">
     <meta property="og:description" content="@yield('meta_description', 'Trusted for 15+ years: Amter helps Malayalis speak fluent English naturally through bite-sized audio lessons and AI-powered voice matching.')">
     <meta property="og:image" content="@yield('og_image', asset('images/hero-chips.jpg'))">
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:url" content="{{ $canonicalUrl }}">
     <meta name="twitter:title" content="@yield('title', 'Amter | Spoken English Course in Malayalam')">
     <meta name="twitter:description" content="@yield('meta_description', 'Trusted for 15+ years: Amter helps Malayalis speak fluent English naturally through bite-sized audio lessons and AI-powered voice matching.')">
     <meta name="twitter:image" content="@yield('og_image', asset('images/hero-chips.jpg'))">
 
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
 
     <!-- Rich Brand & EducationalOrganization Structured Data -->
     <script type="application/ld+json">
