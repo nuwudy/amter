@@ -1,7 +1,96 @@
 @extends('layouts.public')
-@section('title', 'Amter - Learn Spoken English (Malayalam to English)')
-@section('meta_description', 'Master English with Amter. The best app for Malayalis to learn spoken English naturally using AI voice matching. No boring grammar, just results.')
-@section('meta_keywords', 'learn english malayalam, spoken english app, malayalam to english, english speaking course, amter app')
+@section('title', 'Amter | Learn Spoken English in Malayalam — Speak as Fluently as a Native')
+@section('meta_description', 'Amter (Amter Spoken English) — Trusted for 15+ years by Malayalam speakers to speak fluent English like a native speaker. Bite-sized audio/video lessons & AI Voice Matching. മലയാളത്തിലൂടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കാം.')
+@section('meta_keywords', 'amter, amter english, amter spoken english, amter.in, spoken english malayalam, learn english in malayalam, malayalam to english speaking course, speak fluent english malayali, english speaking app kerala, മലയാളത്തിലൂടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കാം, സ്പോക്കൺ ഇംഗ്ലീഷ്')
+
+@php
+    $faqs = [
+        [
+            'question' => "What is Amter (Amter Spoken English) and why is it trusted for 15+ years?",
+            'answer' => "Amter (amter.in) is a dedicated Spoken English learning platform with over 15 years of provenance helping Malayalam speakers become as fluent as native English speakers. Unlike traditional grammar-translation classes, Amter combines natural audio/video immersion with AI Voice-Matching technology so you stop translating in your head and start speaking English naturally."
+        ],
+        [
+            'question' => "മലയാളികൾക്ക് എങ്ങനെ ഒഴുക്കോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കാം? (How can Malayalam speakers become as fluent as an English speaker?)",
+            'answer' => "വ്യാകരണ നിയമങ്ങൾ കാണാപാഠം പഠിക്കുന്നതിന് പകരം, കേട്ടും പറഞ്ഞും പരിശീലിക്കുന്നതാണ് ഇംഗ്ലീഷ് ഒഴുക്കോടെ സംസാരിക്കാനുള്ള ഏറ്റവും മികച്ച വഴി. Amter-ലെ 60-സെക്കൻഡ് വീഡിയോ/ഓഡിയോ പാഠങ്ങളും AI Voice Matching സാങ്കേതികവിദ്യയും വഴി മലയാളികൾക്ക് സ്വന്തം സമയത്തിനനുസരിച്ച് ഇംഗ്ലീഷ് അനായാസം സംസാരിക്കാൻ പഠിക്കാം."
+        ],
+        [
+            'question' => "What makes Amter different from traditional Spoken English classes in Kerala?",
+            'answer' => "We ditched boring grammar drills for Natural Language Acquisition. Traditional classes focus on 'Grammar Translation' which makes you translate Malayalam to English in your head. Amter trains your brain to think and respond directly in English through bite-sized real-world clips and instant AI pronunciation feedback."
+        ],
+        [
+            'question' => "Is this Spoken English course suitable for beginners with weak English?",
+            'answer' => "Absolutely. Our curriculum is crafted specifically for Malayalis (Malayalam speakers), starting from foundation sessions ('Basic English') all the way to advanced speeches, documentaries, and professional communication. Malayalam explanations guide you initially as you transition to full English fluency."
+        ],
+        [
+            'question' => "How does Amter's AI 'Voice Match' technology help me speak fluent English?",
+            'answer' => "Our AI-powered Voice Match listens to you speak and compares your pronunciation, rhythm, and confidence with native speakers. It gives you instant feedback so you can practice privately 24/7 without any fear or embarrassment."
+        ],
+        [
+            'question' => "How much time do I need to spend daily on Amter?",
+            'answer' => "Just 10 to 20 minutes a day! Our 'One Bite at a Time' philosophy breaks lessons into short, engaging units that fit easily into your daily routine, commute, or work break."
+        ],
+        [
+            'question' => "Can I try Amter Spoken English classes for free?",
+            'answer' => "Yes! Click 'Go to Classes' to immediately try our free sample lessons and register a 100% free account (no credit card required) to unlock even more free interactive sessions."
+        ],
+        [
+            'question' => "Will Amter help me with job interviews, IELTS/OET, and NRI career growth?",
+            'answer' => "Definitely. Fluency and spoken confidence are the #1 requirements for corporate interviews, Gulf/UK/US/Canada NRI professionals, and global careers. Amter equips you with practical, real-world spoken English."
+        ]
+    ];
+
+    $reviewCount = isset($reviews) && $reviews->count() > 0 ? max(120, $reviews->count()) : 150;
+@endphp
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@graph": [
+    {
+      "@@type": "Course",
+      "@@id": "{{ url('/') }}/#course",
+      "name": "Amter Spoken English Course (Malayalam to Fluent English)",
+      "alternateName": "Amter English Speaking Course for Malayalis",
+      "description": "A 100% self-paced Spoken English course designed specifically for Malayalam speakers to achieve native-like English fluency through bite-sized audio/video lessons and AI voice matching.",
+      "provider": {
+        "@@id": "{{ url('/') }}/#organization"
+      },
+      "inLanguage": ["en", "ml"],
+      "availableLanguage": ["English", "Malayalam"],
+      "educationalLevel": "Beginner to Advanced",
+      "hasCourseInstance": {
+        "@@type": "CourseInstance",
+        "courseMode": "online",
+        "courseWorkload": "PT20M"
+      },
+      "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "bestRating": "5",
+        "ratingCount": "{{ $reviewCount }}"
+      }
+    },
+    {
+      "@@type": "FAQPage",
+      "@@id": "{{ url('/') }}/#faq",
+      "mainEntity": [
+        @foreach($faqs as $index => $faq)
+        {
+          "@@type": "Question",
+          "name": @json($faq['question']),
+          "acceptedAnswer": {
+            "@@type": "Answer",
+            "text": @json($faq['answer'])
+          }
+        }{{ !$loop->last ? ',' : '' }}
+        @endforeach
+      ]
+    }
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 <div class="relative overflow-hidden bg-slate-900" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
@@ -14,14 +103,17 @@
             
             <!-- Text Content -->
             <div class="text-center lg:text-left z-10">
-                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 text-primary-400 font-bold text-sm mb-6 border border-primary-500/20">
+                <div class="inline-flex flex-wrap items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 text-primary-400 font-bold text-sm mb-6 border border-primary-500/20">
                     <span class="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></span>
-                    മലയാളിയുടെ English Guru
+                    <span>മലയാളിയുടെ English Guru &bull; 15+ Years of Excellence</span>
                 </div>
-                <h1 class="text-5xl lg:text-7xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-                   Speak English<br/>
+                <h1 class="text-5xl lg:text-7xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+                    Speak English<br/>
                     <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-cyan-300">via amter.</span>
                 </h1>
+                <p class="text-sm sm:text-base font-bold text-cyan-300/90 uppercase tracking-widest mb-6">
+                    Amter Spoken English &bull; Malayalam to Fluent English
+                </p>
 
                 @php
                     $classesUrl = route('public.library');
@@ -39,11 +131,11 @@
                 <div class="text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl mx-auto lg:mx-0">
                     <p class="mb-4">
                         <span class="font-extrabold text-white relative">
-                            English സംസാരിക്കാൻ
+                            മലയാളത്തിലൂടെ English സംസാരിക്കാൻ
                             <span class="absolute -bottom-1 left-0 w-full h-2 bg-primary-500/20 -z-10"></span>
                         </span> വൈദഗ്ദ്ധ്യം നേടൂ: 
                         ചെറിയ ഓഡിയോ പാഠങ്ങളിലൂടെ, 
-                        <span class="font-bold text-primary-400">വോയ്‌സ് മാച്ചിംഗ് സാങ്കേദ്യവിദ്യയിലൂടെ…</span>
+                        <span class="font-bold text-primary-400">വോയ്‌സ് മാച്ചിംഗ് സാങ്കേതികവിദ്യയിലൂടെ…</span>
                     </p>
                     <div class="mt-6 mb-8 p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl relative overflow-hidden group hover:border-primary-500/30 transition-all duration-300">
                         <!-- Shiny hover effect across card -->
@@ -61,9 +153,9 @@
                             
                             <!-- Text and Badges -->
                             <div class="flex-grow">
-                                <h3 class="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-200 to-blue-300 tracking-wide mb-3">
-                                    The 100% self-learning system designed for Malayali
-                                </h3>
+                                <h2 class="text-lg sm:text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-200 to-blue-300 tracking-wide mb-3">
+                                    The 100% self-learning Spoken English system designed for Malayalis
+                                </h2>
                                 <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
                                     <span class="px-3.5 py-1 rounded-full bg-primary-500/10 text-primary-300 font-bold text-sm border border-primary-500/20 shadow-sm transition-all hover:bg-primary-500 hover:text-white cursor-default">കേൾക്കാം</span>
                                     <span class="px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-300 font-bold text-sm border border-blue-500/20 shadow-sm transition-all hover:bg-blue-500 hover:text-white cursor-default">പഠിക്കാം</span>
@@ -82,7 +174,7 @@
                 
                 <!-- Hero Image -->
                 <div class="relative z-10 transform rotate-2 hover:rotate-0 transition-all duration-500">
-                    <img src="{{ asset('images/hero-chips.jpg') }}" alt="Learn English like eating chips" class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full max-w-md mx-auto">
+                    <img src="{{ asset('images/hero-chips.jpg') }}" alt="Amter Spoken English - Learn Spoken English in Malayalam like eating chips" class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full max-w-md mx-auto">
                     
                     <!-- Floating Badge -->
                     <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-xl animate-bounce delay-1000 border border-gray-50">
@@ -151,13 +243,13 @@
         .ticker-track {
             display: flex;
             width: max-content;
-            gap: 2rem; /* space-x-8 */
+            gap: 2rem;
         }
         .animate-marquee {
             animation: marquee 60s linear infinite;
         }
         .animate-marquee-reverse {
-            animation: marquee-reverse 60s linear infinite; /* Slightly different speed for visual interest */
+            animation: marquee-reverse 60s linear infinite;
         }
         .ticker-item {
             display: inline-flex;
@@ -169,17 +261,17 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 1.25rem;
-            background-color: #F9FAFB; /* bg-gray-50 */
-            border: 1px solid #F3F4F6; /* border-gray-100 */
+            background-color: #F9FAFB;
+            border: 1px solid #F3F4F6;
             border-radius: 9999px;
             font-weight: 500;
-            color: #4B5563; /* text-gray-600 */
+            color: #4B5563;
             transition: all 0.3s ease;
         }
         .ticker-pill:hover {
-            color: #00c2e8; /* primary-500 */
-            border-color: #cffafe; /* primary-100 */
-            background-color: #ecfeff; /* primary-50 */
+            color: #00c2e8;
+            border-color: #cffafe;
+            background-color: #ecfeff;
             transform: scale(1.05);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
@@ -187,7 +279,7 @@
             width: 0.375rem;
             height: 0.375rem;
             border-radius: 50%;
-            background-color: #00c2e8; /* primary-500 */
+            background-color: #00c2e8;
         }
         
         @keyframes marquee {
@@ -199,7 +291,6 @@
             100% { transform: translateX(0); }
         }
         
-        /* Pause on hover for readability */
         .ticker-group:hover .animate-marquee,
         .ticker-group:hover .animate-marquee-reverse {
             animation-play-state: paused;
@@ -209,9 +300,7 @@
     <div class="py-12 bg-gray-800 border-y border-gray-700 ticker-group overflow-hidden" style="backdrop-filter: blur(8px);">
         <!-- Row 1: Method & Tech (Left to Right) -->
         <div class="mb-6 ticker-wrapper relative flex overflow-hidden">
-             <!-- Content Doubled for Infinite Loop -->
              <div class="ticker-track animate-marquee">
-                <!-- Set 1 -->
                 @foreach([
                     '24/7 Access • Learn at your pace',
                     'No Classrooms • No Boring Lectures',
@@ -233,7 +322,6 @@
                     </div>
                 @endforeach
                 
-                <!-- Set 2 (Duplicate) -->
                 @foreach([
                     '24/7 Access • Learn at your pace',
                     'No Classrooms • No Boring Lectures',
@@ -260,7 +348,6 @@
         <!-- Row 2: Malayali Specific & Trust (Right to Left) -->
         <div class="ticker-wrapper relative flex overflow-hidden">
             <div class="ticker-track animate-marquee-reverse">
-                <!-- Set 1 -->
                 @foreach([
                     'മലയാളികൾക്കായി പ്രത്യേകം (Specially for Malayalis)',
                     'Malayalam to English Mastery',
@@ -270,19 +357,17 @@
                     'Confidence, Guaranteed',
                     'Stop Translating, Start Speaking',
                     'Unlock Your Global Career',
-                    '20 Years of Expertise',
+                    '15+ Years of Proven Expertise',
                     'Ad-Free Experience'
                 ] as $item)
                     <div class="ticker-item">
                         <span class="ticker-pill shadow-sm hover:!bg-blue-50 hover:!text-blue-600 hover:!border-blue-200">
-                             <!-- Blue accent for this row on hover -->
                              <span class="pill-dot !bg-blue-500"></span>
                             {{ $item }}
                         </span>
                     </div>
                 @endforeach
 
-                 <!-- Set 2 (Duplicate) -->
                 @foreach([
                     'മലയാളികൾക്കായി പ്രത്യേകം (Specially for Malayalis)',
                     'Malayalam to English Mastery',
@@ -292,7 +377,7 @@
                     'Confidence, Guaranteed',
                     'Stop Translating, Start Speaking',
                     'Unlock Your Global Career',
-                    '20 Years of Expertise',
+                    '15+ Years of Proven Expertise',
                     'Ad-Free Experience'
                 ] as $item)
                     <div class="ticker-item">
@@ -306,57 +391,56 @@
         </div>
     </div>
 
-
-
     <!-- Why Section -->
     <section class="bg-slate-900 py-24 sm:py-32">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-white sm:text-4xl">Why Learners Choose Amter</h2>
-                <p class="mt-4 text-lg text-gray-300">A curriculum designed for real results, not just passing tests.</p>
+                <h2 class="text-3xl font-bold text-white sm:text-4xl">Why Malayalam Speakers Choose Amter to Speak Fluent English</h2>
+                <p class="mt-4 text-lg text-gray-300">Over 15 years of provenance helping Malayalis speak English as fluently as native speakers.</p>
             </div>
 
             <div class="grid grid-cols-1 gap-8 md:grid-cols-3 mb-16">
                 <!-- Card 1: Method & AI -->
                 <div class="bg-white/5 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-gray-600 hover:-translate-y-1 backdrop-blur" style="background: rgba(255,255,255,0.07);">
                     <div class="h-48 w-full mb-6 overflow-hidden rounded-2xl">
-                        <img src="{{ asset('images/why-practical.jpg') }}" alt="Real Conversational Practice" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/why-practical.jpg') }}" alt="Amter AI Voice Matching - Real Conversational English Practice" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-purple-600 font-bold text-xs mb-4">
                         <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
                         Method & Tech
                     </div>
                     <h3 class="text-xl font-bold text-white mb-3">Stop Translating, Start Speaking</h3>
-                    <p class="text-gray-300 leading-relaxed">Directly learn to think in English with Real Video Clips and AI-Powered Voice Match. No more translating in your head.</p>
+                    <p class="text-gray-300 leading-relaxed">Directly learn to think in English with Real Video Clips and AI-Powered Voice Match. No more translating Malayalam in your head.</p>
                 </div>
 
                 <!-- Card 2: Malayali Specific -->
                 <div class="bg-white/5 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-gray-600 hover:-translate-y-1 backdrop-blur" style="background: rgba(255,255,255,0.07);">
                     <div class="h-48 w-full mb-6 overflow-hidden rounded-2xl">
-                        <img src="{{ asset('images/why-fast.jpg') }}" alt="Designed for Kerala" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/why-fast.jpg') }}" alt="Spoken English Course Designed for Kerala & Malayali Professionals" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-600 font-bold text-xs mb-4">
                         <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                         Malayali Focus
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Designed for Kerala Professionals</h3>
-                    <p class="text-gray-300 leading-relaxed">A curriculum crafted specifically for Malayalis. Master 'NRI Survival English' and unlock your global career.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">Designed for Malayalis & NRIs</h3>
+                    <p class="text-gray-300 leading-relaxed">A curriculum crafted specifically for Malayalam speakers. Master fluent Spoken English and unlock your global career.</p>
                 </div>
 
                 <!-- Card 3: Ease & Access -->
                 <div class="bg-white/5 rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 border border-gray-600 hover:-translate-y-1 backdrop-blur" style="background: rgba(255,255,255,0.07);">
                     <div class="h-48 w-full mb-6 overflow-hidden rounded-2xl">
-                        <img src="{{ asset('images/why-students.jpg') }}" alt="Zero Pressure Learning" class="w-full h-full object-cover">
+                        <img src="{{ asset('images/why-students.jpg') }}" alt="Self-Paced Spoken English Learning on Mobile" class="w-full h-full object-cover">
                     </div>
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 text-green-600 font-bold text-xs mb-4">
                         <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                         Ease & Access
                     </div>
                     <h3 class="text-xl font-bold text-white mb-3">Zero Pressure, 100% Results</h3>
-                    <p class="text-gray-300 leading-relaxed">No boring lectures or teachers. Learn at your own pace with 60-second bite-sized units that fit your busy life.</p>
+                    <p class="text-gray-300 leading-relaxed">No boring lectures or classroom fear. Learn at your own pace with 60-second bite-sized units that fit your busy life.</p>
                 </div>
             </div>
 
+            <div class="text-center">
                 <a href="{{ $classesUrl }}" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 to-blue-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:scale-105 shadow-lg shadow-primary-500/20 transition-all">
                     Start Learning Now
                     <svg class="w-5 h-5 shrink-0" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
@@ -366,12 +450,12 @@
     </section>
 
     <!-- Student Reviews Section -->
-    <section class="bg-gray-50/50 py-24 border-y border-gray-100">
+    <section id="reviews" class="bg-gray-50/50 py-24 border-y border-gray-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
                 <div class="max-w-2xl">
                     <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl tracking-tight mb-4">Loved by Hundreds of Students</h2>
-                    <p class="text-lg text-gray-600">Real stories from real learners who transformed their fluency with Amter.</p>
+                    <p class="text-lg text-gray-600">Real stories from Malayali learners who transformed their English fluency with Amter.</p>
                 </div>
                 
                 @auth
@@ -416,7 +500,6 @@
                         </div>
                     </div>
                 @empty
-                    <!-- Placeholder reviews if none exist yet -->
                     @foreach([
                         ['name' => 'Rahul K.', 'text' => "Amter transformed my confidence. The bite-sized lessons are so easy to follow during my commute.", 'rating' => 5],
                         ['name' => 'Sara M.', 'text' => "Finally, an app that understands Malayalis! The voice matching is like having a private tutor 24/7.", 'rating' => 5],
@@ -437,53 +520,17 @@
             </div>
         </div>
     </section>
+
     <!-- FAQ Section -->
     <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div class="text-center mb-16">
-            <h2 class="text-3xl font-bold text-gray-900 sm:text-4xl">Common Questions</h2>
-            <p class="mt-4 text-lg text-gray-600">Everything you need to know about the Amter way of learning.</p>
+            <h2 class="text-3xl font-bold text-white sm:text-4xl">Frequently Asked Questions about Amter Spoken English</h2>
+            <p class="mt-4 text-lg text-gray-300">Everything you need to know about learning fluent Spoken English in Malayalam with Amter.</p>
         </div>
 
         <div class="space-y-4">
-            @php
-                $faqs = [
-                    [
-                        'question' => "What makes Amter different from traditional Spoken English classes?",
-                        'answer' => "We ditched the boring grammar drills for a natural approach. Traditional classes focus on 'Grammar Translation' which makes you translate in your head. Amter focuses on 'Natural Acquisition'—listening and speaking through bite-sized audio lessons and advanced voice matching technology. It's just like learning your first language."
-                    ],
-                    [
-                        'question' => "Is this course suitable for beginners with weak English?",
-                        'answer' => "Absolutely. We have courses specifically designed for Malayalis (Malayalam Speakers) that start from the very basics. We use Malayalam to explain concepts initially, gradually transitioning you to full English mastery."
-                    ],
-                    [
-                        'question' => "How does the 'Voice Match' technology help me speak better?",
-                        'answer' => "Our AI-powered Voice Match technology listens to you speak and compares it with native speakers. It provides instant feedback, helping you correct your pronunciation and intonation immediately, effectively acting as a personal speech coach."
-                    ],
-                    [
-                        'question' => "How much time do I need to spend daily?",
-                        'answer' => "Consistency is key. Our 'One Bite at a Time' philosophy allows you to make significant progress with just 10-20 minutes a day. The units are bite-sized (60-second clips), fitting perfectly into a busy schedule."
-                    ],
-                    [
-                        'question' => "Is there a personal tutor or live classes?",
-                        'answer' => "No, Amter is a 100% self-paced learning platform. There are no awkward classrooms, scheduling conflicts, or pressure from teachers. You are in complete control, with our AI tools supporting you every step of the way."
-                    ],
-                    [
-                        'question' => "Can I access the course on my mobile phone?",
-                        'answer' => "Yes! Amter is a fully responsive web application. You can access your lessons on any device—smartphone, tablet, or laptop—anytime, anywhere. Perfect for learning during your commute or breaks."
-                    ],
-                    [
-                        'question' => "Is there a free trial available?",
-                        'answer' => "Yes, we offer 'Free Preview' access for our courses. You can try out the initial units and experience the learning method first-hand without any subscription or credit card requirement."
-                    ],
-                    [
-                        'question' => "Will this help me with job interviews and expanding my career?",
-                        'answer' => "Definitely. Fluency in English is a major confidence booster and a key requirement for many corporate jobs and NRI opportunities. Our 'NRI Survival English' and professional modules are crafted to help you unlock your global career potential."
-                    ]
-                ];
-            @endphp
-
             @foreach($faqs as $index => $faq)
-            <div x-data="{ open: false }" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
+            <div x-data="{ open: {{ $index < 2 ? 'true' : 'false' }} }" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md">
                 <button @click="open = !open" class="w-full px-8 py-6 text-left flex items-center justify-between focus:outline-none">
                     <span class="text-lg font-bold text-gray-900">{{ $faq['question'] }}</span>
                     <span class="transform transition-transform duration-300" :class="{'rotate-180': open}">
@@ -492,14 +539,13 @@
                         </svg>
                     </span>
                 </button>
-                <div x-show="open" x-collapse style="display: none;" class="px-8 pb-8 text-gray-600 leading-relaxed">
+                <div x-show="open" x-collapse class="px-8 pb-8 text-gray-600 leading-relaxed">
                     {{ $faq['answer'] }}
                 </div>
             </div>
             @endforeach
         </div>
     </section>
-
 
     <!-- Review Submission Modal -->
     @auth

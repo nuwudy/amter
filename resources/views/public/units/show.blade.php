@@ -1,6 +1,40 @@
 @extends('layouts.public')
-@section('title', $unit->title . ' - Lesson Preview')
-@section('meta_description', 'Preview our lesson: ' . $unit->title . '. Start learning to speak English like a native speaker with Amter.')
+@php
+    $sessionTitle = $unit->courseSession->title ?? ($course->title ?? 'Spoken English');
+    $moduleName = $unit->courseSession->module->name ?? 'Spoken English Course';
+    $rawUnitTitle = trim((string) $unit->title);
+    $unitDisplayTitle = ctype_digit($rawUnitTitle) ? "Lesson {$rawUnitTitle}" : $rawUnitTitle;
+    $seoTitle = "{$unitDisplayTitle} - {$sessionTitle} | Amter Spoken English (Malayalam to English)";
+    $seoDescription = "Practice {$unitDisplayTitle} in {$sessionTitle} ({$moduleName}) on Amter Spoken English. Designed for Malayalam speakers to become as fluent as native English speakers using AI Voice Matching.";
+@endphp
+@section('title', $seoTitle)
+@section('meta_description', $seoDescription)
+@section('meta_keywords', "amter, amter spoken english, {$sessionTitle}, {$unitDisplayTitle}, spoken english malayalam, learn english in malayalam")
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "LearningResource",
+  "name": @json("{$sessionTitle} - {$unitDisplayTitle}"),
+  "description": @json($seoDescription),
+  "learningResourceType": "Interactive Audio/Video Lesson",
+  "inLanguage": ["en", "ml"],
+  "educationalLevel": "Beginner to Advanced",
+  "isAccessibleForFree": true,
+  "provider": {
+    "@@id": "{{ url('/') }}/#organization"
+  },
+  "isPartOf": {
+    "@@type": "Course",
+    "name": @json($sessionTitle),
+    "provider": {
+      "@@id": "{{ url('/') }}/#organization"
+    }
+  }
+}
+</script>
+@endsection
 
 @section('content')
 <div class="bg-[#0f172a] min-h-screen w-full flex flex-col items-center justify-start overflow-x-hidden">

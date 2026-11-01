@@ -11,9 +11,15 @@ class SitemapController extends Controller
     public function index(): Response
     {
         $courses = Course::all();
-        // Since units belong to courses, we need them for public preview links
-        // We only show units that are part of a course
-        $units = Unit::whereHas('courseSession.module.course')->get();
+
+        // Only include publicly accessible 200-OK free sample units in sitemap.xml
+        // (Excluding locked/redirecting units prevents Google Search Console 302 penalties)
+        $units = Unit::with('courseSession.module.course')
+            ->where('is_published', true)
+            ->where('is_free_sample', true)
+            ->whereHas('courseSession.module.course')
+            ->orderBy('id', 'asc')
+            ->get();
 
         return response()->view('sitemap', [
             'courses' => $courses,

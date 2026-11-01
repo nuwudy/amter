@@ -1,6 +1,35 @@
 @extends('layouts.public', ['nav_theme' => 'dark'])
-@section('title', 'Course Library - Learn Spoken English with amter')
-@section('meta_description', 'Unlock the power of spoken English with amter\'s library of interactive video lessons, AI roleplay, and voice-matching challenges.')
+@section('title', 'Spoken English Course Library (Malayalam to Fluent English) | Amter')
+@section('meta_description', 'Explore Amter Spoken English course sessions: Basic English, Great Speeches, Documentaries, and daily fluency lessons designed for Malayalam speakers to speak as fluently as native English speakers.')
+@section('meta_keywords', 'amter, amter spoken english, amter course library, spoken english malayalam classes, free spoken english lessons malayalam, learn english speaking kerala')
+
+@section('structured_data')
+<script type="application/ld+json">
+{
+  "@@context": "https://schema.org",
+  "@@type": "ItemList",
+  "name": "Amter Spoken English Course Sessions (Malayalam to Fluent English)",
+  "description": "Interactive Spoken English sessions designed for Malayalis to achieve native-like English fluency.",
+  "numberOfItems": {{ $sessions->count() }},
+  "itemListElement": [
+    @foreach($sessions as $idx => $s)
+    {
+      "@@type": "ListItem",
+      "position": {{ $idx + 1 }},
+      "item": {
+        "@@type": "Course",
+        "name": @json($s->title),
+        "description": @json($s->description ?: "Interactive Spoken English session ({$s->units_count} lessons) on Amter Spoken English."),
+        "provider": {
+          "@@id": "{{ url('/') }}/#organization"
+        }
+      }
+    }{{ !$loop->last ? ',' : '' }}
+    @endforeach
+  ]
+}
+</script>
+@endsection
 
 @section('content')
 @php

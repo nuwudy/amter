@@ -5,42 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Amter - Speak English Naturally')</title>
-    <meta name="description" content="@yield('meta_description', 'Amter helps you learn English naturally through bite-sized audio lessons and AI-powered voice matching. Perfect for Malayalis looking to improve their fluency.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'learn english, spoken english malayalam, english speaking app, language learning, voice matching english, amter english')">
-    
+    <title>@yield('title', 'Amter | Spoken English Course in Malayalam (Speak Fluent English)')</title>
+    <meta name="description" content="@yield('meta_description', 'Amter (Amter Spoken English) — Trusted for 15+ years by Malayalam speakers to become as fluent as native English speakers through bite-sized audio/video lessons and AI voice matching. മലയാളത്തിലൂടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ പഠിക്കാം.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'amter, amter english, amter spoken english, amter.in, spoken english malayalam, learn english in malayalam, malayalam to english speaking course, english fluency for malayalis, online spoken english kerala, മലയാളത്തിലൂടെ ഇംഗ്ലീഷ് പഠിക്കാം')">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="author" content="Amter Spoken English">
+    <meta name="geo.region" content="IN-KL">
+    <meta name="geo.placename" content="Kerala, India">
+
+    <!-- Language & Regional Targeting -->
+    <link rel="alternate" hreflang="en-in" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="ml-in" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Amter Spoken English">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:locale:alternate" content="ml_IN">
     <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="@yield('title', config('app.name', 'Amter')) - Speak English Naturally">
-    <meta property="og:description" content="@yield('meta_description', 'Amter helps you learn English naturally through bite-sized audio lessons and AI-powered voice matching.')">
+    <meta property="og:title" content="@yield('title', 'Amter | Spoken English Course in Malayalam')">
+    <meta property="og:description" content="@yield('meta_description', 'Trusted for 15+ years: Amter helps Malayalis speak fluent English naturally through bite-sized audio lessons and AI-powered voice matching.')">
     <meta property="og:image" content="@yield('og_image', asset('images/hero-chips.jpg'))">
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ url()->current() }}">
-    <meta property="twitter:title" content="@yield('title', config('app.name', 'Amter')) - Speak English Naturally">
-    <meta property="twitter:description" content="@yield('meta_description', 'Amter helps you learn English naturally through bite-sized audio lessons and AI-powered voice matching.')">
-    <meta property="twitter:image" content="@yield('og_image', asset('images/hero-chips.jpg'))">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ url()->current() }}">
+    <meta name="twitter:title" content="@yield('title', 'Amter | Spoken English Course in Malayalam')">
+    <meta name="twitter:description" content="@yield('meta_description', 'Trusted for 15+ years: Amter helps Malayalis speak fluent English naturally through bite-sized audio lessons and AI-powered voice matching.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/hero-chips.jpg'))">
 
     <link rel="canonical" href="{{ url()->current() }}">
 
-    <!-- Structured Data -->
+    <!-- Rich Brand & EducationalOrganization Structured Data -->
     <script type="application/ld+json">
     {
       "@@context": "https://schema.org",
-      "@@type": "Organization",
-      "name": "Amter",
-      "url": "{{ url('/') }}",
-      "logo": "{{ asset('images/full-logo.png?v=1.0.2') }}",
-      "sameAs": [
-        "https://www.instagram.com/amter_english"
-      ],
-      "contactPoint": {
-        "@@type": "ContactPoint",
-        "telephone": "+91-9895940500",
-        "contactType": "customer service"
-      }
+      "@@graph": [
+        {
+          "@@type": "EducationalOrganization",
+          "@@id": "{{ url('/') }}/#organization",
+          "name": "Amter",
+          "legalName": "Amter Spoken English",
+          "alternateName": [
+            "Amter English",
+            "Amter Spoken English",
+            "Amter English Speaking Course",
+            "Amter Malayalam to English",
+            "Amter App"
+          ],
+          "url": "{{ url('/') }}",
+          "logo": {
+            "@@type": "ImageObject",
+            "url": "{{ asset('images/full-logo.png?v=1.0.2') }}"
+          },
+          "image": "{{ asset('images/hero-chips.jpg') }}",
+          "foundingDate": "2010",
+          "description": "For over 15 years, Amter (Amter Spoken English) has helped Malayalam speakers become as fluent as native English speakers using natural audio/video immersion and AI voice-matching technology.",
+          "knowsLanguage": ["en", "ml"],
+          "areaServed": ["IN", "AE", "SA", "QA", "KW", "OM", "BH", "GB", "US", "CA", "AU"],
+          "sameAs": [
+            "https://www.instagram.com/amter_english"
+          ],
+          "contactPoint": {
+            "@@type": "ContactPoint",
+            "telephone": "+91-9895940500",
+            "contactType": "customer service",
+            "availableLanguage": ["English", "Malayalam"]
+          }
+        },
+        {
+          "@@type": "WebSite",
+          "@@id": "{{ url('/') }}/#website",
+          "url": "{{ url('/') }}",
+          "name": "Amter Spoken English (Malayalam to Fluent English)",
+          "alternateName": "Amter",
+          "publisher": {
+            "@@id": "{{ url('/') }}/#organization"
+          },
+          "inLanguage": ["en-IN", "ml-IN"]
+        }
+      ]
     }
     </script>
     @yield('structured_data')
@@ -162,22 +207,22 @@
             <!-- Logo -->
             <div class="flex-shrink-0 flex items-center">
                 <a href="{{ route('home') }}" class="flex items-center gap-2 group">
-                    <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" style="max-height: 48px; max-width: 200px;" class="h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0">
+                    <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter Spoken English - Malayalam to English Course" style="max-height: 48px; max-width: 200px;" class="h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105 shrink-0">
                 </a>
             </div>
 
             <nav class="hidden md:flex space-x-8 items-center">
-    <a href="{{ route('home') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Home</a>
-    @auth
-        <a href="{{ route('filament.student.pages.dashboard') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Dashboard</a>
-        <a href="{{ route('logout') }}" class="font-medium text-white hover:text-red-400 transition-colors">Logout</a>
-    @else
-        <a href="{{ route('login') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Login</a>
-    @endauth
-    <a href="{{ route('contact') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Contact</a>
-    <a href="{{ route('pricing') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Pricing</a>
-    <a href="{{ route('public.library') }}" class="bg-gradient-to-r from-primary-500 to-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">Go to Classes</a>
-</nav>
+                <a href="{{ route('home') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Home</a>
+                @auth
+                    <a href="{{ route('filament.student.pages.dashboard') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Dashboard</a>
+                    <a href="{{ route('logout') }}" class="font-medium text-white hover:text-red-400 transition-colors">Logout</a>
+                @else
+                    <a href="{{ route('login') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Login</a>
+                @endauth
+                <a href="{{ route('contact') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Contact</a>
+                <a href="{{ route('pricing') }}" class="font-medium text-white hover:text-primary-400 transition-colors">Pricing</a>
+                <a href="{{ route('public.library') }}" class="bg-gradient-to-r from-primary-500 to-blue-600 text-white px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200">Go to Classes</a>
+            </nav>
 
             <!-- Mobile Menu Button -->
             <div class="md:hidden flex items-center">
@@ -284,16 +329,16 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
-                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter English" style="max-height: 40px; max-width: 150px;" class="h-10 w-auto object-contain shrink-0">
+                        <img src="{{ asset('images/full-logo.png?v=1.0.2') }}" alt="Amter Spoken English - Malayalam to English Course" style="max-height: 40px; max-width: 150px;" class="h-10 w-auto object-contain shrink-0">
                     </div>
-                    <p class="text-gray-500 text-sm leading-relaxed max-w-sm">
-                        Amter makes learning a new language as easy as snacking. Bite-sized lessons, voice matching technology, and a world of discovery await.
+                    <p class="text-gray-500 text-sm leading-relaxed max-w-md">
+                        <strong>Amter (Amter Spoken English)</strong> — Trusted for over 15 years by Malayalis worldwide. Learn spoken English in Malayalam and speak as fluently as a native speaker with bite-sized lessons and AI voice-matching technology.
                     </p>
                 </div>
                 <div>
                     <h4 class="font-bold text-gray-900 mb-4">Discover</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="{{ route('home') }}#courses" class="hover:text-primary-600">Curriculum</a></li>
+                        <li><a href="{{ route('public.library') }}" class="hover:text-primary-600">Course Library</a></li>
                         <li><a href="{{ route('about') }}" class="hover:text-primary-600">Methodology</a></li>
                         <li><a href="{{ route('pricing') }}" class="hover:text-primary-600">Pricing</a></li>
                     </ul>
@@ -309,10 +354,9 @@
                 </div>
             </div>
             <div class="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p class="text-xs text-gray-400">&copy; {{ date('Y') }} Amter. All rights reserved.</p>
+                <p class="text-xs text-gray-400">&copy; {{ date('Y') }} Amter Spoken English (amter.in). All rights reserved.</p>
                 <div class="flex space-x-4">
-                    <!-- Social Placeholders -->
-                    <a href="#" class="text-gray-400 hover:text-primary-500"><span class="sr-only">Instagram</span><svg class="w-5 h-5 shrink-0" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                    <a href="https://www.instagram.com/amter_english" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary-500"><span class="sr-only">Instagram</span><svg class="w-5 h-5 shrink-0" width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
                 </div>
             </div>
         </div>
