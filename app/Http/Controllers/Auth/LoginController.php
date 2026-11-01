@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Middleware\SingleDeviceLockdown;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,8 @@ class LoginController extends Controller
             session()->flash('just_logged_in', true);
 
             $user = Auth::user();
+            SingleDeviceLockdown::registerDevice($user, $request);
+
             $role = strtolower(trim($user->role ?? ''));
 
             Log::info('Custom Auth: Login successful', ['email' => $user->email, 'role' => $role]);

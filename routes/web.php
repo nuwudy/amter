@@ -21,6 +21,9 @@ Route::middleware('web')->group(function () {
     Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.submit');
     Route::redirect('/admin/login', '/login');
     Route::get('/logout', function () {
+        if (auth()->check()) {
+            \App\Http\Middleware\SingleDeviceLockdown::unregisterCurrentDevice(auth()->user(), request());
+        }
         auth()->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();

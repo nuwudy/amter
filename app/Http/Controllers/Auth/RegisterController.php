@@ -53,6 +53,7 @@ class RegisterController extends Controller
             Auth::login($user);
             $request->session()->regenerate();
             session()->flash('just_logged_in', true);
+            \App\Http\Middleware\SingleDeviceLockdown::registerDevice($user, $request);
 
             $resumeUrl = $user->getNextIncompleteTrackUnitUrl();
 
