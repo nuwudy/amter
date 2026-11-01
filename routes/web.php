@@ -99,7 +99,7 @@ Route::get('/sessions/{session}/search', function (\App\Models\CourseSession $se
             'completed' => isset($completedUnitIds[$unit->id]),
             'url' => route('student.units.show', ['unit' => $unit->id]),
             'edit_url' => $isAdmin
-                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id]) . '?session_id=' . $unit->course_session_id)
+                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id], panel: 'admin') . '?session_id=' . $unit->course_session_id)
                 : null,
         ];
     }));
@@ -147,7 +147,7 @@ Route::get('/tracks/{track}/search', function (\App\Models\LearningTrack $track,
                 'track_id' => $track->id,
             ]),
             'edit_url' => ($isAdmin && $step->unit_id)
-                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $step->unit_id]) . ($unit?->course_session_id ? '?session_id=' . $unit->course_session_id : ''))
+                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $step->unit_id], panel: 'admin') . ($unit?->course_session_id ? '?session_id=' . $unit->course_session_id : ''))
                 : null,
         ];
     }));

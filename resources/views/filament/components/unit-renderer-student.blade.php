@@ -388,7 +388,7 @@
         @endauth
 
         @if($isAdmin && $unit)
-            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id]) }}{{ $unit->course_session_id ? '?session_id=' . $unit->course_session_id : '' }}" 
+            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id], panel: 'admin') }}{{ $unit->course_session_id ? '?session_id=' . $unit->course_session_id : '' }}" 
                style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.3rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid rgba(251, 191, 36, 0.6); border-radius: 9999px; color: #0f172a; text-decoration: none; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.5);"
                onmouseover="this.style.transform='translateY(-2px)'; this.style.filter='brightness(1.08)';"
                onmouseout="this.style.transform='translateY(0)'; this.style.filter='brightness(1)';">
@@ -396,7 +396,7 @@
                 <span>Quick Edit</span>
             </a>
 
-            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('create') }}?session_id={{ $unit->course_session_id }}&insert_order={{ ((int) $unit->sort_order) + 1 }}" 
+            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('create', panel: 'admin') }}?session_id={{ $unit->course_session_id }}&insert_order={{ ((int) $unit->sort_order) + 1 }}" 
                style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.15rem; background: rgba(16, 185, 129, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 9999px; color: #6ee7b7; text-decoration: none; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
                onmouseover="this.style.background='rgba(16, 185, 129, 0.35)'; this.style.transform='translateY(-2px)';"
                onmouseout="this.style.background='rgba(16, 185, 129, 0.2)'; this.style.transform='translateY(0)';">
