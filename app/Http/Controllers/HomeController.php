@@ -187,6 +187,9 @@ class HomeController extends Controller
                     'accessible' => $isAccessible,
                     'url' => $epUrl,
                     'action' => $epAction,
+                    'edit_url' => ($user && $user->isAdmin())
+                        ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $u->id]) . '?session_id=' . $session->id)
+                        : null,
                 ];
             }
 

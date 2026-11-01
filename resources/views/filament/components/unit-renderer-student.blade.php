@@ -357,7 +357,7 @@
     </style>
 
     {{-- Top Action Bar: Search & Jump Trigger + Dashboard Link --}}
-    <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 50;">
+    <div style="display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; position: relative; z-index: 50;">
         <button type="button" 
                 @click="openModal()"
                 style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.4rem; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.6); border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s;"
@@ -386,6 +386,24 @@
                 <span>Dashboard</span>
             </a>
         @endauth
+
+        @if($isAdmin && $unit)
+            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id]) }}{{ $unit->course_session_id ? '?session_id=' . $unit->course_session_id : '' }}" 
+               style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.3rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid rgba(251, 191, 36, 0.6); border-radius: 9999px; color: #0f172a; text-decoration: none; font-size: 0.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; transition: all 0.2s; box-shadow: 0 8px 20px -4px rgba(245, 158, 11, 0.5);"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.filter='brightness(1.08)';"
+               onmouseout="this.style.transform='translateY(0)'; this.style.filter='brightness(1)';">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                <span>Quick Edit</span>
+            </a>
+
+            <a href="{{ \App\Filament\Resources\UnitResource::getUrl('create') }}?session_id={{ $unit->course_session_id }}&insert_order={{ ((int) $unit->sort_order) + 1 }}" 
+               style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.15rem; background: rgba(16, 185, 129, 0.2); backdrop-filter: blur(12px); border: 1px solid rgba(16, 185, 129, 0.5); border-radius: 9999px; color: #6ee7b7; text-decoration: none; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+               onmouseover="this.style.background='rgba(16, 185, 129, 0.35)'; this.style.transform='translateY(-2px)';"
+               onmouseout="this.style.background='rgba(16, 185, 129, 0.2)'; this.style.transform='translateY(0)';">
+                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                <span>Insert Next (#{{ ((int) $unit->sort_order) + 1 }})</span>
+            </a>
+        @endif
     </div>
 
     {{-- Instant Search & Jump Modal Teleported to Body --}}
@@ -461,6 +479,11 @@
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
+                                <span x-show="step.edit_url"
+                                      @click.stop.prevent="window.location.href = step.edit_url"
+                                      style="font-size: 0.65rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.25rem 0.65rem; border-radius: 9999px; background: #f59e0b; color: #0f172a; cursor: pointer;">
+                                    ✎ Edit
+                                </span>
                                 <span x-show="step.completed" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">Mastered</span>
                                 <span x-show="step.step === {{ $activeStepOrLesson }}" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.3); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">Current</span>
                                 <svg style="width: 14px; height: 14px; color: #64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>

@@ -497,9 +497,16 @@
                                         </div>
                                     </div>
                                 </div>
-                                <span style="padding: 0.35rem 0.75rem; border-radius: 0.6rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; background: #00c2e8; color: #0f172a;">
-                                    Play ▶
-                                </span>
+                                <div style="display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;">
+                                    <span x-show="ep.edit_url"
+                                          @click.stop.prevent="window.location.href = ep.edit_url"
+                                          style="padding: 0.35rem 0.7rem; border-radius: 0.6rem; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #0f172a; cursor: pointer;">
+                                        ✎ Edit
+                                    </span>
+                                    <span style="padding: 0.35rem 0.75rem; border-radius: 0.6rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; background: #00c2e8; color: #0f172a;">
+                                        Play ▶
+                                    </span>
+                                </div>
                             </a>
                         </template>
                     </div>

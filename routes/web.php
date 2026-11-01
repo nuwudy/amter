@@ -90,6 +90,7 @@ Route::get('/sessions/{session}/search', function (\App\Models\CourseSession $se
     return response()->json($units->map(function ($unit) use ($completedUnitIds) {
         $rawTitle = trim((string) ($unit->title ?? 'Untitled Lesson'));
         $displayTitle = ctype_digit($rawTitle) ? "Lesson {$rawTitle}" : $rawTitle;
+        $isAdmin = auth()->check() && auth()->user()->isAdmin();
 
         return [
             'step' => (int) $unit->sort_order,
@@ -97,6 +98,9 @@ Route::get('/sessions/{session}/search', function (\App\Models\CourseSession $se
             'session' => (string) ($unit->courseSession?->title ?? 'Amter Session'),
             'completed' => isset($completedUnitIds[$unit->id]),
             'url' => route('student.units.show', ['unit' => $unit->id]),
+            'edit_url' => $isAdmin
+                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $unit->id]) . '?session_id=' . $unit->course_session_id)
+                : null,
         ];
     }));
 })->name('sessions.search');
@@ -129,8 +133,9 @@ Route::get('/tracks/{track}/search', function (\App\Models\LearningTrack $track,
     }
 
     $completedUnitIds = auth()->check() ? auth()->user()->completedUnits()->pluck('units.id')->flip()->toArray() : [];
+    $isAdmin = auth()->check() && auth()->user()->isAdmin();
 
-    return response()->json($steps->map(function ($step) use ($track, $completedUnitIds) {
+    return response()->json($steps->map(function ($step) use ($track, $completedUnitIds, $isAdmin) {
         $unit = $step->unit;
         return [
             'step' => $step->step_number,
@@ -141,6 +146,9 @@ Route::get('/tracks/{track}/search', function (\App\Models\LearningTrack $track,
                 'unit' => $step->unit_id,
                 'track_id' => $track->id,
             ]),
+            'edit_url' => ($isAdmin && $step->unit_id)
+                ? (\App\Filament\Resources\UnitResource::getUrl('edit', ['record' => $step->unit_id]) . ($unit?->course_session_id ? '?session_id=' . $unit->course_session_id : ''))
+                : null,
         ];
     }));
 })->name('tracks.search');

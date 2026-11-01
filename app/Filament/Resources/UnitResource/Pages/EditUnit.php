@@ -18,6 +18,11 @@ class EditUnit extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \Filament\Actions\Action::make('preview_student')
+                ->label('Preview Student View')
+                ->icon('heroicon-o-play')
+                ->color('success')
+                ->url(fn () => route('student.units.show', ['unit' => $this->record->id])),
             ViewAction::make(),
             DeleteAction::make(),
         ];

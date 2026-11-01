@@ -630,6 +630,12 @@
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
                                 <span x-show="ep.free_guest" style="padding: 0.18rem 0.5rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.62rem; font-weight: 900; text-transform: uppercase;">Free</span>
                                 <span x-show="!ep.free_guest && ep.free_registered" style="padding: 0.18rem 0.5rem; border-radius: 9999px; background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.62rem; font-weight: 900; text-transform: uppercase;">Free Account</span>
+                                <a x-show="ep.edit_url"
+                                   :href="ep.edit_url"
+                                   @click.stop
+                                   style="padding: 0.38rem 0.7rem; border-radius: 0.65rem; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; background: #f59e0b; color: #090d16; text-decoration: none;">
+                                    ✎ Edit
+                                </a>
                                 <span style="padding: 0.4rem 0.8rem; border-radius: 0.65rem; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;"
                                       :style="ep.current ? 'background: #00c2e8; color: #090d16;' : 'background: rgba(255,255,255,0.1); color: #ffffff;'">
                                     Play ▶
