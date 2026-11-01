@@ -2,8 +2,9 @@
 
 namespace App\Filament\Student\Pages;
 
-use Filament\Pages\Page;
+use App\Http\Controllers\HomeController;
 use App\Models\LearningTrack;
+use Filament\Pages\Page;
 use Illuminate\Support\Collection;
 
 class Dashboard extends Page
@@ -16,7 +17,6 @@ class Dashboard extends Page
 
     public function mount()
     {
-        // Sync milestones in case they were missed
         $service = new \App\Services\MilestoneService();
         $service->checkRetroactiveMilestones(auth()->user());
     }
@@ -26,8 +26,18 @@ class Dashboard extends Page
         return LearningTrack::getPrimaryTrack() ?? LearningTrack::where('is_active', true)->first();
     }
 
+    public function getMovieLibraryData(): array
+    {
+        return HomeController::buildMovieLibraryData(request());
+    }
+
     public function getResumeUrl(): ?string
     {
+        $libraryData = $this->getMovieLibraryData();
+        if (!empty($libraryData['heroSession']) && !empty($libraryData['heroSession']->target_url) && $libraryData['heroSession']->target_url !== '#') {
+            return $libraryData['heroSession']->target_url;
+        }
+
         return auth()->user()->getNextIncompleteTrackUnitUrl($this->getPrimaryTrack());
     }
 

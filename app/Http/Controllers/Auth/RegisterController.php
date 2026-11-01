@@ -55,10 +55,8 @@ class RegisterController extends Controller
             session()->flash('just_logged_in', true);
             \App\Http\Middleware\SingleDeviceLockdown::registerDevice($user, $request);
 
-            $resumeUrl = $user->getNextIncompleteTrackUnitUrl();
-
-            // Redirect back to intended page (e.g. unit) or Master Track resume step
-            return redirect()->intended($resumeUrl ?: route('filament.student.pages.dashboard'))
+            // Redirect back to intended page or Movie-Platform Student Dashboard
+            return redirect()->intended(route('filament.student.pages.dashboard'))
                 ->with('success', 'സ്വാഗതം! നിങ്ങളുടെ ഫ്രീ അക്കൗണ്ട് വിജയകരമായി തയ്യാറായി. ഇപ്പോൾ കൂടുതൽ ക്ലാസ്സുകൾ ആസ്വദിക്കാം!');
         } catch (\Exception $e) {
             Log::error('Registration Error', ['error' => $e->getMessage()]);

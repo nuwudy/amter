@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 
 class PublicCourseController extends Controller
 {
@@ -24,9 +25,6 @@ class PublicCourseController extends Controller
 
     public function showUnit(Course $course, Unit $unit)
     {
-        // Ensure unit belongs to course (optional check, but good for data integrity)
-        // For now, assuming direct access is fine for simplicity or check relation if needed.
-
         // If unit is NOT free and user is NOT logged in/subscribed
         if (!$unit->is_free_sample && !auth()->check()) {
             if ($unit->is_registered_only) {
@@ -35,14 +33,14 @@ class PublicCourseController extends Controller
             return redirect()->route('pricing')->with('warning', 'This premium lesson requires a subscription. Check out our plans below!');
         }
 
-        // If logged in, we should ideally use the Student Panel view, but for "Public Explorer" feel:
-        // If they are logged in but don't have subscription? The CheckSubscription middleware handles the student panel.
-        // If they access this public route while logged in, maybe we just show the content or redirect to student panel?
-        
         if (auth()->check()) {
             // Redirect to student panel for better experience (tracking etc)
             return redirect()->route('student.units.show', $unit);
         }
+
+        // Remember last attended free unit for guests (30 days)
+        session(['last_attended_unit_id' => $unit->id]);
+        Cookie::queue(cookie('amter_last_unit_id', (string) $unit->id, 60 * 24 * 30));
 
         // It is a free sample, show it in public layout
         return view('public.units.show', [

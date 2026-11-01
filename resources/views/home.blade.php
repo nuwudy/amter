@@ -24,10 +24,7 @@
                 </h1>
 
                 @php
-                    $primaryTrack = \App\Models\LearningTrack::getPrimaryTrack();
-                    $classesUrl = ($primaryTrack && $primaryTrack->trackUnits()->exists()) 
-                        ? $primaryTrack->getFirstStepUrl() 
-                        : route('public.library');
+                    $classesUrl = route('public.library');
                 @endphp
                 <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 mb-8">
                     <a href="{{ $classesUrl }}" class="bg-primary-500 text-slate-950 px-8 py-4 rounded-full font-bold text-lg hover:bg-primary-400 transition-all hover:scale-105 shadow-lg shadow-primary-500/20 animate-shine text-center">

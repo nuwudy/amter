@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 
 class UnitController extends Controller
 {
@@ -25,21 +26,25 @@ class UnitController extends Controller
 
             abort(403, 'You do not have access to this lesson.');
         }
-        
+
         $trackId = request()->query('track_id');
         $currentTrack = $trackId ? \App\Models\LearningTrack::find($trackId) : null;
-        
+
+        // Remember last attended unit for both logged-in students and guests (30 days)
+        session(['last_attended_unit_id' => $unit->id]);
+        Cookie::queue(cookie('amter_last_unit_id', (string) $unit->id, 60 * 24 * 30));
+
         return view('student.units.show', [
             'unit' => $unit,
             'currentTrack' => $currentTrack,
-            'libraryId' => 569307, // Your Bunny Library ID (better to put this in config/services.php)
+            'libraryId' => 569307,
         ]);
     }
 
     public function complete(Unit $unit)
     {
         $user = auth()->user();
-        
+
         if (!$user) {
             return redirect()->route('register')->with('info', 'നിങ്ങളുടെ പുരോഗതി രേഖപ്പെടുത്താനും കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾ കാണാനും സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ!');
         }
@@ -47,7 +52,7 @@ class UnitController extends Controller
         // Mark as complete (avoid duplicates)
         if (!$user->completedUnits()->where('unit_id', $unit->id)->exists()) {
             $user->completedUnits()->attach($unit->id, ['completed_at' => now()]);
-            
+
             // Check for milestones immediately
             $milestoneService = new \App\Services\MilestoneService();
             $milestoneService->checkMilestones($user, $unit);
@@ -61,11 +66,14 @@ class UnitController extends Controller
         }
 
         // Fallback to standard session/module progression if not in a track or end of track
-        if (!$nextUnit && !$trackId) {
+        if (!$nextUnit) {
             $nextUnit = $unit->nextUnit();
         }
 
         if ($nextUnit) {
+            session(['last_attended_unit_id' => $nextUnit->id]);
+            Cookie::queue(cookie('amter_last_unit_id', (string) $nextUnit->id, 60 * 24 * 30));
+
             $redirectParams = ['unit' => $nextUnit];
             if ($trackId) {
                 $redirectParams['track_id'] = $trackId;
@@ -85,6 +93,6 @@ class UnitController extends Controller
         return redirect()->route('student.units.show', $redirectParams)
             ->with('success', $trackId ? 'Track Completed! Incredible job!' : 'Course Completed! Great job!')
             ->with('course_completed', true)
-            ->with('xp_gained', 500); // Bonus for course completion
+            ->with('xp_gained', 500);
     }
 }

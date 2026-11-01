@@ -346,6 +346,14 @@
             <span style="font-weight: 800; color: #1e293b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap;">Search & Jump</span>
         </button>
 
+        <a href="{{ route('public.library') }}" 
+           style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.25rem; background: rgba(15,23,42,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 9999px; color: #38bdf8; text-decoration: none; font-size: 0.8rem; font-weight: 800; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"
+           onmouseover="this.style.background='rgba(15,23,42,0.95)'; this.style.transform='translateY(-2px)';"
+           onmouseout="this.style.background='rgba(15,23,42,0.75)'; this.style.transform='translateY(0)';">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <span>All Sessions</span>
+        </a>
+
         @auth
             <a href="{{ route('filament.student.pages.dashboard') }}" 
                style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.6rem 1.25rem; background: rgba(15,23,42,0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.2); border-radius: 9999px; color: #f1f5f9; text-decoration: none; font-size: 0.8rem; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"

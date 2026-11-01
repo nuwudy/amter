@@ -42,9 +42,7 @@ class LoginController extends Controller
                 return redirect()->to(Filament::getPanel('admin')->getUrl());
             }
 
-            $resumeUrl = $user->getNextIncompleteTrackUnitUrl();
-            Log::info('Redirecting to Student Master Track resume', ['url' => $resumeUrl]);
-            return redirect()->intended($resumeUrl ?: route('filament.student.pages.dashboard'));
+            return redirect()->intended(route('filament.student.pages.dashboard'));
         }
 
         return back()->withErrors([
