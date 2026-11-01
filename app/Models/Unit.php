@@ -66,6 +66,9 @@ class Unit extends Model
             if ($unit->course_session_id) {
                 static::resequenceSession((int) $unit->course_session_id, (int) $unit->id, (int) $unit->sort_order);
             }
+            if ($unit->is_published && $unit->course_session_id) {
+                static::appendNewUnitToSessionTracks($unit);
+            }
         });
 
         static::updated(function ($unit) {
@@ -79,6 +82,10 @@ class Unit extends Model
             }
 
             if ($unit->wasChanged('is_published') && $unit->is_published) {
+                if ($unit->course_session_id) {
+                    static::appendNewUnitToSessionTracks($unit);
+                }
+
                 // Find all users enrolled in any course
                 $users = \App\Models\User::whereHas('courses')->get();
 
@@ -93,7 +100,11 @@ class Unit extends Model
         });
 
         static::deleted(function ($unit) {
+            $affectedTrackIds = TrackUnit::where('unit_id', $unit->id)->pluck('learning_track_id')->unique()->toArray();
             TrackUnit::where('unit_id', $unit->id)->delete();
+            foreach ($affectedTrackIds as $tId) {
+                TrackUnit::resequenceTrack((int) $tId);
+            }
             if ($unit->course_session_id) {
                 static::resequenceSession((int) $unit->course_session_id);
             }
@@ -175,64 +186,58 @@ class Unit extends Model
 
             $expectedOrder++;
         }
+    }
 
-        // Sync LearningTrack steps for any track that includes units from this session
-        $publishedUnitIdsInOrder = static::where('course_session_id', $sessionId)
-            ->where('is_published', true)
-            ->orderBy('sort_order', 'asc')
-            ->orderBy('id', 'asc')
-            ->pluck('id')
-            ->values();
+    /**
+     * When a new published unit is added to a CourseSession that already participates in a LearningTrack,
+     * insert it right after the preceding unit of that same session (or at the end of the track)
+     * WITHOUT regrouping or overwriting any manual step ordering in the LearningTrack.
+     */
+    public static function appendNewUnitToSessionTracks(self $unit): void
+    {
+        $sessionId = (int) $unit->course_session_id;
+        if (!$sessionId) {
+            return;
+        }
 
-        if ($publishedUnitIdsInOrder->isNotEmpty()) {
-            $tracksWithSession = TrackUnit::whereHas('unit', fn ($q) => $q->where('course_session_id', $sessionId))
-                ->pluck('learning_track_id')
-                ->unique();
+        // Refresh unit sort_order after resequenceSession
+        $freshOrder = (int) (DB::table('units')->where('id', $unit->id)->value('sort_order') ?? $unit->sort_order ?? 1);
 
-            foreach ($tracksWithSession as $trackId) {
-                $trackSteps = TrackUnit::with('unit')
-                    ->where('learning_track_id', $trackId)
-                    ->orderBy('step_number', 'asc')
-                    ->orderBy('id', 'asc')
-                    ->get();
+        $tracksWithSession = TrackUnit::whereHas('unit', fn ($q) => $q->where('course_session_id', $sessionId))
+            ->pluck('learning_track_id')
+            ->unique();
 
-                $firstIndex = $trackSteps->search(fn ($tu) => $tu->unit && (int) $tu->unit->course_session_id === $sessionId);
-                if ($firstIndex === false) {
-                    continue;
-                }
+        foreach ($tracksWithSession as $trackId) {
+            $alreadyExists = TrackUnit::where('learning_track_id', $trackId)
+                ->where('unit_id', $unit->id)
+                ->exists();
 
-                $existingByUnit = $trackSteps
-                    ->filter(fn ($tu) => $tu->unit && (int) $tu->unit->course_session_id === $sessionId)
-                    ->keyBy('unit_id');
-
-                $beforeSteps = $trackSteps->slice(0, $firstIndex)->filter(fn ($tu) => !$tu->unit || (int) $tu->unit->course_session_id !== $sessionId);
-                $afterSteps = $trackSteps->slice($firstIndex)->filter(fn ($tu) => !$tu->unit || (int) $tu->unit->course_session_id !== $sessionId);
-
-                $sessionSteps = collect();
-                foreach ($publishedUnitIdsInOrder as $uid) {
-                    if ($existingByUnit->has($uid)) {
-                        $sessionSteps->push($existingByUnit->get($uid));
-                    } else {
-                        $newTu = TrackUnit::create([
-                            'learning_track_id' => $trackId,
-                            'unit_id' => $uid,
-                            'step_number' => 999999,
-                        ]);
-                        $sessionSteps->push($newTu);
-                    }
-                }
-
-                $merged = $beforeSteps->concat($sessionSteps)->concat($afterSteps)->values();
-                $stepCounter = 1;
-                foreach ($merged as $step) {
-                    if ((int) $step->step_number !== $stepCounter) {
-                        DB::table('track_units')
-                            ->where('id', $step->id)
-                            ->update(['step_number' => $stepCounter, 'updated_at' => $now]);
-                    }
-                    $stepCounter++;
-                }
+            if ($alreadyExists) {
+                continue;
             }
+
+            // Find the step in this track for the unit immediately preceding this unit in the same session
+            $prevSessionTrackUnit = TrackUnit::where('learning_track_id', $trackId)
+                ->whereHas('unit', function ($q) use ($sessionId, $freshOrder) {
+                    $q->where('course_session_id', $sessionId)
+                      ->where('sort_order', '<', $freshOrder);
+                })
+                ->orderBy('step_number', 'desc')
+                ->first();
+
+            $targetStep = $prevSessionTrackUnit
+                ? ((int) $prevSessionTrackUnit->step_number + 1)
+                : (((int) TrackUnit::where('learning_track_id', $trackId)->max('step_number')) + 1);
+
+            $newTrackUnit = TrackUnit::withoutEvents(function () use ($trackId, $unit, $targetStep) {
+                return TrackUnit::create([
+                    'learning_track_id' => $trackId,
+                    'unit_id' => $unit->id,
+                    'step_number' => $targetStep,
+                ]);
+            });
+
+            TrackUnit::resequenceTrack((int) $trackId, (int) $newTrackUnit->id, $targetStep);
         }
     }
 

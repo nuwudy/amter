@@ -49,14 +49,14 @@ class HomeController extends Controller
         $sessions = CourseSession::with(['module', 'units' => function ($query) {
             $query->where('is_published', true)->orderBy('sort_order', 'asc');
         }])
-            ->where('is_hidden', false)
             ->withCount(['units' => function ($q) {
                 $q->where('is_published', true);
             }])
             ->whereHas('units', function ($q) {
                 $q->where('is_published', true);
             })
-            ->orderBy('sort_order')
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc')
             ->get();
 
         $completedUnitIds = $user
@@ -73,7 +73,7 @@ class HomeController extends Controller
                 ->where('is_published', true)
                 ->find((int) $cookieOrSessionUnitId);
 
-            if ($candidate && $candidate->courseSession && !$candidate->courseSession->is_hidden) {
+            if ($candidate && $candidate->courseSession) {
                 $hasHistory = true;
                 // If the user already completed this candidate unit, advance to the next incomplete unit in that session
                 if ($user && isset($completedUnitIds[$candidate->id])) {
@@ -98,7 +98,7 @@ class HomeController extends Controller
                 ->orderBy('completed_units.completed_at', 'desc')
                 ->first();
 
-            if ($lastCompleted && $lastCompleted->courseSession && !$lastCompleted->courseSession->is_hidden) {
+            if ($lastCompleted && $lastCompleted->courseSession) {
                 $hasHistory = true;
                 $nextInSession = Unit::with('courseSession.module')
                     ->where('course_session_id', $lastCompleted->course_session_id)
@@ -205,18 +205,12 @@ class HomeController extends Controller
             ];
         }
 
-        // 3. Reorder sessions so the Last Attended Session is #1 at the top, followed by started sessions, then default sort_order
+        // 3. Strictly preserve the Admin's CourseSession Order (sort_order) in the Library Grid
         $sortedSessions = $sessions->sortBy(function ($session) {
-            if ($session->is_last_attended) {
-                return -10000;
-            }
-            if ($session->completed_count > 0) {
-                return -5000 + (int) $session->sort_order;
-            }
             return (int) $session->sort_order;
         })->values();
 
-        // 4. Determine Featured / Top Hero Session (Last Attended Session if any, otherwise the first session with free sample or first session)
+        // 4. Determine Featured / Top Hero Session (Last Attended Session if any, otherwise first session in Admin order)
         $heroSession = $sortedSessions->firstWhere('is_last_attended', true)
             ?: $sortedSessions->first(fn ($s) => $s->units->contains('is_free_sample', true))
             ?: $sortedSessions->first();

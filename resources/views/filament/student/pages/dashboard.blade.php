@@ -407,11 +407,18 @@
                                 <div style="font-size: 0.65rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem;">
                                     {{ $modTitle }}
                                 </div>
-                                <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
-                                    <h3 style="font-size: 0.95rem; font-weight: 800; color: white; margin: 0; line-height: 1.3;">
-                                        {{ $session->title }}
-                                    </h3>
-                                </a>
+                                @if(!$session->is_hidden)
+                                    <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
+                                        <h3 style="font-size: 0.95rem; font-weight: 800; color: white; margin: 0; line-height: 1.3;">
+                                            {{ $session->title }}
+                                        </h3>
+                                    </a>
+                                @endif
+                                @if($session->description)
+                                    <p style="font-size: 0.73rem; color: #94a3b8; margin: {{ $session->is_hidden ? '0' : '0.25rem 0 0 0' }}; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                        {{ $session->description }}
+                                    </p>
+                                @endif
                             </div>
 
                             <div style="display: flex; flex-direction: column; gap: 0.45rem;">

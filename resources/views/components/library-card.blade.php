@@ -19,6 +19,12 @@
         
         {{-- Gradient Overlay --}}
         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(15, 23, 42, 0.6), transparent, transparent);"></div>
+
+        {{-- Order Badge --}}
+        <div class="absolute top-4 left-4 bg-slate-900/85 backdrop-blur-sm px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wider text-white uppercase shadow-sm"
+             style="position: absolute; top: 1rem; left: 1rem; background-color: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); padding: 0.25rem 0.65rem; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; color: #38bdf8; text-transform: uppercase; border: 1px solid rgba(56, 189, 248, 0.4);">
+            Order #{{ $record->sort_order }}
+        </div>
         
         {{-- Module Badge (Breadcrumb-ish) --}}
         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold tracking-wider text-slate-800 uppercase shadow-sm"
@@ -30,9 +36,14 @@
     {{-- Content Section --}}
     <div class="p-4 sm:p-5 flex flex-col flex-grow justify-between" style="padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-between;">
         <div>
-            <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1 line-clamp-2" style="font-size: 1rem; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 0.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                {{ $record->title }}
-            </h3>
+            @if(!$record->is_hidden || $admin)
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 leading-tight mb-1 line-clamp-2" style="font-size: 1rem; font-weight: 700; color: #1e293b; line-height: 1.25; margin-bottom: 0.25rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ $record->title }}
+                    @if($admin && $record->is_hidden)
+                        <span style="font-size: 0.65rem; color: #f59e0b; font-weight: 800; text-transform: uppercase; margin-left: 0.35rem;">(Title Hidden on Card)</span>
+                    @endif
+                </h3>
+            @endif
             <p class="text-[10px] sm:text-xs text-slate-500 font-medium" style="font-size: 0.75rem; color: #64748b; font-weight: 500;">
                 {{ $record->units->count() }} Lessons
             </p>

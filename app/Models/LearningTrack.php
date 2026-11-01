@@ -111,15 +111,19 @@ class LearningTrack extends Model
         $currentStep = $this->getNextStepNumber();
         $added = 0;
 
-        foreach ($unitIds as $unitId) {
-            TrackUnit::create([
-                'learning_track_id' => $this->id,
-                'unit_id' => $unitId,
-                'step_number' => $currentStep++,
-                'notes' => $notes,
-            ]);
-            $added++;
-        }
+        TrackUnit::withoutEvents(function () use ($unitIds, $notes, &$currentStep, &$added) {
+            foreach ($unitIds as $unitId) {
+                TrackUnit::create([
+                    'learning_track_id' => $this->id,
+                    'unit_id' => $unitId,
+                    'step_number' => $currentStep++,
+                    'notes' => $notes,
+                ]);
+                $added++;
+            }
+        });
+
+        TrackUnit::resequenceTrack((int) $this->id);
 
         return $added;
     }
@@ -138,15 +142,19 @@ class LearningTrack extends Model
         $currentStep = $this->getNextStepNumber();
         $added = 0;
 
-        foreach ($units as $unit) {
-            TrackUnit::create([
-                'learning_track_id' => $this->id,
-                'unit_id' => $unit->id,
-                'step_number' => $currentStep++,
-                'notes' => $notes,
-            ]);
-            $added++;
-        }
+        TrackUnit::withoutEvents(function () use ($units, $notes, &$currentStep, &$added) {
+            foreach ($units as $unit) {
+                TrackUnit::create([
+                    'learning_track_id' => $this->id,
+                    'unit_id' => $unit->id,
+                    'step_number' => $currentStep++,
+                    'notes' => $notes,
+                ]);
+                $added++;
+            }
+        });
+
+        TrackUnit::resequenceTrack((int) $this->id);
 
         return $added;
     }

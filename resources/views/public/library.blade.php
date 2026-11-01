@@ -530,11 +530,13 @@
                         {{-- Card Content --}}
                         <div class="amter-lib-card-body">
                             <div>
-                                <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
-                                    <h3 style="font-size: 0.95rem; font-weight: 800; color: #ffffff; margin: 0 0 0.3rem 0; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                                        {{ $session->title }}
-                                    </h3>
-                                </a>
+                                @if(!$session->is_hidden)
+                                    <a href="{{ $session->target_url }}" @if($session->target_onclick) onclick="{!! $session->target_onclick !!}" @endif style="text-decoration: none;">
+                                        <h3 style="font-size: 0.95rem; font-weight: 800; color: #ffffff; margin: 0 0 0.3rem 0; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            {{ $session->title }}
+                                        </h3>
+                                    </a>
+                                @endif
 
                                 @if($session->description)
                                     <p style="font-size: 0.73rem; color: #94a3b8; margin: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">

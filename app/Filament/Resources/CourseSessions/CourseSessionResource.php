@@ -80,7 +80,9 @@ class CourseSessionResource extends Resource
                 TextInput::make('sort_order')
                     ->label('Order')
                     ->numeric()
-                    ->default(0),
+                    ->required()
+                    ->default(fn () => ((int) (\App\Models\CourseSession::max('sort_order') ?? 0)) + 1)
+                    ->helperText('Set 1 for the top card; other cards shift automatically.'),
             ]);
     }
 

@@ -35,6 +35,72 @@ Route::middleware('web')->group(function () {
 Route::get('/units/{unit}', [UnitController::class, 'show'])->name('student.units.show');
 Route::post('/units/{unit}/complete', [UnitController::class, 'complete'])->name('student.units.complete');
 
+// Course Session Jump & Search Routes (default when studying from Library / Dashboard)
+Route::get('/sessions/{session}/jump/{order}', function (\App\Models\CourseSession $session, $order) {
+    $unit = $session->units()
+        ->where('is_published', true)
+        ->where('sort_order', (int) $order)
+        ->first();
+
+    if (!$unit) {
+        return back()->with('warning', "Lesson {$order} not found in {$session->title}.");
+    }
+
+    return redirect()->route('student.units.show', ['unit' => $unit->id]);
+})->name('sessions.jump');
+
+Route::get('/sessions/{session}/search', function (\App\Models\CourseSession $session, \Illuminate\Http\Request $request) {
+    $query = trim($request->query('q', ''));
+    $completedUnitIds = auth()->check() ? auth()->user()->completedUnits()->pluck('units.id')->flip()->toArray() : [];
+
+    if (empty($query)) {
+        $units = $session->units()
+            ->with('courseSession')
+            ->where('is_published', true)
+            ->orderBy('sort_order', 'asc')
+            ->limit(40)
+            ->get();
+    } else {
+        $lessonNumber = null;
+        if (preg_match('/^(?:lesson|step|unit)?\s*(\d+)$/i', $query, $m)) {
+            $lessonNumber = (int) $m[1];
+        }
+
+        // Search inside current session first, and also allow matching lessons across other sessions by keyword
+        $units = \App\Models\Unit::with('courseSession')
+            ->where('is_published', true)
+            ->where(function ($q) use ($session, $query, $lessonNumber) {
+                if ($lessonNumber !== null) {
+                    $q->where(function ($sq) use ($session, $lessonNumber) {
+                        $sq->where('course_session_id', $session->id)
+                           ->where('sort_order', $lessonNumber);
+                    });
+                }
+                $q->orWhere('title', 'like', "%{$query}%")
+                  ->orWhereHas('courseSession', function ($csq) use ($query) {
+                      $csq->where('title', 'like', "%{$query}%");
+                  });
+            })
+            ->orderByRaw('CASE WHEN course_session_id = ' . (int) $session->id . ' THEN 0 ELSE 1 END')
+            ->orderBy('sort_order', 'asc')
+            ->limit(40)
+            ->get();
+    }
+
+    return response()->json($units->map(function ($unit) use ($completedUnitIds) {
+        $rawTitle = trim((string) ($unit->title ?? 'Untitled Lesson'));
+        $displayTitle = ctype_digit($rawTitle) ? "Lesson {$rawTitle}" : $rawTitle;
+
+        return [
+            'step' => (int) $unit->sort_order,
+            'title' => $displayTitle,
+            'session' => (string) ($unit->courseSession?->title ?? 'Amter Session'),
+            'completed' => isset($completedUnitIds[$unit->id]),
+            'url' => route('student.units.show', ['unit' => $unit->id]),
+        ];
+    }));
+})->name('sessions.search');
+
 // Master Track Jump & Search Routes
 Route::get('/tracks/{track}/jump/{step}', function (\App\Models\LearningTrack $track, $step) {
     $trackUnit = $track->trackUnits()

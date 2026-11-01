@@ -1,9 +1,13 @@
 @php
     $contentBlocks = $blocks ?? ($getRecord ? $getRecord()->content_blocks : []);
 
-    // Navigation Logic
+    // Navigation Logic: Only use LearningTrack mode when ?track_id= is explicitly passed.
+    // Otherwise, default to the Unit's own CourseSession (Library / Dashboard mode).
     $unit = $unit ?? $record ?? ($getRecord ? $getRecord() : null);
-    $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : (\App\Models\LearningTrack::getPrimaryTrack() ?? \App\Models\LearningTrack::where('is_active', true)->first()));
+    $currentTrack = $currentTrack ?? (request()->query('track_id') ? \App\Models\LearningTrack::find(request()->query('track_id')) : null);
+
+    $sessionStepNumber = null;
+    $totalSessionSteps = null;
 
     if ($unit) {
         $inCurrentTrack = $currentTrack && $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->exists();
@@ -17,6 +21,10 @@
             $navPrev = $unit->previousUnit();
             $trackStepNumber = null;
             $totalTrackSteps = null;
+            $sessionStepNumber = (int) ($unit->sort_order ?: 1);
+            $totalSessionSteps = $unit->courseSession
+                ? $unit->courseSession->units()->where('is_published', true)->count()
+                : null;
         }
     } else {
         $navNext = null;
@@ -33,16 +41,31 @@
         : route('filament.student.pages.dashboard');
 
     $sessionTitle = $unit?->courseSession?->title ?? $unit?->courseSession?->name ?? null;
-    $trackSearchUrl = $currentTrack ? route('tracks.search', ['track' => $currentTrack->id]) : '';
-    $trackJumpBaseUrl = $currentTrack ? url('/tracks/' . $currentTrack->id . '/jump') : '';
+    $activeStepOrLesson = $trackStepNumber ?? $sessionStepNumber ?? 1;
+    $activeTotalCount = $totalTrackSteps ?? $totalSessionSteps ?? 0;
+    $isTrackMode = !empty($trackStepNumber) && !empty($currentTrack);
+
+    $trackSearchUrl = $isTrackMode
+        ? route('tracks.search', ['track' => $currentTrack->id])
+        : ($unit?->course_session_id ? route('sessions.search', ['session' => $unit->course_session_id]) : '');
+    $trackJumpBaseUrl = $isTrackMode
+        ? url('/tracks/' . $currentTrack->id . '/jump')
+        : ($unit?->course_session_id ? url('/sessions/' . $unit->course_session_id . '/jump') : '');
 @endphp
 
-<div x-data="trackSearchHandler({ trackId: {{ $currentTrack?->id ?? 1 }}, currentStep: {{ $trackStepNumber ?? 1 }}, searchUrl: '{{ $trackSearchUrl }}', jumpBaseUrl: '{{ $trackJumpBaseUrl }}', totalSteps: {{ $totalTrackSteps ?? 0 }} })" class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-    @if(!empty($trackStepNumber) && !empty($currentTrack))
+<div x-data="trackSearchHandler({ trackId: {{ $currentTrack?->id ?? ($unit?->course_session_id ?? 1) }}, currentStep: {{ $activeStepOrLesson }}, searchUrl: '{{ $trackSearchUrl }}', jumpBaseUrl: '{{ $trackJumpBaseUrl }}', totalSteps: {{ $activeTotalCount }} })" class="premium-lesson-wrapper font-sans" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+    @if($isTrackMode)
         <div style="margin-bottom: 0.75rem; z-index: 10;">
             <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 0.4rem 1rem; border-radius: 99px; backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 6px;">
                 <span style="width: 6px; height: 6px; border-radius: 99px; background: #38bdf8;"></span>
                 Step {{ $trackStepNumber }}@if(!empty($totalTrackSteps)) of {{ $totalTrackSteps }}@endif &bull; {{ $currentTrack->title }}
+            </span>
+        </div>
+    @elseif(!empty($sessionStepNumber) && !empty($sessionTitle))
+        <div style="margin-bottom: 0.75rem; z-index: 10;">
+            <span style="font-size: 11px; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 0.4rem 1rem; border-radius: 99px; backdrop-filter: blur(8px); display: inline-flex; align-items: center; gap: 6px;">
+                <span style="width: 6px; height: 6px; border-radius: 99px; background: #38bdf8;"></span>
+                Lesson {{ $sessionStepNumber }}@if(!empty($totalSessionSteps)) of {{ $totalSessionSteps }}@endif &bull; {{ $sessionTitle }}
             </span>
         </div>
     @endif
@@ -386,21 +409,21 @@
                            x-ref="trackSearchInput"
                            x-model="query" 
                            @keydown.enter.prevent="if (isNumberQuery) { jumpToStep(); } else if (results.length > 0) { window.location.href = results[0].url; }"
-                           placeholder="Type a step number (e.g. 2500) or topic..."
+                           placeholder="{{ $isTrackMode ? 'Type a step number (e.g. 25) or topic...' : 'Type a lesson number (e.g. 12) or topic...' }}"
                            style="width: 100%; border: none; outline: none; font-size: 1.05rem; font-weight: 600; color: #ffffff; background: transparent;">
                     <button type="button" @click="searchModalOpen = false" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; color: #94a3b8; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.color='#fff'; this.style.background='rgba(255,255,255,0.15)';" onmouseout="this.style.color='#94a3b8'; this.style.background='rgba(255,255,255,0.08)';">
                         ✕
                     </button>
                 </div>
 
-                {{-- Direct Number Jump Action (Instantly visible when user types 2500, etc.) --}}
+                {{-- Direct Number Jump Action --}}
                 <div x-show="isNumberQuery" 
                      x-cloak
                      style="padding: 0.85rem 1.25rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%); border-bottom: 1px solid rgba(99, 102, 241, 0.35); display: flex; align-items: center; justify-content: space-between; gap: 1rem;">
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <span style="font-size: 1.2rem;">⚡</span>
                         <span style="color: #ffffff; font-weight: 800; font-size: 0.95rem;">
-                            Go straight to <span style="color: #38bdf8; text-decoration: underline;" x-text="'Step ' + targetStepNumber"></span>
+                            Go straight to <span style="color: #38bdf8; text-decoration: underline;" x-text="'{{ $isTrackMode ? 'Step ' : 'Lesson ' }}' + targetStepNumber"></span>
                         </span>
                     </div>
                     <button type="button" 
@@ -419,16 +442,16 @@
 
                 {{-- Step List (Scrollable) --}}
                 <div x-show="!loading" style="overflow-y: auto; padding: 1rem; flex: 1;" class="space-y-2">
-                    <template x-for="step in results" :key="step.step">
+                    <template x-for="step in results" :key="step.url">
                         <a :href="step.url" 
                            style="display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 1.1rem; border-radius: 1rem; text-decoration: none; transition: all 0.2s; gap: 1rem;"
-                           :style="step.step === {{ $trackStepNumber ?? -1 }} ? 'background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4);' : 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);'"
+                           :style="step.step === {{ $activeStepOrLesson }} ? 'background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4);' : 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);'"
                            onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.2)'; this.style.transform='translateY(-1px)';"
                            onmouseout="this.style.transform='translateY(0)';"
                            class="group">
                             <div style="display: flex; align-items: center; gap: 0.85rem; min-width: 0;">
                                 <div style="width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 0.75rem; flex-shrink: 0;"
-                                     :style="step.completed ? 'background: #059669; color: white;' : (step.step === {{ $trackStepNumber ?? -1 }} ? 'background: #6366f1; color: white;' : 'background: rgba(255,255,255,0.1); color: #cbd5e1;')">
+                                     :style="step.completed ? 'background: #059669; color: white;' : (step.step === {{ $activeStepOrLesson }} ? 'background: #6366f1; color: white;' : 'background: rgba(255,255,255,0.1); color: #cbd5e1;')">
                                     <span x-show="step.completed">✓</span>
                                     <span x-show="!step.completed" x-text="step.step"></span>
                                 </div>
@@ -439,7 +462,7 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
                                 <span x-show="step.completed" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">Mastered</span>
-                                <span x-show="step.step === {{ $trackStepNumber ?? -1 }}" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.3); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">Current</span>
+                                <span x-show="step.step === {{ $activeStepOrLesson }}" style="font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: rgba(99, 102, 241, 0.3); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4);">Current</span>
                                 <svg style="width: 14px; height: 14px; color: #64748b;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg>
                             </div>
                         </a>
@@ -452,7 +475,7 @@
                 
                 {{-- Footer info --}}
                 <div style="padding: 0.85rem 1.5rem; background: rgba(15, 23, 42, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.75rem; color: #94a3b8; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Total <strong style="color: #ffffff;">{{ $totalTrackSteps ?? 0 }}</strong> steps in Master Track</span>
+                    <span>Total <strong style="color: #ffffff;">{{ $activeTotalCount }}</strong> {{ $isTrackMode ? 'steps in Master Track' : 'lessons in ' . ($sessionTitle ?? 'this session') }}</span>
                     <span style="font-size: 0.7rem; color: #64748b;">Press ESC or click outside to close</span>
                 </div>
             </div>
@@ -467,9 +490,13 @@
             {{-- Lesson Title & Session/Chapter Title --}}
             <div style="text-align: center; margin-bottom: 2rem; padding: 0 1.5rem;">
                 <div style="display: inline-flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 0.85rem;">
-                    @if(!empty($trackStepNumber))
+                    @if($isTrackMode)
                         <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.4);">
                             <span>Step {{ $trackStepNumber }}@if(!empty($totalTrackSteps)) of {{ $totalTrackSteps }}@endif</span>
+                        </div>
+                    @elseif(!empty($sessionStepNumber))
+                        <div style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.85rem; border-radius: 9999px; background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; font-weight: 900; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.4);">
+                            <span>Lesson {{ $sessionStepNumber }}@if(!empty($totalSessionSteps)) of {{ $totalSessionSteps }}@endif</span>
                         </div>
                     @endif
 
@@ -486,7 +513,7 @@
                     $displayTitle = (is_numeric(trim($rawTitle))) ? 'Lesson ' . trim($rawTitle) : $rawTitle;
                 @endphp
                 <h1 style="font-size: 2rem; font-weight: 950; color: #0f172a; line-height: 1.15; letter-spacing: -0.04em; margin: 0;">
-                    @if(!empty($trackStepNumber))
+                    @if($isTrackMode)
                         <span style="color: #6366f1;">Step {{ $trackStepNumber }}:</span>
                     @endif
                     {{ $displayTitle }}
@@ -1785,12 +1812,12 @@
                 },
 
                 get isNumberQuery() {
-                    const clean = (this.query || '').trim().replace(/^step\s*/i, '');
+                    const clean = (this.query || '').trim().replace(/^(?:step|lesson|unit)\s*/i, '');
                     return /^\d+$/.test(clean) && parseInt(clean, 10) > 0;
                 },
 
                 get targetStepNumber() {
-                    const clean = (this.query || '').trim().replace(/^step\s*/i, '');
+                    const clean = (this.query || '').trim().replace(/^(?:step|lesson|unit)\s*/i, '');
                     return this.isNumberQuery ? parseInt(clean, 10) : null;
                 },
 
