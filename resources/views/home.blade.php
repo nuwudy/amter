@@ -172,9 +172,11 @@
                 <!-- Decorative Blobs -->
                 <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] lg:w-[600px] lg:h-[600px] bg-gradient-to-bl from-primary-500/15 to-blue-500/15 rounded-full blur-3xl -z-10"></div>
                 
-                <!-- Hero Image -->
+                <!-- Hero Video -->
                 <div class="relative z-10 transform rotate-2 hover:rotate-0 transition-all duration-500">
-                    <img src="{{ asset('images/hero-chips.jpg') }}" alt="Amter Spoken English - Learn Spoken English in Malayalam like eating chips" class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full max-w-md mx-auto">
+                    <video autoplay loop muted playsinline preload="auto" poster="{{ asset('images/hero-chips.jpg') }}" class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full max-w-md mx-auto object-cover" style="display: block;">
+                        <source src="{{ asset('storage/media-library/01M6XP64QQPAEFH92N94YFRE00.mp4') }}" type="video/mp4">
+                    </video>
                     
                     <!-- Floating Badge -->
                     <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-xl animate-bounce delay-1000 border border-gray-50">
