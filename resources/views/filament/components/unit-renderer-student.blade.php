@@ -909,10 +909,11 @@
                                         <!-- English Text Area (Hidden by default) -->
                                         @if(!empty($targets[0]))
                                             <div x-show="revealed" 
+                                                 @click="if(status !== 'success') { status === 'listening' || status === 'preparing' ? stopVoice() : startVoice(); }"
                                                  x-transition:enter="transition ease-out duration-300"
                                                  x-transition:enter-start="opacity-0 transform scale-95"
                                                  x-transition:enter-end="opacity-100 transform scale-100"
-                                                 style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-top: 0.5rem;">
+                                                 style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-top: 0.5rem; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
                                                 <h3 style="font-size: 2rem; font-weight: 950; color: #0f172a; letter-spacing: -0.03em; line-height: 1.1; margin: 0;">
                                                     "{{ implode(' / ', $targets) }}"
                                                 </h3>
@@ -932,40 +933,43 @@
                                     </div>
                                 </div>
 
-                                <button type="button" @click="status === 'listening' || status === 'preparing' ? stopVoice() : startVoice()" :disabled="status === 'success'"
-                                        class="transition-all duration-300"
-                                        :class="{ 'mic-preparing': status === 'preparing', 'mic-listening': status === 'listening' }"
-                                        style="width: 5.5rem; height: 5.5rem; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);"
-                                        :style="{ 
-                                            background: status === 'listening' ? '#f43f5e' : (status === 'preparing' ? '#eab308' : (status === 'success' ? '#10b981' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')),
-                                            transform: status === 'listening' || status === 'preparing' ? 'scale(1.1)' : 'scale(1)',
-                                            boxShadow: '0 15px 30px rgba(99,102,241,0.25)'
-                                        }">
-                                    <svg x-show="status !== 'success'" style="width: 2.75rem; height: 2.75rem; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                                    <svg x-show="status === 'success'" style="width: 3rem; height: 3rem; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                </button>
+                                <div @click="if(status !== 'success') { status === 'listening' || status === 'preparing' ? stopVoice() : startVoice(); }"
+                                     style="display: flex; flex-direction: column; align-items: center; gap: 0.9rem; width: 100%; padding: 0.5rem 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;">
+                                    <button type="button" :disabled="status === 'success'"
+                                            class="transition-all duration-300"
+                                            :class="{ 'mic-idle': status === 'idle', 'mic-preparing': status === 'preparing', 'mic-listening': status === 'listening' }"
+                                            style="width: 5.5rem; height: 5.5rem; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
+                                            :style="{ 
+                                                background: status === 'listening' ? '#f43f5e' : (status === 'preparing' ? '#eab308' : (status === 'success' ? '#10b981' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')),
+                                                transform: status === 'listening' || status === 'preparing' ? 'scale(1.1)' : 'scale(1)',
+                                                boxShadow: '0 15px 30px rgba(99,102,241,0.25)'
+                                            }">
+                                        <svg x-show="status !== 'success'" style="width: 2.75rem; height: 2.75rem; color: #fff; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                                        <svg x-show="status === 'success'" style="width: 3rem; height: 3rem; color: #fff; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    </button>
 
-                                <div style="text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
-                                    <!-- Dynamic Score Pill -->
-                                    <template x-if="score > 0">
-                                        <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.25rem;">
-                                            <span style="padding: 0.4rem 1.2rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 900; color: #fff; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.3s;"
-                                                  :style="{
-                                                      background: score === 100 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
-                                                                 (score >= 85 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' :
-                                                                 (score >= 50 ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' :
-                                                                                'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)')),
-                                                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                                                  }"
-                                                  x-text="score + '% ACCURATE'">
-                                            </span>
-                                        </div>
-                                    </template>
+                                    <div style="text-align: center; min-height: 50px; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+                                        <!-- Dynamic Score Pill -->
+                                        <template x-if="score > 0">
+                                            <div style="display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.25rem;">
+                                                <span style="padding: 0.4rem 1.2rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 900; color: #fff; letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.3s;"
+                                                      :style="{
+                                                          background: score === 100 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
+                                                                     (score >= 85 ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' :
+                                                                     (score >= 50 ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' :
+                                                                                    'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)')),
+                                                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                                      }"
+                                                      x-text="score + '% ACCURATE'">
+                                                </span>
+                                            </div>
+                                        </template>
 
-                                    <span style="font-size: 13px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em;"
-                                          :style="{ color: status === 'success' ? '#10b981' : (status === 'error' ? '#f43f5e' : '#64748b') }"
-                                          x-text="status === 'idle' ? '{{ $btnLabel }}' : (status === 'preparing' ? 'Connecting Mic...' : (status === 'listening' ? 'Speak Now...' : (status === 'success' ? (score === 100 ? 'Perfect Pronunciation!' : 'Great Pronunciation!') : 'Didn\'t catch that. Try again?')))"></span>
-                                    <p x-show="recognizedText" style="font-size: 16px; font-weight: 800; font-style: italic; color: #6366f1; line-height: 1.4;" x-text="recognizedText"></p>
+                                        <span style="font-size: 13px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.15em;"
+                                              :style="{ color: status === 'success' ? '#10b981' : (status === 'error' ? '#f43f5e' : '#64748b') }"
+                                              x-text="status === 'idle' ? '{{ $btnLabel }}' : (status === 'preparing' ? 'Connecting Mic...' : (status === 'listening' ? 'Speak Now... (Tap when done)' : (status === 'success' ? (score === 100 ? 'Perfect Pronunciation!' : 'Great Pronunciation!') : (errorMessage || 'Didn\'t catch that. Tap to try again?'))))"></span>
+                                        <p x-show="recognizedText" style="font-size: 16px; font-weight: 800; font-style: italic; color: #6366f1; line-height: 1.4;" x-text="recognizedText"></p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1045,10 +1049,11 @@
 
                                         <!-- English Text Area (Hidden by default) -->
                                         <div x-show="showEnglish" 
+                                             @click="speakNow()"
                                              x-transition:enter="transition ease-out duration-300"
                                              x-transition:enter-start="opacity-0 transform scale-95"
                                              x-transition:enter-end="opacity-100 transform scale-100"
-                                             style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                                             style="width: 100%; background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(0, 0, 0, 0.04); border-radius: 1.5rem; padding: 1.25rem 1.5rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
                                             <p style="font-size: 1.15rem; font-weight: 700; color: #334155; margin: 0; line-height: 1.5;" x-text="text"></p>
                                         </div>
 
@@ -1065,12 +1070,15 @@
                                     </div>
                                 @endif
 
-                                <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
-                                    <button type="button" @click="speakNow()" 
-                                            style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); box-shadow: 0 10px 20px rgba(99, 102, 241, 0.25); flex-shrink: 0;">
-                                        <svg x-show="!speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        <svg x-show="speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                <div @click="speakNow()"
+                                     style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem; width: 100%; padding: 0.5rem 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;">
+                                    <button type="button" 
+                                            style="width: 68px; height: 68px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.25s; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); box-shadow: 0 12px 24px rgba(99, 102, 241, 0.35); flex-shrink: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
+                                            :style="speaking ? 'transform: scale(1.08); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.2);' : ''">
+                                        <svg x-show="!speaking" style="width: 28px; height: 28px; color: #fff; margin-left: 2px; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        <svg x-show="speaking" style="width: 28px; height: 28px; color: #fff; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                                     </button>
+                                    <span style="font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.12em;" x-text="speaking ? 'Playing...' : 'Tap to Listen'">Tap to Listen</span>
                                 </div>
                             </div>
                         </div>
@@ -1205,27 +1213,29 @@
                                 </div>
                                 
                                 <div style="display: flex; justify-content: space-around; width: 100%; margin-top: 0.5rem;">
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                        <button type="button" @click="speakNow()"
-                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25);">
-                                            <svg x-show="!speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                            <svg x-show="speaking" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                    <div @click="speakNow()"
+                                         style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0.4rem 1.25rem; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none;">
+                                        <button type="button"
+                                                style="width: 64px; height: 64px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); box-shadow: 0 10px 20px rgba(59, 130, 246, 0.25); touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
+                                            <svg x-show="!speaking" style="width: 26px; height: 26px; color: #fff; margin-left: 2px; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            <svg x-show="speaking" style="width: 26px; height: 26px; color: #fff; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                                         </button>
                                         <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Listen</span>
                                     </div>
 
-                                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                                        <button type="button" @click="micStatus === 'listening' || micStatus === 'preparing' ? stopMic() : startMic()"
+                                    <div @click="micStatus === 'listening' || micStatus === 'preparing' ? stopMic() : startMic()"
+                                         style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0.4rem 1.25rem; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none;">
+                                        <button type="button"
                                                 class="transition-all duration-300"
                                                 :class="{ 'mic-idle': micStatus === 'idle', 'mic-preparing': micStatus === 'preparing', 'mic-listening': micStatus === 'listening' }"
-                                                style="width: 55px; height: 55px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);"
+                                                style="width: 64px; height: 64px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; z-index: 10; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
                                                 :style="{ 
                                                     background: micStatus === 'listening' ? '#f43f5e' : (micStatus === 'preparing' ? '#eab308' : (micStatus === 'success' ? '#10b981' : 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)')),
                                                     transform: micStatus === 'listening' || micStatus === 'preparing' ? 'scale(1.1)' : 'scale(1)',
                                                     boxShadow: '0 15px 30px rgba(99,102,241,0.25)'
                                                 }">
-                                            <svg x-show="micStatus !== 'success'" style="width: 22px; height: 22px; color: #fff;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
-                                            <svg x-show="micStatus === 'success'" style="width: 24px; height: 24px; color: #fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                            <svg x-show="micStatus !== 'success'" style="width: 26px; height: 26px; color: #fff; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                                            <svg x-show="micStatus === 'success'" style="width: 28px; height: 28px; color: #fff; pointer-events: none;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="4"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                                         </button>
                                         <span style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em;">Speak</span>
                                     </div>
@@ -1343,10 +1353,346 @@
 </div>
 
 <script>
+    // Mobile-safe Text-to-Speech (TTS) & Speech Recognition Helpers
+    (function() {
+        window.__amterCachedVoices = [];
+        window.__amterUtteranceRef = null;
+        window.__amterFallbackAudio = null;
+
+        const loadVoices = () => {
+            try {
+                if (window.speechSynthesis && typeof window.speechSynthesis.getVoices === 'function') {
+                    const v = window.speechSynthesis.getVoices();
+                    if (v && v.length > 0) {
+                        window.__amterCachedVoices = v;
+                    }
+                }
+            } catch (e) {}
+        };
+
+        loadVoices();
+        if (window.speechSynthesis && 'onvoiceschanged' in window.speechSynthesis) {
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        window.getAmterSpeechVoice = function(accent, gender) {
+            loadVoices();
+            const voices = window.__amterCachedVoices || [];
+            if (!voices || voices.length === 0) return null;
+
+            const normLang = (l) => String(l || '').replace('_', '-').toLowerCase();
+            const targetAccent = normLang(accent || 'en-US');
+            const langMatches = (v) => {
+                const vl = normLang(v.lang);
+                return vl.startsWith(targetAccent) || vl.startsWith('en');
+            };
+
+            if (!gender || gender === 'any') {
+                return voices.find(v => normLang(v.lang).startsWith(targetAccent))
+                    || voices.find(v => normLang(v.lang).startsWith('en'))
+                    || null;
+            }
+
+            const femaleKeywords = ['female', 'zira', 'samantha', 'victoria', 'hazel', 'susan', 'linda', 'heather', 'helena', 'catherine', 'zari', 'serena', 'google us english'];
+            const maleKeywords = ['male', 'david', 'mark', 'george', 'daniel', 'peter', 'alex', 'james', 'richard', 'sean'];
+            const preferredKeywords = gender.toLowerCase() === 'female' ? femaleKeywords : maleKeywords;
+
+            let matched = voices.find(v => {
+                if (!normLang(v.lang).startsWith(targetAccent)) return false;
+                const name = String(v.name || '').toLowerCase();
+                return preferredKeywords.some(kw => name.includes(kw));
+            });
+            if (!matched) {
+                matched = voices.find(v => langMatches(v) && preferredKeywords.some(kw => String(v.name || '').toLowerCase().includes(kw)));
+            }
+            if (!matched) {
+                matched = voices.find(v => normLang(v.lang).startsWith(targetAccent))
+                    || voices.find(v => normLang(v.lang).startsWith('en'));
+            }
+            return matched || null;
+        };
+
+        window.stopAmterSpeech = function() {
+            try {
+                if (window.__amterFallbackAudio) {
+                    window.__amterFallbackAudio.pause();
+                    window.__amterFallbackAudio.currentTime = 0;
+                    window.__amterFallbackAudio = null;
+                }
+            } catch (e) {}
+            try {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+            } catch (e) {}
+        };
+
+        window.playAmterFallbackAudio = function(text, accent, callbacks) {
+            try {
+                const tl = String(accent || 'en-US').split('-')[0] || 'en';
+                const encoded = encodeURIComponent(String(text || '').trim().slice(0, 200));
+                const urls = [
+                    `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${tl}&q=${encoded}`,
+                    `https://dict.youdao.com/dictvoice?audio=${encoded}&type=2`
+                ];
+                let idx = 0;
+                const tryNext = () => {
+                    if (idx >= urls.length) {
+                        if (callbacks && callbacks.onEnd) callbacks.onEnd();
+                        return;
+                    }
+                    const audio = new Audio(urls[idx++]);
+                    window.__amterFallbackAudio = audio;
+                    audio.onplay = () => { if (callbacks && callbacks.onStart) callbacks.onStart(); };
+                    audio.onended = () => { if (callbacks && callbacks.onEnd) callbacks.onEnd(); };
+                    audio.onerror = () => { tryNext(); };
+                    const p = audio.play();
+                    if (p && typeof p.catch === 'function') {
+                        p.catch(() => tryNext());
+                    }
+                };
+                tryNext();
+            } catch (e) {
+                if (callbacks && callbacks.onEnd) callbacks.onEnd();
+            }
+        };
+
+        window.speakAmterText = function(text, accent, gender, rate, callbacks) {
+            const cleanText = String(text || '').trim();
+            if (!cleanText) {
+                if (callbacks && callbacks.onEnd) callbacks.onEnd();
+                return;
+            }
+
+            window.stopAmterSpeech();
+
+            if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance === 'undefined') {
+                window.playAmterFallbackAudio(cleanText, accent, callbacks);
+                return;
+            }
+
+            let started = false;
+            let finished = false;
+            let fallbackTimer = null;
+            let safetyEndTimer = null;
+
+            const finish = () => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(fallbackTimer);
+                clearTimeout(safetyEndTimer);
+                if (callbacks && callbacks.onEnd) callbacks.onEnd();
+            };
+
+            try {
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                window.__amterUtteranceRef = utterance; // Prevent mobile GC bug
+                utterance.lang = accent || 'en-US';
+                utterance.rate = parseFloat(rate) || 1.0;
+
+                const isAndroid = /Android/i.test(navigator.userAgent || '');
+                const matchedVoice = window.getAmterSpeechVoice(accent || 'en-US', gender || 'any');
+                // Only assign voice object when its language is valid; Android WebViews can silently fail otherwise
+                if (matchedVoice && (!isAndroid || (gender && gender !== 'any'))) {
+                    utterance.voice = matchedVoice;
+                }
+
+                utterance.onstart = () => {
+                    started = true;
+                    clearTimeout(fallbackTimer);
+                    if (callbacks && callbacks.onStart) callbacks.onStart();
+                };
+                utterance.onend = () => finish();
+                utterance.onerror = () => {
+                    if (!started && !finished) {
+                        clearTimeout(fallbackTimer);
+                        window.playAmterFallbackAudio(cleanText, accent, {
+                            onStart: callbacks && callbacks.onStart,
+                            onEnd: finish
+                        });
+                    } else {
+                        finish();
+                    }
+                };
+
+                window.speechSynthesis.speak(utterance);
+                if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                }
+
+                // If mobile browser TTS silently fails to start within 900ms, use direct audio fallback
+                fallbackTimer = setTimeout(() => {
+                    if (!started && !finished && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
+                        window.playAmterFallbackAudio(cleanText, accent, {
+                            onStart: callbacks && callbacks.onStart,
+                            onEnd: finish
+                        });
+                    }
+                }, 900);
+
+                // Safety timer in case onend is never fired on certain mobile WebViews
+                const estDuration = Math.max(4000, cleanText.split(/\s+/).length * 650 + 2500);
+                safetyEndTimer = setTimeout(() => finish(), estDuration);
+            } catch (e) {
+                window.playAmterFallbackAudio(cleanText, accent, {
+                    onStart: callbacks && callbacks.onStart,
+                    onEnd: finish
+                });
+            }
+        };
+
+        // Shared High-Sensitivity Speech Matcher for Malayalam -> English Learners
+        window.computeAmterVoiceMatchScore = function(targetStr, spokenStr) {
+            const normalizeToken = (w) => {
+                let word = String(w || '').toLowerCase().trim()
+                    .replace(/['’`]/g, '')
+                    .replace(/[^a-z0-9]/g, '');
+                const numberMap = {
+                    '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
+                    '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
+                    '10': 'ten', '11': 'eleven', '12': 'twelve', '20': 'twenty',
+                    '30': 'thirty', '40': 'forty', '50': 'fifty', '100': 'hundred'
+                };
+                if (numberMap[word]) word = numberMap[word];
+                if (word === 'whats' || word === 'whatis') return 'was';
+                if (word === 'where') return 'were';
+                if (word === 'their' || word === 'theyre' || word === 'theyare' || word === 'there') return 'there';
+                if (word === 'your' || word === 'youre' || word === 'youare') return 'your';
+                if (word === 'its' || word === 'itis') return 'its';
+                if (word === 'to' || word === 'too' || word === 'two') return 'to';
+                if (word === 'for' || word === 'four') return 'for';
+                if (word === 'by' || word === 'buy' || word === 'bye') return 'by';
+                if (word === 'no' || word === 'know') return 'no';
+                if (word === 'right' || word === 'write') return 'right';
+                if (word === 'hear' || word === 'here') return 'here';
+                if (word === 'sea' || word === 'see') return 'see';
+                if (word === 'wanna') return 'wantto';
+                if (word === 'gonna') return 'goingto';
+                if (word === 'gotta') return 'gotto';
+                if (word === 'kinda') return 'kindof';
+                if (word === 'lemme') return 'letme';
+                if (word === 'gimme') return 'giveme';
+                if (word === 'im' || word === 'iam') return 'iam';
+                if (word === 'ive' || word === 'ihave') return 'ihave';
+                if (word === 'id' || word === 'iwould' || word === 'ihad') return 'id';
+                if (word === 'ill' || word === 'iwill') return 'iwill';
+                if (word === 'dont' || word === 'donot') return 'dont';
+                if (word === 'doesnt' || word === 'doesnot') return 'doesnt';
+                if (word === 'didnt' || word === 'didnot') return 'didnt';
+                if (word === 'cant' || word === 'cannot') return 'cant';
+                if (word === 'wont' || word === 'willnot') return 'wont';
+                return word;
+            };
+
+            const stemWord = (w) => {
+                if (w.length > 4 && w.endsWith('ing')) return w.slice(0, -3);
+                if (w.length > 3 && w.endsWith('ed')) return w.slice(0, -2);
+                if (w.length > 3 && w.endsWith('es')) return w.slice(0, -2);
+                if (w.length > 3 && w.endsWith('s')) return w.slice(0, -1);
+                return w;
+            };
+
+            const charEditDist = (a, b) => {
+                if (a === b) return 0;
+                if (!a.length) return b.length;
+                if (!b.length) return a.length;
+                const dp = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+                for (let j = 0; j <= b.length; j++) dp[0][j] = j;
+                for (let i = 1; i <= a.length; i++) {
+                    for (let j = 1; j <= b.length; j++) {
+                        dp[i][j] = a[i - 1] === b[j - 1]
+                            ? dp[i - 1][j - 1]
+                            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                    }
+                }
+                return dp[a.length][b.length];
+            };
+
+            const wordsMatchFuzzy = (tw, sw) => {
+                if (!tw || !sw) return false;
+                if (tw === sw || stemWord(tw) === stemWord(sw)) return true;
+                if (tw.length >= 4 && sw.length >= 4 && (tw.includes(sw) || sw.includes(tw))) return true;
+                const dist = charEditDist(tw, sw);
+                const maxL = Math.max(tw.length, sw.length);
+                if (maxL >= 6 && dist <= 2) return true;
+                if (maxL >= 4 && dist <= 1) return true;
+                return false;
+            };
+
+            const targetWords = String(targetStr || '').split(/\s+/).map(normalizeToken).filter(Boolean);
+            const spokenWords = String(spokenStr || '').split(/\s+/).map(normalizeToken).filter(Boolean);
+            if (targetWords.length === 0 || spokenWords.length === 0) return 0;
+
+            const joinedTarget = targetWords.join('');
+            const joinedSpoken = spokenWords.join('');
+            if (joinedTarget === joinedSpoken || joinedSpoken.includes(joinedTarget)) {
+                return 100;
+            }
+
+            // Single-word target (like "decade."): check against every spoken word using character similarity
+            if (targetWords.length === 1) {
+                const tw = targetWords[0];
+                let bestSingle = 0;
+                for (const sw of spokenWords) {
+                    if (wordsMatchFuzzy(tw, sw)) return 100;
+                    const dist = charEditDist(tw, sw);
+                    const maxL = Math.max(tw.length, sw.length);
+                    const sim = Math.round(((maxL - dist) / maxL) * 100);
+                    if (sim > bestSingle) bestSingle = sim;
+                }
+                return Math.max(0, bestSingle);
+            }
+
+            // Multi-word target: check how many target words were spoken (fuzzy match) + DP sequence score
+            let matchedTargetWords = 0;
+            const usedSpoken = new Set();
+            for (const tw of targetWords) {
+                for (let j = 0; j < spokenWords.length; j++) {
+                    if (!usedSpoken.has(j) && wordsMatchFuzzy(tw, spokenWords[j])) {
+                        matchedTargetWords++;
+                        usedSpoken.add(j);
+                        break;
+                    }
+                }
+            }
+            const coverageScore = Math.round((matchedTargetWords / targetWords.length) * 100);
+
+            const dp = Array.from({ length: targetWords.length + 1 }, () => Array(spokenWords.length + 1).fill(0));
+            for (let i = 0; i <= targetWords.length; i++) dp[i][0] = i;
+            for (let j = 0; j <= spokenWords.length; j++) dp[0][j] = j;
+
+            for (let i = 1; i <= targetWords.length; i++) {
+                for (let j = 1; j <= spokenWords.length; j++) {
+                    if (wordsMatchFuzzy(targetWords[i - 1], spokenWords[j - 1])) {
+                        dp[i][j] = dp[i - 1][j - 1];
+                    } else {
+                        dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                    }
+                }
+            }
+
+            const editDistance = dp[targetWords.length][spokenWords.length];
+            const maxLen = Math.max(targetWords.length, spokenWords.length);
+            const dpScore = Math.round(((maxLen - editDistance) / maxLen) * 100);
+
+            const charDist = charEditDist(joinedTarget, joinedSpoken);
+            const charMax = Math.max(joinedTarget.length, joinedSpoken.length);
+            const charScore = charMax > 0 ? Math.round(((charMax - charDist) / charMax) * 100) : 0;
+
+            return Math.max(0, coverageScore, dpScore, charScore);
+        };
+    })();
+
     document.addEventListener('alpine:init', () => {
         Alpine.data('voiceMatcher', (targets, defaultRevealed = true) => ({
             status: 'idle',
+            errorMessage: '',
             recognizedText: '',
+            allAlternatives: [],
             playing: false,
             quizSolved: false,
             selectedOption: null,
@@ -1358,80 +1704,103 @@
             safetyTimeout: null,
 
             getWordMatchPercentage(targetStr, spokenStr) {
-                const cleanWord = (w) => {
-                    let word = w.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
-                    if (word === 'whats' || word === 'whatis') return 'was';
-                    if (word === 'where') return 'were';
-                    if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
-                    return word;
-                };
-                
-                const targetWords = targetStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
-                const spokenWords = spokenStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
-                
-                if (targetWords.length === 0) return 0;
-                
-                const dp = Array(targetWords.length + 1).fill(null).map(() => Array(spokenWords.length + 1).fill(0));
-                
-                for (let i = 0; i <= targetWords.length; i++) dp[i][0] = i;
-                for (let j = 0; j <= spokenWords.length; j++) dp[0][j] = j;
-                
-                for (let i = 1; i <= targetWords.length; i++) {
-                    for (let j = 1; j <= spokenWords.length; j++) {
-                        if (targetWords[i - 1] === spokenWords[j - 1]) {
-                            dp[i][j] = dp[i - 1][j - 1];
-                        } else {
-                            dp[i][j] = Math.min(
-                                dp[i - 1][j] + 1,
-                                dp[i][j - 1] + 1,
-                                dp[i - 1][j - 1] + 1
-                            );
+                return window.computeAmterVoiceMatchScore(targetStr, spokenStr);
+            },
+
+            evaluateCandidates() {
+                const candidates = [this.recognizedText, ...(this.allAlternatives || [])]
+                    .map(s => String(s || '').trim())
+                    .filter(Boolean);
+                if (candidates.length === 0) return { passed: false, score: 0 };
+
+                let bestScore = 0;
+                let bestText = this.recognizedText;
+
+                for (const candidate of candidates) {
+                    for (const t of targets) {
+                        const s = window.computeAmterVoiceMatchScore(t, candidate);
+                        if (s > bestScore) {
+                            bestScore = s;
+                            bestText = candidate;
                         }
                     }
                 }
-                
-                const editDistance = dp[targetWords.length][spokenWords.length];
-                const maxLen = Math.max(targetWords.length, spokenWords.length);
-                
-                let percentage = Math.round(((maxLen - editDistance) / maxLen) * 100);
-                return Math.max(0, percentage);
+
+                this.score = bestScore;
+                if (bestScore >= 60 && bestText) {
+                    this.recognizedText = bestText;
+                }
+                return { passed: bestScore >= 60, score: bestScore };
             },
             
             startVoice() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) return;
+                if (!SpeechRecognition) {
+                    this.status = 'error';
+                    this.errorMessage = 'Voice recognition works best in Chrome or Safari.';
+                    return;
+                }
 
+                window.stopAmterSpeech();
                 this.stopVoice();
 
                 const rec = new SpeechRecognition();
                 this.recInstance = rec;
                 rec.lang = 'en-US';
                 rec.interimResults = true;
+                rec.maxAlternatives = 5;
+                rec.continuous = false;
                 this.status = 'preparing';
+                this.errorMessage = '';
                 this.score = 0;
                 this.recognizedText = '';
+                this.allAlternatives = [];
 
                 rec.onstart = () => {
                     this.status = 'listening';
-                    // Safety timeout: auto-stop recording after 8 seconds of active listening
                     this.safetyTimeout = setTimeout(() => {
                         if (this.status === 'listening') {
-                            rec.stop();
+                            try { rec.stop(); } catch (e) {}
                         }
-                    }, 8000);
+                    }, 9000);
                 };
 
-                rec.onresult = (e) => { 
-                    this.recognizedText = Array.from(e.results).map(r => r[0].transcript).join(''); 
+                rec.onresult = (e) => {
+                    const primaryTranscript = Array.from(e.results).map(r => r[0]?.transcript || '').join(' ').trim();
+                    this.recognizedText = primaryTranscript;
+
+                    const altSet = new Set([primaryTranscript]);
+                    for (let i = 0; i < e.results.length; i++) {
+                        const res = e.results[i];
+                        for (let k = 0; k < res.length; k++) {
+                            if (res[k] && res[k].transcript) {
+                                altSet.add(res[k].transcript.trim());
+                            }
+                        }
+                    }
+                    this.allAlternatives = Array.from(altSet);
+
+                    // Instant pass while speaking as soon as user hits passing pronunciation!
+                    const check = this.evaluateCandidates();
+                    if (check.passed && check.score >= 75) {
+                        this.status = 'success';
+                        if (window.confetti) confetti();
+                        try { rec.stop(); } catch (err) {}
+                    }
                 };
 
                 rec.onerror = (e) => {
-                    console.error("Speech recognition error:", e.error);
+                    if (this.status === 'success') return;
+                    if (e && (e.error === 'not-allowed' || e.error === 'service-not-allowed')) {
+                        this.errorMessage = 'Please allow microphone access in your browser.';
+                    } else {
+                        this.errorMessage = '';
+                    }
                     if (this.status === 'listening' || this.status === 'preparing') {
                         this.status = 'error';
                         setTimeout(() => {
                             if (this.status === 'error') this.status = 'idle';
-                        }, 2000);
+                        }, 2200);
                     }
                 };
 
@@ -1442,7 +1811,9 @@
                     }
                     this.recInstance = null;
 
-                    if (!this.recognizedText.trim()) {
+                    if (this.status === 'success') return;
+
+                    if (!this.recognizedText.trim() && (!this.allAlternatives || this.allAlternatives.length === 0)) {
                         if (this.status === 'listening' || this.status === 'preparing') {
                             this.status = 'idle';
                         }
@@ -1450,36 +1821,8 @@
                         return;
                     }
 
-                    const clean = (s) => {
-                        let t = s.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
-                        // Specific fix for common STT misrecognitions
-                        // We treat them as equivalent in this context
-                        return t.split(' ').map(word => {
-                            if (word === 'whats' || word === 'whatis') return 'was';
-                            if (word === 'where') return 'were';
-                            if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
-                            return word;
-                        }).join('');
-                    };
-                    const text = clean(this.recognizedText);
-                    const isStrictMatch = targets.some(t => clean(t) === text);
-
-                    let highestScore = 0;
-                    targets.forEach(t => {
-                        const s = this.getWordMatchPercentage(t, this.recognizedText);
-                        if (s > highestScore) {
-                            highestScore = s;
-                        }
-                    });
-
-                    this.score = highestScore;
-
-                    if (isStrictMatch && this.score < 100) {
-                        this.score = 100;
-                    }
-
-                    // Lowered passing threshold from 85% to 70% to be more sensitive/friendly
-                    if (isStrictMatch || this.score >= 70) {
+                    const check = this.evaluateCandidates();
+                    if (check.passed) {
                         this.status = 'success';
                         if (window.confetti) confetti();
                     } else {
@@ -1488,10 +1831,15 @@
                             if (this.status === 'error') {
                                 this.status = 'idle';
                             }
-                        }, 2000);
+                        }, 2200);
                     }
                 };
-                rec.start();
+
+                try {
+                    rec.start();
+                } catch (e) {
+                    this.status = 'idle';
+                }
             },
 
             stopVoice() {
@@ -1501,7 +1849,12 @@
                 }
                 if (this.recInstance) {
                     try {
-                        this.recInstance.abort(); // Use abort to immediately cancel without processing
+                        // Use stop() instead of abort() so whatever the student already spoke is evaluated!
+                        if (this.recognizedText && this.recognizedText.trim().length > 0) {
+                            this.recInstance.stop();
+                            return;
+                        }
+                        this.recInstance.abort();
                     } catch (e) {}
                     this.recInstance = null;
                 }
@@ -1511,38 +1864,15 @@
             }
         }));
 
-        window.getAmterSpeechVoice = function(accent, gender) {
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices || voices.length === 0) return null;
-            if (!gender || gender === 'any') {
-                return voices.find(v => v.lang.startsWith(accent));
-            }
-            const femaleKeywords = ['female', 'zira', 'samantha', 'victoria', 'hazel', 'susan', 'linda', 'heather', 'helena', 'catherine', 'zari', 'serena', 'google us english'];
-            const maleKeywords = ['male', 'david', 'mark', 'george', 'daniel', 'peter', 'alex', 'james', 'richard', 'sean'];
-            const preferredKeywords = gender.toLowerCase() === 'female' ? femaleKeywords : maleKeywords;
-            let matched = voices.find(v => {
-                if (!v.lang.startsWith(accent)) return false;
-                const name = v.name.toLowerCase();
-                return preferredKeywords.some(kw => name.includes(kw));
-            });
-            if (!matched) {
-                matched = voices.find(v => preferredKeywords.some(kw => v.name.toLowerCase().includes(kw)));
-            }
-            if (!matched) {
-                matched = voices.find(v => v.lang.startsWith(accent));
-            }
-            return matched;
-        };
-
         Alpine.data('listenSpeakBlock', (englishText, hideEnglish) => ({
             englishText: englishText,
             showEnglish: !hideEnglish,
             showMalayalam: false,
             speaking: false,
             
-            // Mic logic (adapted from voiceMatcher)
             micStatus: 'idle',
             recognizedText: '',
+            allAlternatives: [],
             score: 0,
             recInstance: null,
             safetyTimeout: null,
@@ -1550,102 +1880,103 @@
             speakNow() {
                 if (!this.englishText.trim()) return;
 
-                if (window.speechSynthesis.speaking || this.speaking) {
-                    window.speechSynthesis.cancel();
+                if (this.speaking) {
+                    window.stopAmterSpeech();
                     this.speaking = false;
                     return;
                 }
 
                 this.speaking = true;
-                const utterance = new SpeechSynthesisUtterance(this.englishText);
-                utterance.lang = 'en-US';
-                utterance.rate = 1.0;
-
-                const matchedVoice = window.getAmterSpeechVoice('en-US', 'any');
-                if (matchedVoice) {
-                    utterance.voice = matchedVoice;
-                }
-
-                utterance.onstart = () => { this.speaking = true; };
-                utterance.onend = () => { this.speaking = false; };
-                utterance.onerror = () => { this.speaking = false; };
-
-                window.speechSynthesis.speak(utterance);
+                window.speakAmterText(this.englishText, 'en-US', 'any', 1.0, {
+                    onStart: () => { this.speaking = true; },
+                    onEnd: () => { this.speaking = false; }
+                });
             },
 
             getWordMatchPercentage(targetStr, spokenStr) {
-                const cleanWord = (w) => {
-                    let word = w.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
-                    if (word === 'whats' || word === 'whatis') return 'was';
-                    if (word === 'where') return 'were';
-                    if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
-                    return word;
-                };
-                
-                const targetWords = targetStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
-                const spokenWords = spokenStr.split(/\s+/).map(cleanWord).filter(w => w.length > 0);
-                
-                if (targetWords.length === 0) return 0;
-                
-                const dp = Array(targetWords.length + 1).fill(null).map(() => Array(spokenWords.length + 1).fill(0));
-                
-                for (let i = 0; i <= targetWords.length; i++) dp[i][0] = i;
-                for (let j = 0; j <= spokenWords.length; j++) dp[0][j] = j;
-                
-                for (let i = 1; i <= targetWords.length; i++) {
-                    for (let j = 1; j <= spokenWords.length; j++) {
-                        if (targetWords[i - 1] === spokenWords[j - 1]) {
-                            dp[i][j] = dp[i - 1][j - 1];
-                        } else {
-                            dp[i][j] = Math.min(
-                                dp[i - 1][j] + 1,
-                                dp[i][j - 1] + 1,
-                                dp[i - 1][j - 1] + 1
-                            );
-                        }
+                return window.computeAmterVoiceMatchScore(targetStr, spokenStr);
+            },
+
+            evaluateCandidates() {
+                const candidates = [this.recognizedText, ...(this.allAlternatives || [])]
+                    .map(s => String(s || '').trim())
+                    .filter(Boolean);
+                if (candidates.length === 0) return { passed: false, score: 0 };
+
+                let bestScore = 0;
+                let bestText = this.recognizedText;
+                for (const candidate of candidates) {
+                    const s = window.computeAmterVoiceMatchScore(this.englishText, candidate);
+                    if (s > bestScore) {
+                        bestScore = s;
+                        bestText = candidate;
                     }
                 }
-                
-                const editDistance = dp[targetWords.length][spokenWords.length];
-                const maxLen = Math.max(targetWords.length, spokenWords.length);
-                
-                let percentage = Math.round(((maxLen - editDistance) / maxLen) * 100);
-                return Math.max(0, percentage);
+                this.score = bestScore;
+                if (bestScore >= 60 && bestText) {
+                    this.recognizedText = bestText;
+                }
+                return { passed: bestScore >= 60, score: bestScore };
             },
             
             startMic() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) return;
 
+                window.stopAmterSpeech();
+                this.speaking = false;
                 this.stopMic();
 
                 const rec = new SpeechRecognition();
                 this.recInstance = rec;
                 rec.lang = 'en-US';
                 rec.interimResults = true;
+                rec.maxAlternatives = 5;
+                rec.continuous = false;
                 this.micStatus = 'preparing';
                 this.score = 0;
                 this.recognizedText = '';
+                this.allAlternatives = [];
 
                 rec.onstart = () => {
                     this.micStatus = 'listening';
                     this.safetyTimeout = setTimeout(() => {
                         if (this.micStatus === 'listening') {
-                            rec.stop();
+                            try { rec.stop(); } catch (e) {}
                         }
-                    }, 8000);
+                    }, 9000);
                 };
 
                 rec.onresult = (e) => { 
-                    this.recognizedText = Array.from(e.results).map(r => r[0].transcript).join(''); 
+                    const primaryTranscript = Array.from(e.results).map(r => r[0]?.transcript || '').join(' ').trim();
+                    this.recognizedText = primaryTranscript;
+
+                    const altSet = new Set([primaryTranscript]);
+                    for (let i = 0; i < e.results.length; i++) {
+                        const res = e.results[i];
+                        for (let k = 0; k < res.length; k++) {
+                            if (res[k] && res[k].transcript) {
+                                altSet.add(res[k].transcript.trim());
+                            }
+                        }
+                    }
+                    this.allAlternatives = Array.from(altSet);
+
+                    const check = this.evaluateCandidates();
+                    if (check.passed && check.score >= 75) {
+                        this.micStatus = 'success';
+                        if (window.confetti) confetti();
+                        try { rec.stop(); } catch (err) {}
+                    }
                 };
 
-                rec.onerror = (e) => {
+                rec.onerror = () => {
+                    if (this.micStatus === 'success') return;
                     if (this.micStatus === 'listening' || this.micStatus === 'preparing') {
                         this.micStatus = 'error';
                         setTimeout(() => {
                             if (this.micStatus === 'error') this.micStatus = 'idle';
-                        }, 2000);
+                        }, 2200);
                     }
                 };
 
@@ -1656,7 +1987,9 @@
                     }
                     this.recInstance = null;
 
-                    if (!this.recognizedText.trim()) {
+                    if (this.micStatus === 'success') return;
+
+                    if (!this.recognizedText.trim() && (!this.allAlternatives || this.allAlternatives.length === 0)) {
                         if (this.micStatus === 'listening' || this.micStatus === 'preparing') {
                             this.micStatus = 'idle';
                         }
@@ -1664,25 +1997,8 @@
                         return;
                     }
 
-                    const clean = (s) => {
-                        let t = s.toLowerCase().trim().replace(/[?.,\/#!$%\^&\*;:{}=\-_`~()']/g,'');
-                        return t.split(' ').map(word => {
-                            if (word === 'whats' || word === 'whatis') return 'was';
-                            if (word === 'where') return 'were';
-                            if (word === 'their' || word === 'theyre' || word === 'theyare') return 'there';
-                            return word;
-                        }).join('');
-                    };
-                    const text = clean(this.recognizedText);
-                    const isStrictMatch = (clean(this.englishText) === text);
-
-                    this.score = this.getWordMatchPercentage(this.englishText, this.recognizedText);
-
-                    if (isStrictMatch && this.score < 100) {
-                        this.score = 100;
-                    }
-
-                    if (isStrictMatch || this.score >= 70) {
+                    const check = this.evaluateCandidates();
+                    if (check.passed) {
                         this.micStatus = 'success';
                         if (window.confetti) confetti();
                     } else {
@@ -1691,10 +2007,15 @@
                             if (this.micStatus === 'error') {
                                 this.micStatus = 'idle';
                             }
-                        }, 2000);
+                        }, 2200);
                     }
                 };
-                rec.start();
+
+                try {
+                    rec.start();
+                } catch (e) {
+                    this.micStatus = 'idle';
+                }
             },
 
             stopMic() {
@@ -1704,6 +2025,10 @@
                 }
                 if (this.recInstance) {
                     try {
+                        if (this.recognizedText && this.recognizedText.trim().length > 0) {
+                            this.recInstance.stop();
+                            return;
+                        }
                         this.recInstance.abort();
                     } catch (e) {}
                     this.recInstance = null;
@@ -1726,28 +2051,17 @@
             speakNow() {
                 if (!this.text.trim()) return;
 
-                if (window.speechSynthesis.speaking || this.speaking) {
-                    window.speechSynthesis.cancel();
+                if (this.speaking) {
+                    window.stopAmterSpeech();
                     this.speaking = false;
                     return;
                 }
 
-                this.speaking = true; // Set playing state immediately on click
-
-                const utterance = new SpeechSynthesisUtterance(this.text);
-                utterance.lang = this.accent;
-                utterance.rate = parseFloat(this.rate);
-
-                const matchedVoice = window.getAmterSpeechVoice(this.accent, this.gender);
-                if (matchedVoice) {
-                    utterance.voice = matchedVoice;
-                }
-
-                utterance.onstart = () => { this.speaking = true; };
-                utterance.onend = () => { this.speaking = false; };
-                utterance.onerror = () => { this.speaking = false; };
-
-                window.speechSynthesis.speak(utterance);
+                this.speaking = true;
+                window.speakAmterText(this.text, this.accent, this.gender, this.rate, {
+                    onStart: () => { this.speaking = true; },
+                    onEnd: () => { this.speaking = false; }
+                });
             }
         }));
 
@@ -1760,17 +2074,7 @@
             isSolved: false,
 
             playText() {
-                if (window.speechSynthesis.speaking) {
-                    window.speechSynthesis.cancel();
-                }
-                const utterance = new SpeechSynthesisUtterance(this.correct);
-                utterance.lang = this.accent;
-                utterance.rate = 0.9;
-
-                const matchedVoice = window.getAmterSpeechVoice(this.accent, this.gender);
-                if (matchedVoice) utterance.voice = matchedVoice;
-
-                window.speechSynthesis.speak(utterance);
+                window.speakAmterText(this.correct, this.accent, this.gender, 0.9, {});
             },
 
             checkAnswer() {
@@ -1789,21 +2093,19 @@
         }));
     });
 
-    // Pre-warm Web Speech API on first user interaction for instantaneous mobile playback
+    // Safe voice list warm-up on first interaction (without speaking an empty string that locks Android TTS)
     (function() {
-        const preWarm = () => {
+        const warmVoices = () => {
             try {
-                if (window.speechSynthesis) {
-                    const u = new SpeechSynthesisUtterance('');
-                    u.volume = 0;
-                    window.speechSynthesis.speak(u);
+                if (window.speechSynthesis && typeof window.speechSynthesis.getVoices === 'function') {
+                    window.speechSynthesis.getVoices();
                 }
             } catch (e) {}
-            document.removeEventListener('click', preWarm);
-            document.removeEventListener('touchstart', preWarm);
+            document.removeEventListener('click', warmVoices);
+            document.removeEventListener('touchstart', warmVoices);
         };
-        document.addEventListener('click', preWarm);
-        document.addEventListener('touchstart', preWarm);
+        document.addEventListener('click', warmVoices, { passive: true });
+        document.addEventListener('touchstart', warmVoices, { passive: true });
     })();
 
     // Track Step Search & Navigation Handler
