@@ -299,4 +299,73 @@ class HomeController extends Controller
             'Premium Unlock',
         ];
     }
+
+    /**
+     * First-party Text-to-Speech MP3 stream proxy with local disk caching.
+     * Guarantees audio playback across all mobile browsers and in-app WebViews (Facebook, Instagram, WhatsApp, iOS Safari, Android).
+     */
+    public function ttsStream(Request $request)
+    {
+        $text = trim((string) $request->query('text', ''));
+        if ($text === '') {
+            return response('Missing text', 400);
+        }
+
+        $text = mb_substr($text, 0, 300);
+        $tl = preg_replace('/[^a-zA-Z\-]/', '', (string) $request->query('tl', 'en-US')) ?: 'en-US';
+
+        $cacheDir = storage_path('app/public/tts-cache');
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0775, true);
+        }
+
+        $cacheKey = md5(strtolower($tl) . '|' . $text);
+        $cacheFile = $cacheDir . '/' . $cacheKey . '.mp3';
+
+        if (is_file($cacheFile) && filesize($cacheFile) > 256) {
+            return response()->file($cacheFile, [
+                'Content-Type' => 'audio/mpeg',
+                'Cache-Control' => 'public, max-age=31536000, immutable',
+                'Accept-Ranges' => 'bytes',
+            ]);
+        }
+
+        $encoded = rawurlencode($text);
+        $shortTl = explode('-', $tl)[0] ?: 'en';
+
+        $upstreams = [
+            "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl={$tl}&dt=t&q={$encoded}",
+            "https://translate.googleapis.com/translate_tts?ie=UTF-8&client=gtx&tl={$shortTl}&dt=t&q={$encoded}",
+            "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl={$shortTl}&q={$encoded}",
+            "https://dict.youdao.com/dictvoice?type=2&audio={$encoded}",
+        ];
+
+        foreach ($upstreams as $url) {
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(6)
+                    ->withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                        'Accept' => 'audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,*/*;q=0.8',
+                        'Referer' => 'https://translate.google.com/',
+                    ])
+                    ->get($url);
+
+                if ($response->successful() && strlen($response->body()) > 256) {
+                    $audioBytes = $response->body();
+                    @file_put_contents($cacheFile, $audioBytes);
+
+                    return response($audioBytes, 200, [
+                        'Content-Type' => 'audio/mpeg',
+                        'Content-Length' => strlen($audioBytes),
+                        'Cache-Control' => 'public, max-age=31536000, immutable',
+                        'Accept-Ranges' => 'bytes',
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                continue;
+            }
+        }
+
+        return response('TTS unavailable', 503);
+    }
 }

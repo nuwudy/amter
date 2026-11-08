@@ -11,6 +11,7 @@ use App\Http\Controllers\PaymentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/library', [HomeController::class, 'library'])->name('public.library');
+Route::get('/tts-stream', [HomeController::class, 'ttsStream'])->name('tts.stream');
 Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index']);
 Route::get('/google7d9d49afe342ab69.html', fn () => response('google-site-verification: google7d9d49afe342ab69.html', 200)->header('Content-Type', 'text/html'));
 Route::redirect('/student', '/app'); // Redirect legacy path

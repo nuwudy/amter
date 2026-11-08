@@ -189,9 +189,12 @@
         {{-- Navigation Bar Re-Design --}}
         .nav-pill-wrapper {
             position: fixed;
-            bottom: 2.5rem;
+            bottom: 1.5rem;
             left: 0;
+            right: 0;
             width: 100%;
+            padding: 0 0.75rem;
+            box-sizing: border-box;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -200,63 +203,146 @@
         }
 
         .nav-pill {
-            background: rgba(15, 23, 42, 0.8) !important;
+            background: rgba(15, 23, 42, 0.92) !important;
             backdrop-filter: blur(25px) saturate(150%) !important;
             -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(255, 255, 255, 0.16) !important;
             border-radius: 9999px !important;
-            padding: 0.625rem;
-            display: flex;
-            align-items: center;
-            gap: 0.625rem;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5) !important;
+            padding: 0.45rem !important;
+            display: grid !important;
+            grid-template-columns: 1fr auto 1fr !important;
+            align-items: center !important;
+            gap: 0.35rem !important;
+            box-shadow: 0 20px 45px -10px rgba(0,0,0,0.6) !important;
             pointer-events: auto;
-            width: 95%;
-            max-width: 400px;
+            width: 100% !important;
+            max-width: 390px !important;
+            box-sizing: border-box !important;
         }
 
         .nav-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 0.875rem 1.5rem;
-            border-radius: 9999px;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            font-weight: 800;
-            text-decoration: none;
-            transition: 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            padding: 0.75rem 0.6rem !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            border-radius: 9999px !important;
+            color: rgba(255, 255, 255, 0.88) !important;
+            font-size: 13px !important;
+            font-weight: 800 !important;
+            text-decoration: none !important;
+            transition: 0.25s !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            white-space: nowrap !important;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-link:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.1);
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.1) !important;
         }
 
         .nav-refresh-btn {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            color: white;
-            padding: 0.875rem 2rem;
-            border-radius: 9999px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: none;
-            font-size: 12px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            cursor: pointer;
-            box-shadow: 0 12px 24px -6px rgba(99, 102, 241, 0.4) !important;
-            transition: all 0.3s;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+            color: white !important;
+            padding: 0.75rem 1.35rem !important;
+            border-radius: 9999px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
+            border: none !important;
+            font-size: 12px !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.07em !important;
+            cursor: pointer !important;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.45) !important;
+            transition: all 0.25s !important;
+            white-space: nowrap !important;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .nav-refresh-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.03);
             box-shadow: 0 15px 30px -6px rgba(99, 102, 241, 0.5) !important;
+        }
+
+        .premium-lesson-wrapper, .premium-lesson-wrapper *, .premium-lesson-wrapper *::before, .premium-lesson-wrapper *::after {
+            box-sizing: border-box;
+        }
+
+        /* Mobile Viewport Lock & Compact Real Estate */
+        @media (max-width: 640px) {
+            html, body {
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
+                overscroll-behavior-x: none !important;
+            }
+            .premium-lesson-wrapper {
+                padding: 0.65rem 0.35rem 6rem 0.35rem !important;
+                overflow-x: hidden !important;
+                max-width: 100vw !important;
+                box-sizing: border-box !important;
+            }
+            .lesson-master-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 1.75rem !important;
+                margin: 0 auto 0.75rem auto !important;
+                padding-bottom: 1.25rem !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+            .lego-block, .interactive-pill {
+                width: calc(100% - 0.85rem) !important;
+                max-width: 100% !important;
+                border-radius: 1.5rem !important;
+                padding: 1rem 0.85rem !important;
+                gap: 0.85rem !important;
+                box-sizing: border-box !important;
+            }
+            .video-section, .image-block-wrap, .rich-text-block-wrap {
+                padding-left: 0.45rem !important;
+                padding-right: 0.45rem !important;
+            }
+            .image-block-inner {
+                border-radius: 1.5rem !important;
+            }
+            .rich-text-block-wrap .prose {
+                padding: 1.25rem 1.15rem !important;
+                border-radius: 1.5rem !important;
+            }
+            .transcript-toggle-btn {
+                padding: 0.48rem 0.85rem !important;
+                font-size: 0.72rem !important;
+                gap: 0.35rem !important;
+                letter-spacing: 0.04em !important;
+            }
+            .nav-pill-wrapper {
+                bottom: 0.85rem !important;
+                padding: 0 0.5rem !important;
+            }
+            .nav-pill {
+                max-width: 360px !important;
+                padding: 0.35rem !important;
+                gap: 0.25rem !important;
+            }
+            .nav-link {
+                padding: 0.65rem 0.4rem !important;
+                font-size: 12px !important;
+                gap: 5px !important;
+            }
+            .nav-refresh-btn {
+                padding: 0.65rem 1.1rem !important;
+                font-size: 11px !important;
+                gap: 6px !important;
+            }
         }
 
         {{-- Widget Specific Improvements --}}
@@ -773,7 +859,7 @@
                                 default => '#334155',
                             };
                         @endphp
-                        <div style="padding: 0 1.5rem; margin: 1rem 0;">
+                        <div class="rich-text-block-wrap" style="padding: 0 1.5rem; margin: 1rem 0; width: 100%;">
                             <div class="prose max-w-none" style="
                                 background: #ffffff !important;
                                 border-radius: 2rem !important;
@@ -818,8 +904,8 @@
                             }
                         @endphp
                         @if($iUrl)
-                            <div style="width: 100%; display: flex; justify-content: center; margin: 0.25rem 0; padding: 0 1.5rem;">
-                                <div style="max-width: 700px; width: 100%; border-radius: 2.5rem; overflow: hidden; background: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255,255,255,0.4);">
+                            <div class="image-block-wrap" style="width: 100%; display: flex; justify-content: center; margin: 0.25rem 0; padding: 0 1.5rem;">
+                                <div class="image-block-inner" style="max-width: 700px; width: 100%; border-radius: 2.5rem; overflow: hidden; background: #fff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255,255,255,0.4);">
                                     @if(!empty($imgPath) && !str_starts_with($imgPath, 'http'))
                                         <x-image :src="$imgPath" 
                                                  :width="760" 
@@ -1318,39 +1404,44 @@
     {{-- Universal Navigation Bar (The Pill) --}}
     <div class="nav-pill-wrapper">
         <div class="nav-pill">
-            <div style="flex: 1; display: flex; justify-content: center;">
+            <div style="display: flex; justify-content: center; width: 100%; min-width: 0;">
                 @if($navPrev)
                     <a href="{{ $isPublic ? route('student.units.show', array_filter(['unit' => $navPrev, 'track_id' => $currentTrack?->id])) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navPrev->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navPrev->id])) }}" 
                        class="nav-link">
-                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M15 19l-7-7 7-7" /></svg>
+                        <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M15 19l-7-7 7-7" /></svg>
                         <span>Prev</span>
                     </a>
+                @else
+                    <span class="nav-link" style="opacity: 0.3; pointer-events: none;">
+                        <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M15 19l-7-7 7-7" /></svg>
+                        <span>Prev</span>
+                    </span>
                 @endif
             </div>
 
             <button type="button" onclick="window.location.reload()" 
                     class="nav-refresh-btn">
-                <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                 <span>Refresh</span>
             </button>
 
-            <div style="flex: 1; display: flex; justify-content: center;">
+            <div style="display: flex; justify-content: center; width: 100%; min-width: 0;">
                 @if($navNext)
                     <a href="{{ $isPublic ? route('student.units.show', array_filter(['unit' => $navNext, 'track_id' => $currentTrack?->id])) : ($isStudentPanel ? \App\Filament\Student\Resources\Units\UnitResource::getUrl('view', ['record' => $navNext->id]) : \App\Filament\Resources\UnitResource::getUrl('view', ['record' => $navNext->id])) }}" 
                        class="nav-link">
                         <span>Next</span>
-                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M9 5l7 7-7 7" /></svg>
+                        <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M9 5l7 7-7 7" /></svg>
                     </a>
                 @else
                     @if($isAdmin)
                         <a href="{{ $libraryRoute }}" class="nav-link">
                             <span>Library</span>
-                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 12h16M4 18h7" /></svg>
+                            <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 6h16M4 12h16M4 18h7" /></svg>
                         </a>
                     @else
                         <a href="{{ route('filament.student.pages.dashboard') }}" class="nav-link">
-                            <span>Dashboard</span>
-                            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                            <span>Done</span>
+                            <svg width="14" height="14" style="width: 14px; height: 14px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
                         </a>
                     @endif
                 @endif
@@ -1365,6 +1456,7 @@
         window.__amterCachedVoices = [];
         window.__amterUtteranceRef = null;
         window.__amterFallbackAudio = null;
+        const ttsStreamEndpoint = @json(route('tts.stream', [], false));
 
         const loadVoices = () => {
             try {
@@ -1419,12 +1511,22 @@
             return matched || null;
         };
 
+        window.getAmterTtsAudioElement = function() {
+            if (!window.__amterFallbackAudio) {
+                const a = document.createElement('audio');
+                a.setAttribute('playsinline', '');
+                a.setAttribute('webkit-playsinline', '');
+                a.preload = 'auto';
+                window.__amterFallbackAudio = a;
+            }
+            return window.__amterFallbackAudio;
+        };
+
         window.stopAmterSpeech = function() {
             try {
                 if (window.__amterFallbackAudio) {
                     window.__amterFallbackAudio.pause();
                     window.__amterFallbackAudio.currentTime = 0;
-                    window.__amterFallbackAudio = null;
                 }
             } catch (e) {}
             try {
@@ -1434,47 +1536,10 @@
             } catch (e) {}
         };
 
-        window.playAmterFallbackAudio = function(text, accent, callbacks) {
-            try {
-                const tl = String(accent || 'en-US').split('-')[0] || 'en';
-                const encoded = encodeURIComponent(String(text || '').trim().slice(0, 200));
-                const urls = [
-                    `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=${tl}&q=${encoded}`,
-                    `https://dict.youdao.com/dictvoice?audio=${encoded}&type=2`
-                ];
-                let idx = 0;
-                const tryNext = () => {
-                    if (idx >= urls.length) {
-                        if (callbacks && callbacks.onEnd) callbacks.onEnd();
-                        return;
-                    }
-                    const audio = new Audio(urls[idx++]);
-                    window.__amterFallbackAudio = audio;
-                    audio.onplay = () => { if (callbacks && callbacks.onStart) callbacks.onStart(); };
-                    audio.onended = () => { if (callbacks && callbacks.onEnd) callbacks.onEnd(); };
-                    audio.onerror = () => { tryNext(); };
-                    const p = audio.play();
-                    if (p && typeof p.catch === 'function') {
-                        p.catch(() => tryNext());
-                    }
-                };
-                tryNext();
-            } catch (e) {
-                if (callbacks && callbacks.onEnd) callbacks.onEnd();
-            }
-        };
-
-        window.speakAmterText = function(text, accent, gender, rate, callbacks) {
-            const cleanText = String(text || '').trim();
-            if (!cleanText) {
-                if (callbacks && callbacks.onEnd) callbacks.onEnd();
-                return;
-            }
-
-            window.stopAmterSpeech();
-
+        window.playNativeSpeechSynthesis = function(cleanText, accent, gender, rate, callbacks, onFail) {
             if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance === 'undefined') {
-                window.playAmterFallbackAudio(cleanText, accent, callbacks);
+                if (typeof onFail === 'function') onFail();
+                else if (callbacks && callbacks.onEnd) callbacks.onEnd();
                 return;
             }
 
@@ -1497,13 +1562,12 @@
                 }
 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                window.__amterUtteranceRef = utterance; // Prevent mobile GC bug
+                window.__amterUtteranceRef = utterance;
                 utterance.lang = accent || 'en-US';
                 utterance.rate = parseFloat(rate) || 1.0;
 
                 const isAndroid = /Android/i.test(navigator.userAgent || '');
                 const matchedVoice = window.getAmterSpeechVoice(accent || 'en-US', gender || 'any');
-                // Only assign voice object when its language is valid; Android WebViews can silently fail otherwise
                 if (matchedVoice && (!isAndroid || (gender && gender !== 'any'))) {
                     utterance.voice = matchedVoice;
                 }
@@ -1515,12 +1579,11 @@
                 };
                 utterance.onend = () => finish();
                 utterance.onerror = () => {
-                    if (!started && !finished) {
+                    if (!started && !finished && typeof onFail === 'function') {
                         clearTimeout(fallbackTimer);
-                        window.playAmterFallbackAudio(cleanText, accent, {
-                            onStart: callbacks && callbacks.onStart,
-                            onEnd: finish
-                        });
+                        clearTimeout(safetyEndTimer);
+                        finished = true;
+                        onFail();
                     } else {
                         finish();
                     }
@@ -1531,23 +1594,90 @@
                     window.speechSynthesis.resume();
                 }
 
-                // If mobile browser TTS silently fails to start within 900ms, use direct audio fallback
                 fallbackTimer = setTimeout(() => {
                     if (!started && !finished && (!window.speechSynthesis || !window.speechSynthesis.speaking)) {
-                        window.playAmterFallbackAudio(cleanText, accent, {
-                            onStart: callbacks && callbacks.onStart,
-                            onEnd: finish
-                        });
+                        clearTimeout(safetyEndTimer);
+                        finished = true;
+                        if (typeof onFail === 'function') onFail();
+                        else finish();
                     }
-                }, 900);
+                }, 700);
 
-                // Safety timer in case onend is never fired on certain mobile WebViews
                 const estDuration = Math.max(4000, cleanText.split(/\s+/).length * 650 + 2500);
                 safetyEndTimer = setTimeout(() => finish(), estDuration);
             } catch (e) {
-                window.playAmterFallbackAudio(cleanText, accent, {
-                    onStart: callbacks && callbacks.onStart,
-                    onEnd: finish
+                if (typeof onFail === 'function') onFail();
+                else finish();
+            }
+        };
+
+        window.playAmterStreamAudio = function(cleanText, accent, rate, callbacks, onFail) {
+            try {
+                const audio = window.getAmterTtsAudioElement();
+                const tl = String(accent || 'en-US').trim() || 'en-US';
+                const streamUrl = `${ttsStreamEndpoint}?text=${encodeURIComponent(cleanText.slice(0, 300))}&tl=${encodeURIComponent(tl)}`;
+
+                let fallbackTriggered = false;
+                const triggerFallback = () => {
+                    if (fallbackTriggered) return;
+                    fallbackTriggered = true;
+                    audio.onplay = null;
+                    audio.onended = null;
+                    audio.onerror = null;
+                    if (typeof onFail === 'function') {
+                        onFail();
+                    } else if (callbacks && callbacks.onEnd) {
+                        callbacks.onEnd();
+                    }
+                };
+
+                audio.onplay = () => {
+                    try {
+                        const r = parseFloat(rate) || 1.0;
+                        if (r > 0.4 && r <= 2.0) audio.playbackRate = r;
+                    } catch (e) {}
+                    if (callbacks && callbacks.onStart) callbacks.onStart();
+                };
+                audio.onended = () => {
+                    if (callbacks && callbacks.onEnd) callbacks.onEnd();
+                };
+                audio.onerror = () => triggerFallback();
+
+                audio.src = streamUrl;
+                audio.load();
+                const playPromise = audio.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => triggerFallback());
+                }
+            } catch (e) {
+                if (typeof onFail === 'function') onFail();
+                else if (callbacks && callbacks.onEnd) callbacks.onEnd();
+            }
+        };
+
+        window.speakAmterText = function(text, accent, gender, rate, callbacks) {
+            const cleanText = String(text || '').trim();
+            if (!cleanText) {
+                if (callbacks && callbacks.onEnd) callbacks.onEnd();
+                return;
+            }
+
+            window.stopAmterSpeech();
+
+            const ua = navigator.userAgent || '';
+            const isMobileOrInApp = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|FBAN|FBAV|Instagram|WhatsApp|wv|Mobile/i.test(ua)
+                || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1)
+                || window.innerWidth <= 900;
+
+            // On mobile / in-app browsers (Facebook, WhatsApp, Instagram, Android WebView, iOS Safari),
+            // play first-party MP3 stream SYNCHRONOUSLY inside the user tap gesture so autoplay is never blocked.
+            if (isMobileOrInApp || !window.speechSynthesis) {
+                window.playAmterStreamAudio(cleanText, accent, rate, callbacks, () => {
+                    window.playNativeSpeechSynthesis(cleanText, accent, gender, rate, callbacks, null);
+                });
+            } else {
+                window.playNativeSpeechSynthesis(cleanText, accent, gender, rate, callbacks, () => {
+                    window.playAmterStreamAudio(cleanText, accent, rate, callbacks, null);
                 });
             }
         };
