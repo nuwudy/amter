@@ -1074,7 +1074,11 @@
                                      style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem; width: 100%; padding: 0.5rem 0; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;">
                                     <button type="button" 
                                             style="width: 68px; height: 68px; border-radius: 9999px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.25s; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); box-shadow: 0 12px 24px rgba(99, 102, 241, 0.35); flex-shrink: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent;"
-                                            :style="speaking ? 'transform: scale(1.08); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.2);' : ''">
+                                            :style="{
+                                                background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                                                transform: speaking ? 'scale(1.08)' : 'scale(1)',
+                                                boxShadow: speaking ? '0 0 0 10px rgba(99, 102, 241, 0.2)' : '0 12px 24px rgba(99, 102, 241, 0.35)'
+                                            }">
                                         <svg x-show="!speaking" style="width: 28px; height: 28px; color: #fff; margin-left: 2px; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                         <svg x-show="speaking" style="width: 28px; height: 28px; color: #fff; pointer-events: none;" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                                     </button>
@@ -1117,7 +1121,10 @@
                                            @keydown.enter="checkAnswer()"
                                            placeholder="Type what you heard here..." 
                                            style="width: 100%; border-radius: 1.25rem; background: rgba(255, 255, 255, 0.7); border: 1.5px solid rgba(0, 0, 0, 0.1); color: #1e293b; padding: 1rem 1.25rem; font-size: 16px; font-weight: 700; outline: none; text-align: center;"
-                                           :style="isSolved ? 'background: rgba(16, 185, 129, 0.05); border-color: #10b981;' : (attempted && !isSolved ? 'border-color: #f43f5e;' : '')">
+                                           :style="{
+                                               background: isSolved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(255, 255, 255, 0.7)',
+                                               borderColor: isSolved ? '#10b981' : (attempted && !isSolved ? '#f43f5e' : 'rgba(0, 0, 0, 0.1)')
+                                           }">
                                     
                                     <template x-if="!isSolved">
                                         <button type="button" @click="checkAnswer()" 
