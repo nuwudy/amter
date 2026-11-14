@@ -24,9 +24,6 @@ Route::get('/sessions', [MobileApiController::class, 'sessions'])->name('api.ses
 Route::get('/sessions/{session}', [MobileApiController::class, 'sessionDetail'])->name('api.sessions.show');
 Route::get('/units/{unit}', [MobileApiController::class, 'unitDetail'])->name('api.units.show');
 
-// Google Play In-App Billing & Subscription Verification
-Route::post('/verify-google-purchase', [MobileApiController::class, 'verifyGooglePurchase'])->name('api.verify-google-purchase');
-
 // Authenticated Routes (Bearer Token via Laravel Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [MobileApiController::class, 'profile'])->name('api.user');
@@ -36,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Lesson Progress
     Route::post('/units/{unit}/complete', [MobileApiController::class, 'completeUnit'])->name('api.units.complete');
+
+    // Google Play In-App Billing & Subscription Verification
+    Route::post('/verify-google-purchase', [MobileApiController::class, 'verifyGooglePurchase'])->name('api.verify-google-purchase');
 
     // In-App Account Deletion (Google Play Policy Requirement)
     Route::delete('/user', [MobileApiController::class, 'deleteAccount'])->name('api.user.delete');

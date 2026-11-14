@@ -276,7 +276,7 @@ class MobileApiController extends Controller
 
         $courses = Course::where('is_published', true)
             ->with(['modules' => function ($q) {
-                $q->where('is_active', true)->orderBy('sort_order', 'asc');
+                $q->orderBy('sort_order', 'asc');
             }])
             ->withCount('units')
             ->get()
@@ -322,7 +322,7 @@ class MobileApiController extends Controller
             ])
             ->values();
 
-        return response()->json([
+        return $this->noCacheJson([
             'success' => true,
             'products' => $plans,
             'courses' => $courses,
@@ -354,7 +354,7 @@ class MobileApiController extends Controller
             ->map(fn (CourseSession $session) => $this->formatSessionSummary($session, $completedUnitIds))
             ->values();
 
-        return response()->json([
+        return $this->noCacheJson([
             'success' => true,
             'sessions' => $sessions,
         ]);
@@ -395,7 +395,7 @@ class MobileApiController extends Controller
             ];
         })->values();
 
-        return response()->json([
+        return $this->noCacheJson([
             'success' => true,
             'session' => $this->formatSessionSummary($session, $completedUnitIds),
             'units' => $units,
@@ -454,7 +454,7 @@ class MobileApiController extends Controller
             ? $unit->courseSession->units()->where('is_published', true)->count()
             : 0;
 
-        return response()->json([
+        return $this->noCacheJson([
             'success' => true,
             'unit' => [
                 'id' => $unit->id,
@@ -1069,5 +1069,14 @@ class MobileApiController extends Controller
     protected function base64UrlEncode(string $data): string
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    protected function noCacheJson(array $data, int $status = 200): JsonResponse
+    {
+        return response()->json($data, $status, [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
     }
 }
