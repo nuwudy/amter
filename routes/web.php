@@ -158,10 +158,13 @@ Route::get('/tracks/{track}/search', function (\App\Models\LearningTrack $track,
 Route::get('/courses/{course}', [App\Http\Controllers\PublicCourseController::class, 'show'])->name('public.course.show');
 Route::get('/courses/{course}/units/{unit}', [App\Http\Controllers\PublicCourseController::class, 'showUnit'])->name('public.unit.show');
 
-// Static Pages
+// Static Pages & Google Play Compliance Routes
 Route::get('/about', [App\Http\Controllers\PageController::class, 'about'])->name('about');
 Route::get('/terms', [App\Http\Controllers\PageController::class, 'terms'])->name('terms');
 Route::get('/privacy', [App\Http\Controllers\PageController::class, 'privacy'])->name('privacy');
+Route::get('/privacy-policy', [App\Http\Controllers\PageController::class, 'privacy'])->name('privacy.policy');
+Route::get('/delete-account', [App\Http\Controllers\PageController::class, 'deleteAccount'])->name('delete.account');
+Route::post('/delete-account', [App\Http\Controllers\PageController::class, 'destroyAccount'])->name('delete.account.submit');
 Route::get('/contact', [App\Http\Controllers\PageController::class, 'contact'])->name('contact');
 Route::get('/refund-policy', [App\Http\Controllers\PageController::class, 'refund'])->name('refund.policy');
 

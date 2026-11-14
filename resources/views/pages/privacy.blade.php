@@ -76,16 +76,29 @@
                     <section>
                         <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
                             <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-green-100 text-green-600 text-sm">04</span>
-                            Your Rights
+                            Your Rights & Account Deletion
                         </h2>
                         <div class="pl-11">
                             <p class="text-gray-600 mb-4">
                                 You have the right to:
                             </p>
-                            <ul class="space-y-3 list-disc list-inside text-gray-600">
+                            <ul class="space-y-3 list-disc list-inside text-gray-600 mb-4">
                                 <li>Access and export your personal data</li>
-                                <li>Request the deletion of your account and all associated data</li>
+                                <li>Permanently delete your account and all associated learning data at any time via our <a href="{{ route('delete.account') }}" class="text-primary-600 font-semibold hover:underline">Account &amp; Data Deletion page (/delete-account)</a> or directly inside the Amter mobile app</li>
                                 <li>Opt-out of marketing communications</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 text-sm">05</span>
+                            Mobile App Permissions & Payments (Google Play & Web)
+                        </h2>
+                        <div class="pl-11">
+                            <ul class="space-y-3 list-disc list-inside text-gray-600">
+                                <li><strong>Microphone Permission (RECORD_AUDIO):</strong> Used solely when you tap the microphone button during interactive English speaking exercises to evaluate your pronunciation in real time. Audio is not recorded in the background or sold to third parties.</li>
+                                <li><strong>Payments & Subscriptions:</strong> Subscriptions purchased on the web are processed via Razorpay, and purchases inside the Android mobile app are processed via Google Play Billing. We do not store raw credit/debit card numbers or UPI PINs on our servers.</li>
                             </ul>
                         </div>
                     </section>
