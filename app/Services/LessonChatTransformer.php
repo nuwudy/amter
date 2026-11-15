@@ -275,24 +275,31 @@ class LessonChatTransformer
 
         $fullTargetSentence = trim((string) ($leadVideo['target_sentence'] ?? ''));
         $leadMalayalam = trim((string) ($leadVideo['meaning_malayalam'] ?? ''));
+        $leadInstructions = trim((string) ($leadVideo['instructions'] ?? ''));
 
-        if ($leadMalayalam !== '') {
+        if ($fullTargetSentence !== '') {
+            if ($leadMalayalam !== '') {
+                $seenMalayalamIntro = true;
+            }
+            $pushTurn('tutor', 'tts_drill', [
+                'text' => $fullTargetSentence,
+                'phrases' => [$fullTargetSentence],
+                'heading' => 'Listen & Speak',
+                'instructions' => $leadInstructions !== ''
+                    ? $leadInstructions
+                    : 'Watch the video, listen, and tap to speak.',
+                'meaning_malayalam' => $leadMalayalam !== '' ? $leadMalayalam : null,
+                'button_label' => 'Tap to Speak',
+                'hide_english' => false,
+                'is_baseline' => true,
+                'tts_url' => $this->buildTtsUrl($ttsStreamEndpoint, $fullTargetSentence),
+            ], 'Listen & Speak');
+        } elseif ($leadMalayalam !== '') {
             $seenMalayalamIntro = true;
             $pushTurn('tutor', 'text', [
                 'html' => '<p>' . e($leadMalayalam) . '</p>',
                 'is_malayalam_intro' => true,
             ], 'Malayalam Guidance');
-        }
-
-        if ($fullTargetSentence !== '') {
-            $pushTurn('student', 'voice_match', [
-                'phrases' => [$fullTargetSentence],
-                'instructions' => 'Attempt #1: Try saying the full sentence before we break it down.',
-                'meaning_malayalam' => $leadMalayalam !== '' ? $leadMalayalam : null,
-                'button_label' => 'Record Attempt #1',
-                'hide_english' => false,
-                'tts_url' => $this->buildTtsUrl($ttsStreamEndpoint, $fullTargetSentence),
-            ], 'Baseline Attempt');
         }
 
         foreach ($units as $unit) {
