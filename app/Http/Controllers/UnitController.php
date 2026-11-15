@@ -49,13 +49,21 @@ class UnitController extends Controller
             return redirect()->route('register')->with('info', 'നിങ്ങളുടെ പുരോഗതി രേഖപ്പെടുത്താനും കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾ കാണാനും സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ!');
         }
 
-        // Mark as complete (avoid duplicates)
-        if (!$user->completedUnits()->where('unit_id', $unit->id)->exists()) {
-            $user->completedUnits()->attach($unit->id, ['completed_at' => now()]);
+        $groupUnitIds = collect(explode(',', (string) request()->input('group_unit_ids', '')))
+            ->map(fn ($id) => (int) trim($id))
+            ->filter(fn ($id) => $id > 0)
+            ->push((int) $unit->id)
+            ->unique()
+            ->values();
 
-            // Check for milestones immediately
-            $milestoneService = new \App\Services\MilestoneService();
-            $milestoneService->checkMilestones($user, $unit);
+        $milestoneService = new \App\Services\MilestoneService();
+        $unitsToComplete = Unit::whereIn('id', $groupUnitIds)->get();
+
+        foreach ($unitsToComplete as $targetUnit) {
+            if (!$user->completedUnits()->where('unit_id', $targetUnit->id)->exists()) {
+                $user->completedUnits()->attach($targetUnit->id, ['completed_at' => now()]);
+                $milestoneService->checkMilestones($user, $targetUnit);
+            }
         }
 
         $trackId = request()->input('track_id');

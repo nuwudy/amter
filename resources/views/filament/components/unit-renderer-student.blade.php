@@ -629,6 +629,21 @@
                 </h1>
                 <div style="height: 5px; width: 80px; background: linear-gradient(90deg, #6366f1, #a855f7); margin: 0.75rem auto 0 auto; border-radius: 99px; opacity: 0.4;"></div>
             </div>
+            @if(isset($unit))
+            <div x-data="{ viewMode: 'chat' }" style="width: 100%;">
+                <div style="display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+                    <button type="button" @click="viewMode = 'chat'; $dispatch('amter-view-mode', 'chat')" :style="viewMode === 'chat' ? 'background:#0f172a;color:#fff;' : 'background:#e2e8f0;color:#334155;'" style="padding: 0.45rem 1rem; border-radius: 99px; font-size: 12px; font-weight: 800; border: none; cursor: pointer;">
+                        Guided Chat
+                    </button>
+                    <button type="button" @click="viewMode = 'classic'; $dispatch('amter-view-mode', 'classic')" :style="viewMode === 'classic' ? 'background:#0f172a;color:#fff;' : 'background:#e2e8f0;color:#334155;'" style="padding: 0.45rem 1rem; border-radius: 99px; font-size: 12px; font-weight: 800; border: none; cursor: pointer;">
+                        Classic View
+                    </button>
+                </div>
+                <div x-show="viewMode === 'chat'">
+                    @include('filament.components.unit-chat-player', ['unit' => $unit, 'contentBlocks' => $contentBlocks])
+                </div>
+                <div x-show="viewMode === 'classic'" x-cloak>
+            @endif
             @foreach($contentBlocks as $index => $block)
                 @if($index > 0)
                     <div class="block-separator"></div>
@@ -1371,6 +1386,10 @@
                     @endif
                 </div>
             @endforeach
+            @if(isset($unit))
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
@@ -1402,7 +1421,7 @@
     </div>
 
     {{-- Universal Navigation Bar (The Pill) --}}
-    <div class="nav-pill-wrapper">
+    <div class="nav-pill-wrapper" @if(isset($unit)) x-data="{ showClassicNav: false }" @amter-view-mode.window="showClassicNav = ($event.detail === 'classic')" x-show="showClassicNav" x-cloak @endif>
         <div class="nav-pill">
             <div style="display: flex; justify-content: center; width: 100%; min-width: 0;">
                 @if($navPrev)

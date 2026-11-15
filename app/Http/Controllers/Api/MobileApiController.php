@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Unit;
 use App\Models\User;
+use App\Services\LessonChatTransformer;
 use App\Services\MilestoneService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -454,6 +455,10 @@ class MobileApiController extends Controller
             ? $unit->courseSession->units()->where('is_published', true)->count()
             : 0;
 
+        $normalizedBlocks = $this->normalizeContentBlocks($unit->content_blocks ?? []);
+        $ttsEndpoint = url('/tts-stream');
+        $chatTurns = app(LessonChatTransformer::class)->transform($unit, $normalizedBlocks, $ttsEndpoint);
+
         return $this->noCacheJson([
             'success' => true,
             'unit' => [
@@ -473,13 +478,56 @@ class MobileApiController extends Controller
                 'is_free_sample' => (bool) $unit->is_free_sample,
                 'is_registered_only' => (bool) $unit->is_registered_only,
                 'is_completed' => $isCompleted,
-                'content_blocks' => $this->normalizeContentBlocks($unit->content_blocks ?? []),
+                'content_blocks' => $normalizedBlocks,
+                'chat_turns' => $chatTurns,
                 'navigation' => [
                     'previous_unit_id' => $prevUnit?->id,
                     'next_unit_id' => $nextUnit?->id,
                 ],
-                'tts_stream_endpoint' => url('/tts-stream'),
+                'tts_stream_endpoint' => $ttsEndpoint,
             ],
+        ]);
+    }
+
+    /**
+     * GET /api/units/{unit}/chat
+     * Return grouped lesson-chat turns for a unit.
+     */
+    public function unitChat(Request $request, Unit $unit): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = $request->user('sanctum');
+
+        if (!$unit->is_published) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This lesson is not available.',
+            ], 404);
+        }
+
+        if (!$unit->isAccessibleBy($user)) {
+            $requiresAuth = !$user && ($unit->is_registered_only || !$unit->is_free_sample);
+            $requiresUpgrade = $user && !$user->hasActiveSubscription();
+
+            return response()->json([
+                'success' => false,
+                'message' => $requiresAuth
+                    ? 'Please sign in to access this lesson.'
+                    : 'This interactive lesson requires an active Premium Subscription.',
+                'auth_required' => $requiresAuth,
+                'upgrade_required' => $requiresUpgrade,
+            ], 403);
+        }
+
+        $normalizedBlocks = $this->normalizeContentBlocks($unit->content_blocks ?? []);
+        $ttsEndpoint = url('/tts-stream');
+        $chatTurns = app(LessonChatTransformer::class)->transform($unit, $normalizedBlocks, $ttsEndpoint);
+
+        return $this->noCacheJson([
+            'success' => true,
+            'unit_id' => $unit->id,
+            'tts_stream_endpoint' => $ttsEndpoint,
+            'chat_turns' => $chatTurns,
         ]);
     }
 

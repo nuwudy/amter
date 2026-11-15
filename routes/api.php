@@ -23,6 +23,7 @@ Route::get('/content', [MobileApiController::class, 'content'])->name('api.conte
 Route::get('/sessions', [MobileApiController::class, 'sessions'])->name('api.sessions.index');
 Route::get('/sessions/{session}', [MobileApiController::class, 'sessionDetail'])->name('api.sessions.show');
 Route::get('/units/{unit}', [MobileApiController::class, 'unitDetail'])->name('api.units.show');
+Route::get('/units/{unit}/chat', [MobileApiController::class, 'unitChat'])->name('api.units.chat');
 
 // Authenticated Routes (Bearer Token via Laravel Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
