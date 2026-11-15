@@ -99,4 +99,37 @@ class LessonGroupResolverTest extends TestCase
         $this->assertCount(2, $groups[0]); // u1 + u2
         $this->assertCount(1, $groups[1]); // u3
     }
+
+    public function test_resolver_falls_back_to_next_session_when_current_session_has_only_one_video_group(): void
+    {
+        $u1 = new Unit(['content_blocks' => [['type' => 'video', 'data' => ['custom_url' => 'ml01.mp4']]]]);
+        $u1->id = 10;
+        $u2 = new Unit(['content_blocks' => [['type' => 'listen_speak', 'data' => ['english_text' => 'Hi']]]]);
+        $u2->id = 11;
+        $nextSessionFirstUnit = new Unit(['content_blocks' => [['type' => 'video', 'data' => ['custom_url' => 'ml02.mp4']]]]);
+        $nextSessionFirstUnit->id = 20;
+
+        $resolver = new class([$u1, $u2], $nextSessionFirstUnit) extends LessonGroupResolver {
+            public function __construct(private array $mockUnits, private Unit $mockNextSessionUnit) {}
+
+            protected function loadOrderedUnits(Unit $unit, ?\App\Models\LearningTrack $currentTrack): array
+            {
+                return $this->mockUnits;
+            }
+
+            protected function findNextSessionFirstUnit(Unit $unit): ?Unit
+            {
+                return $this->mockNextSessionUnit;
+            }
+
+            protected function findPreviousSessionGroupUnit(Unit $unit): ?Unit
+            {
+                return null;
+            }
+        };
+
+        $resolved = $resolver->resolveForUnit($u1);
+        $this->assertSame([10, 11], $resolved['unit_ids']);
+        $this->assertSame(20, $resolved['next_group_unit']?->id);
+    }
 }

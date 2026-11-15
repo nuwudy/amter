@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CourseSession;
 use App\Models\LearningTrack;
 use App\Models\MediaItem;
 use App\Models\Unit;
@@ -68,13 +69,155 @@ class LessonGroupResolver
         $prevGroup = $targetGroupIndex > 0 ? $groups[$targetGroupIndex - 1] : null;
         $nextGroup = $targetGroupIndex < count($groups) - 1 ? $groups[$targetGroupIndex + 1] : null;
 
+        $inTrack = $currentTrack && $unit->trackUnits()->where('learning_track_id', $currentTrack->id)->exists();
+
+        $previousGroupUnit = $prevGroup
+            ? $prevGroup[0]
+            : (!$inTrack ? $this->findPreviousSessionGroupUnit($unit) : null);
+
+        $nextGroupUnit = $nextGroup
+            ? $nextGroup[0]
+            : (!$inTrack ? $this->findNextSessionFirstUnit($unit) : null);
+
         return [
             'units' => $activeGroupUnits,
             'unit_ids' => array_map(fn (Unit $u) => (int) $u->id, $activeGroupUnits),
             'lead_video' => $this->extractLeadVideo($activeGroupUnits),
-            'previous_group_unit' => $prevGroup ? $prevGroup[0] : null,
-            'next_group_unit' => $nextGroup ? $nextGroup[0] : null,
+            'previous_group_unit' => $previousGroupUnit,
+            'next_group_unit' => $nextGroupUnit,
         ];
+    }
+
+    /**
+     * Find the first published unit of the next non-empty CourseSession when
+     * the current unit is in the last video group of its session.
+     */
+    protected function findNextSessionFirstUnit(Unit $unit): ?Unit
+    {
+        if (!$unit->course_session_id) {
+            return null;
+        }
+
+        $currentSession = $unit->courseSession()->with('module')->first();
+        if (!$currentSession) {
+            return null;
+        }
+
+        $firstUnitInSession = function (?CourseSession $session): ?Unit {
+            if (!$session) {
+                return null;
+            }
+            return $session->units()
+                ->where('is_published', true)
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('id', 'asc')
+                ->first();
+        };
+
+        // 1. Next non-empty session in the same module
+        $sameModuleSessions = \App\Models\CourseSession::where('module_id', $currentSession->module_id)
+            ->where(function ($q) use ($currentSession) {
+                $q->where('sort_order', '>', $currentSession->sort_order)
+                  ->orWhere(function ($q2) use ($currentSession) {
+                      $q2->where('sort_order', $currentSession->sort_order)
+                         ->where('id', '>', $currentSession->id);
+                  });
+            })
+            ->whereHas('units', fn ($q) => $q->where('is_published', true))
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc')
+            ->first();
+
+        if ($sameModuleSessions) {
+            return $firstUnitInSession($sameModuleSessions);
+        }
+
+        // 2. First non-empty session in subsequent modules of the same course
+        $currentModule = $currentSession->module;
+        if ($currentModule && $currentModule->course_id) {
+            $nextModules = \App\Models\Module::where('course_id', $currentModule->course_id)
+                ->where(function ($q) use ($currentModule) {
+                    $q->where('sort_order', '>', $currentModule->sort_order)
+                      ->orWhere(function ($q2) use ($currentModule) {
+                          $q2->where('sort_order', $currentModule->sort_order)
+                             ->where('id', '>', $currentModule->id);
+                      });
+                })
+                ->orderBy('sort_order', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            foreach ($nextModules as $mod) {
+                $session = $mod->courseSessions()
+                    ->whereHas('units', fn ($q) => $q->where('is_published', true))
+                    ->orderBy('sort_order', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->first();
+                if ($session) {
+                    return $firstUnitInSession($session);
+                }
+            }
+        }
+
+        // 3. Fallback: global CourseSession sort_order progression (used by Library)
+        $globalNextSession = \App\Models\CourseSession::where(function ($q) use ($currentSession) {
+                $q->where('sort_order', '>', $currentSession->sort_order)
+                  ->orWhere(function ($q2) use ($currentSession) {
+                      $q2->where('sort_order', $currentSession->sort_order)
+                         ->where('id', '>', $currentSession->id);
+                  });
+            })
+            ->whereHas('units', fn ($q) => $q->where('is_published', true))
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('id', 'asc')
+            ->first();
+
+        return $firstUnitInSession($globalNextSession);
+    }
+
+    /**
+     * Find the first unit of the last video group in the previous non-empty CourseSession.
+     */
+    protected function findPreviousSessionGroupUnit(Unit $unit): ?Unit
+    {
+        if (!$unit->course_session_id) {
+            return null;
+        }
+
+        $currentSession = $unit->courseSession;
+        if (!$currentSession) {
+            return null;
+        }
+
+        $prevSession = \App\Models\CourseSession::where('module_id', $currentSession->module_id)
+            ->where(function ($q) use ($currentSession) {
+                $q->where('sort_order', '<', $currentSession->sort_order)
+                  ->orWhere(function ($q2) use ($currentSession) {
+                      $q2->where('sort_order', $currentSession->sort_order)
+                         ->where('id', '<', $currentSession->id);
+                  });
+            })
+            ->whereHas('units', fn ($q) => $q->where('is_published', true))
+            ->orderBy('sort_order', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if (!$prevSession) {
+            return null;
+        }
+
+        $lastUnit = $prevSession->units()
+            ->where('is_published', true)
+            ->orderBy('sort_order', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if (!$lastUnit) {
+            return null;
+        }
+
+        $prevResolved = $this->resolveForUnit($lastUnit, null);
+        return $prevResolved['units'][0] ?? $lastUnit;
     }
 
     /**

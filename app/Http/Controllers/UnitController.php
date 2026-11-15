@@ -66,16 +66,35 @@ class UnitController extends Controller
             }
         }
 
-        $trackId = request()->input('track_id');
-        $nextUnit = null;
+        $trackId = request()->input('track_id') ?: request()->query('track_id');
+        $currentTrack = $trackId ? \App\Models\LearningTrack::find((int) $trackId) : null;
 
-        if ($trackId) {
-            $nextUnit = $unit->nextTrackUnit((int) $trackId);
-        }
+        $groupData = app(\App\Services\LessonGroupResolver::class)->resolveForUnit($unit, $currentTrack);
+        $nextUnit = $groupData['next_group_unit'] ?? null;
 
-        // Fallback to standard session/module progression if not in a track or end of track
-        if (!$nextUnit) {
-            $nextUnit = $unit->nextUnit();
+        // Fallback: advance past every unit already in this group
+        if (!$nextUnit || $groupUnitIds->contains((int) $nextUnit->id)) {
+            $cursor = $unit;
+            $visited = [];
+            $nextUnit = null;
+
+            for ($i = 0; $i < 50 && $cursor; $i++) {
+                $visited[$cursor->id] = true;
+                $candidate = $trackId
+                    ? $cursor->nextTrackUnit((int) $trackId)
+                    : null;
+                if (!$candidate) {
+                    $candidate = $cursor->nextUnit();
+                }
+                if (!$candidate || isset($visited[$candidate->id])) {
+                    break;
+                }
+                if (!$groupUnitIds->contains((int) $candidate->id)) {
+                    $nextUnit = $candidate;
+                    break;
+                }
+                $cursor = $candidate;
+            }
         }
 
         if ($nextUnit) {

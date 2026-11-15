@@ -14,14 +14,18 @@
     $leadVideo = $groupData['lead_video'] ?? null;
     $leadVideoUrl = $leadVideo['video_url'] ?? null;
     $leadSentence = $leadVideo['target_sentence'] ?? '';
-    $completeUrl = isset($unit) && auth()->check() ? route('student.units.complete', ['unit' => $unit->id]) : null;
+    $trackId = isset($currentTrack) && $currentTrack ? $currentTrack->id : request()->query('track_id');
+    $completeUrl = isset($unit) && auth()->check()
+        ? route('student.units.complete', array_filter(['unit' => $unit->id, 'track_id' => $trackId]))
+        : null;
     $groupUnitIdsCsv = implode(',', $groupData['unit_ids'] ?? []);
+    $chatStorageKey = 'amter_chat_v1_' . ($groupUnitIdsCsv !== '' ? $groupUnitIdsCsv : ($unit->id ?? '0'));
     $nextGroupUrl = !empty($groupData['next_group_unit'])
         ? (auth()->check()
-            ? route('student.units.show', ['unit' => $groupData['next_group_unit']->id])
+            ? route('student.units.show', array_filter(['unit' => $groupData['next_group_unit']->id, 'track_id' => $trackId]))
             : (isset($course)
                 ? route('public.unit.show', ['course' => $course->id, 'unit' => $groupData['next_group_unit']->id])
-                : route('student.units.show', ['unit' => $groupData['next_group_unit']->id])))
+                : route('student.units.show', array_filter(['unit' => $groupData['next_group_unit']->id, 'track_id' => $trackId]))))
         : null;
 @endphp
 
@@ -495,7 +499,8 @@
         ttsEndpoint: @js(url('/tts-stream')),
         leadVideoUrl: @js($leadVideoUrl),
         leadSentence: @js($leadSentence),
-        nextGroupUrl: @js($nextGroupUrl)
+        nextGroupUrl: @js($nextGroupUrl),
+        storageKey: @js($chatStorageKey)
     })"
     @scroll.window="handleWindowScroll()"
     class="amter-chat-root"
@@ -564,13 +569,22 @@
         <div class="amter-progress-track">
             <div class="amter-progress-fill" :style="`width: ${turns.length ? Math.round((Math.min(visibleCount, turns.length) / turns.length) * 100) : 100}%;`"></div>
         </div>
-        <button
-            type="button"
-            @click="showAll = !showAll; if (showAll) visibleCount = turns.length;"
-            class="amter-pill-action amter-pill-slate"
-            style="padding: 4px 10px; font-size: 11px;"
-            x-text="showAll ? 'Guided' : 'Show All'"
-        ></button>
+        <div style="display: flex; align-items: center; gap: 6px;">
+            <button
+                type="button"
+                x-show="hasProgress"
+                @click="resetProgress()"
+                class="amter-pill-action amter-pill-slate"
+                style="padding: 4px 10px; font-size: 11px;"
+            >Restart</button>
+            <button
+                type="button"
+                @click="toggleShowAll()"
+                class="amter-pill-action amter-pill-slate"
+                style="padding: 4px 10px; font-size: 11px;"
+                x-text="showAll ? 'Guided' : 'Show All'"
+            ></button>
+        </div>
     </div>
 
     {{-- Chat Thread --}}
@@ -863,8 +877,11 @@
                 <form method="POST" action="{{ $completeUrl }}" style="margin-top: 12px;">
                     @csrf
                     <input type="hidden" name="group_unit_ids" value="{{ $groupUnitIdsCsv }}">
+                    @if($trackId)
+                        <input type="hidden" name="track_id" value="{{ $trackId }}">
+                    @endif
                     <button type="submit" class="amter-pill-action amter-pill-cyan" style="width: 100%; justify-content: center; padding: 11px;">
-                        Complete Lesson &amp; Continue &rarr;
+                        {{ $nextGroupUrl ? 'Complete Lesson & Continue' : 'Complete Lesson' }} &rarr;
                     </button>
                 </form>
             @elseif($nextGroupUrl)
@@ -888,11 +905,24 @@
     </div>
 
     {{-- Next Video Lesson CTA when all turns in this clip are done --}}
-    @if($nextGroupUrl)
+    @if($completeUrl || $nextGroupUrl)
         <div x-show="isSessionComplete && !(beforeAttempt || afterAttempt)" style="display: flex; justify-content: center; margin-top: 18px;">
-            <a href="{{ $nextGroupUrl }}" class="amter-pill-action amter-pill-cyan" style="padding: 12px 24px; font-size: 14px; text-decoration: none;">
-                Next Video Lesson &rarr;
-            </a>
+            @if($completeUrl)
+                <form method="POST" action="{{ $completeUrl }}">
+                    @csrf
+                    <input type="hidden" name="group_unit_ids" value="{{ $groupUnitIdsCsv }}">
+                    @if($trackId)
+                        <input type="hidden" name="track_id" value="{{ $trackId }}">
+                    @endif
+                    <button type="submit" class="amter-pill-action amter-pill-cyan" style="padding: 12px 24px; font-size: 14px;">
+                        {{ $nextGroupUrl ? 'Next Video Lesson' : 'Complete Lesson' }} &rarr;
+                    </button>
+                </form>
+            @else
+                <a href="{{ $nextGroupUrl }}" class="amter-pill-action amter-pill-cyan" style="padding: 12px 24px; font-size: 14px; text-decoration: none;">
+                    Next Video Lesson &rarr;
+                </a>
+            @endif
         </div>
     @endif
 </div>
@@ -904,6 +934,7 @@ function amterGuidedChat(config) {
         ttsEndpoint: config.ttsEndpoint || '/tts-stream',
         leadVideoUrl: config.leadVideoUrl || null,
         leadSentence: config.leadSentence || '',
+        storageKey: config.storageKey || null,
         visibleCount: Math.min(2, (config.turns || []).length),
         showAll: false,
         isDocked: false,
@@ -933,6 +964,106 @@ function amterGuidedChat(config) {
 
         get isSessionComplete() {
             return this.turns.length > 0 && this.visibleCount >= this.turns.length;
+        },
+
+        get hasProgress() {
+            const initial = Math.min(2, this.turns.length);
+            return this.visibleCount > initial
+                || this.showAll
+                || Object.keys(this.turnStates).length > 0
+                || Object.keys(this.quizSelections).length > 0;
+        },
+
+        init() {
+            this.loadProgress();
+        },
+
+        loadProgress() {
+            if (!this.storageKey) return;
+            try {
+                const raw = window.localStorage.getItem(this.storageKey);
+                if (!raw) return;
+                const saved = JSON.parse(raw);
+                if (!saved || typeof saved !== 'object') return;
+
+                const minVisible = Math.min(2, this.turns.length);
+                if (typeof saved.visibleCount === 'number' && this.turns.length > 0) {
+                    this.visibleCount = Math.max(minVisible, Math.min(saved.visibleCount, this.turns.length));
+                }
+                if (typeof saved.showAll === 'boolean') {
+                    this.showAll = saved.showAll;
+                    if (this.showAll) {
+                        this.visibleCount = this.turns.length;
+                    }
+                }
+                if (saved.reveals && typeof saved.reveals === 'object') {
+                    this.reveals = saved.reveals;
+                }
+                if (saved.dictationInputs && typeof saved.dictationInputs === 'object') {
+                    this.dictationInputs = saved.dictationInputs;
+                }
+                if (saved.quizSelections && typeof saved.quizSelections === 'object') {
+                    this.quizSelections = saved.quizSelections;
+                }
+                if (saved.turnStates && typeof saved.turnStates === 'object') {
+                    this.turnStates = saved.turnStates;
+                }
+                if (saved.beforeAttempt && typeof saved.beforeAttempt === 'object') {
+                    this.beforeAttempt = { score: saved.beforeAttempt.score ?? 0 };
+                }
+                if (saved.afterAttempt && typeof saved.afterAttempt === 'object') {
+                    this.afterAttempt = { score: saved.afterAttempt.score ?? 0 };
+                }
+                if (this.visibleCount > 2 && this.leadVideoUrl) {
+                    this.isDocked = true;
+                }
+            } catch (_) {}
+        },
+
+        saveProgress() {
+            if (!this.storageKey) return;
+            try {
+                const serializableTurnStates = {};
+                for (const [id, st] of Object.entries(this.turnStates || {})) {
+                    if (!st || typeof st !== 'object') continue;
+                    const { mirrorUrl, ...rest } = st;
+                    serializableTurnStates[id] = rest;
+                }
+                const payload = {
+                    visibleCount: this.visibleCount,
+                    showAll: this.showAll,
+                    reveals: this.reveals,
+                    dictationInputs: this.dictationInputs,
+                    quizSelections: this.quizSelections,
+                    turnStates: serializableTurnStates,
+                    beforeAttempt: this.beforeAttempt ? { score: this.beforeAttempt.score ?? 0 } : null,
+                    afterAttempt: this.afterAttempt ? { score: this.afterAttempt.score ?? 0 } : null,
+                };
+                window.localStorage.setItem(this.storageKey, JSON.stringify(payload));
+            } catch (_) {}
+        },
+
+        resetProgress() {
+            this.visibleCount = Math.min(2, this.turns.length);
+            this.showAll = false;
+            this.isDocked = false;
+            this.turnStates = {};
+            this.reveals = {};
+            this.dictationInputs = {};
+            this.quizSelections = {};
+            this.beforeAttempt = null;
+            this.afterAttempt = null;
+            if (this.storageKey) {
+                try { window.localStorage.removeItem(this.storageKey); } catch (_) {}
+            }
+        },
+
+        toggleShowAll() {
+            this.showAll = !this.showAll;
+            if (this.showAll) {
+                this.visibleCount = this.turns.length;
+            }
+            this.saveProgress();
         },
 
         get activeSpeakingTurn() {
@@ -1029,12 +1160,14 @@ function amterGuidedChat(config) {
                 if (this.visibleCount > 2 && this.leadVideoUrl) {
                     this.isDocked = true;
                 }
+                this.saveProgress();
             }
         },
 
         toggleReveal(turnId, lang) {
             const key = `${turnId}:${lang}`;
             this.reveals[key] = !this.reveals[key];
+            this.saveProgress();
         },
 
         isRevealed(turnId, lang) {
@@ -1070,6 +1203,7 @@ function amterGuidedChat(config) {
                 ...(this.turnStates[turn.id] || {}),
                 listened: true,
             };
+            this.saveProgress();
         },
 
         playTts(text, rate = 1.0) {
@@ -1246,6 +1380,8 @@ function amterGuidedChat(config) {
                     this.afterAttempt = { ...(this.afterAttempt || {}), score };
                 }
 
+                this.saveProgress();
+
                 if (event.results[event.results.length - 1]?.isFinal && score >= 75) {
                     setTimeout(() => this.advanceStep(), 900);
                 }
@@ -1280,6 +1416,7 @@ function amterGuidedChat(config) {
             const spoken = (this.dictationInputs[turn.id] || '').trim();
             const { diff, score } = this.computeWordDiff(turn.data.text || '', spoken);
             this.turnStates[turn.id] = { spoken, diff, score, rhythmLabel: `${score}% Accuracy` };
+            this.saveProgress();
             if (score >= 80) {
                 this.advanceStep();
             }
@@ -1294,6 +1431,7 @@ function amterGuidedChat(config) {
 
         selectQuizOption(turn, idx) {
             this.quizSelections[turn.id] = idx;
+            this.saveProgress();
             this.advanceStep();
         },
 
