@@ -455,6 +455,24 @@ class LessonChatTransformer
             }
         }
 
+        if (empty($turns) && !empty($leadVideo)) {
+            $instructions = trim((string) ($leadVideo['instructions'] ?? ''));
+            $transcript = trim((string) ($leadVideo['transcript'] ?? ''));
+            $message = $instructions !== ''
+                ? $instructions
+                : 'Watch and listen to this revision clip above, then continue to the next lesson.';
+            $html = '<p>' . e($message) . '</p>';
+            if ($transcript !== '') {
+                $html .= '<p><strong>Transcript:</strong> ' . nl2br(e($transcript)) . '</p>';
+            }
+
+            $pushTurn('tutor', 'text', [
+                'html' => $html,
+                'alignment' => 'left',
+                'text_color' => 'default',
+            ], 'Watch & Listen');
+        }
+
         if ($lastVoiceTurnIndex !== null && isset($turns[$lastVoiceTurnIndex])) {
             $turns[$lastVoiceTurnIndex]['data']['is_mastery'] = true;
         }

@@ -12,6 +12,7 @@ use App\Models\Plan;
 use App\Models\Unit;
 use App\Models\User;
 use App\Services\LessonChatTransformer;
+use App\Services\LessonGroupResolver;
 use App\Services\MilestoneService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -457,7 +458,13 @@ class MobileApiController extends Controller
 
         $normalizedBlocks = $this->normalizeContentBlocks($unit->content_blocks ?? []);
         $ttsEndpoint = url('/tts-stream');
-        $chatTurns = app(LessonChatTransformer::class)->transform($unit, $normalizedBlocks, $ttsEndpoint);
+        $group = app(LessonGroupResolver::class)->resolveForUnit($unit);
+        $groupUnits = $group['units'];
+        $groupUnitIds = $group['unit_ids'];
+        $leadVideo = $group['lead_video'];
+        $prevGroupUnit = $group['previous_group_unit'];
+        $nextGroupUnit = $group['next_group_unit'];
+        $chatTurns = app(LessonChatTransformer::class)->transformGroup($groupUnits, $ttsEndpoint, $leadVideo);
 
         return $this->noCacheJson([
             'success' => true,
@@ -480,9 +487,14 @@ class MobileApiController extends Controller
                 'is_completed' => $isCompleted,
                 'content_blocks' => $normalizedBlocks,
                 'chat_turns' => $chatTurns,
+                'lead_video' => $leadVideo,
+                'group_unit_ids' => $groupUnitIds,
+                'next_group_unit_id' => $nextGroupUnit?->id,
                 'navigation' => [
                     'previous_unit_id' => $prevUnit?->id,
                     'next_unit_id' => $nextUnit?->id,
+                    'previous_group_unit_id' => $prevGroupUnit?->id,
+                    'next_group_unit_id' => $nextGroupUnit?->id,
                 ],
                 'tts_stream_endpoint' => $ttsEndpoint,
             ],
@@ -519,14 +531,21 @@ class MobileApiController extends Controller
             ], 403);
         }
 
-        $normalizedBlocks = $this->normalizeContentBlocks($unit->content_blocks ?? []);
         $ttsEndpoint = url('/tts-stream');
-        $chatTurns = app(LessonChatTransformer::class)->transform($unit, $normalizedBlocks, $ttsEndpoint);
+        $group = app(LessonGroupResolver::class)->resolveForUnit($unit);
+        $chatTurns = app(LessonChatTransformer::class)->transformGroup(
+            $group['units'],
+            $ttsEndpoint,
+            $group['lead_video']
+        );
 
         return $this->noCacheJson([
             'success' => true,
             'unit_id' => $unit->id,
             'tts_stream_endpoint' => $ttsEndpoint,
+            'lead_video' => $group['lead_video'],
+            'group_unit_ids' => $group['unit_ids'],
+            'next_group_unit_id' => $group['next_group_unit']?->id,
             'chat_turns' => $chatTurns,
         ]);
     }
@@ -548,27 +567,45 @@ class MobileApiController extends Controller
             ], 403);
         }
 
-        $newlyCompleted = false;
-        if (!$user->completedUnits()->where('unit_id', $unit->id)->exists()) {
-            $user->completedUnits()->attach($unit->id, ['completed_at' => now()]);
-            $newlyCompleted = true;
+        $requestedGroupIds = collect($request->input('group_unit_ids', []))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn (int $id) => $id > 0)
+            ->push((int) $unit->id)
+            ->unique()
+            ->values();
 
-            try {
-                $milestoneService = new MilestoneService();
-                $milestoneService->checkMilestones($user, $unit);
-            } catch (\Throwable $e) {
-                Log::warning('Milestone check warning: ' . $e->getMessage());
+        $unitsToComplete = Unit::whereIn('id', $requestedGroupIds)->get();
+        $newlyCompleted = false;
+        $newlyCompletedCount = 0;
+
+        foreach ($unitsToComplete as $targetUnit) {
+            if (!$targetUnit->isAccessibleBy($user)) {
+                continue;
+            }
+            if (!$user->completedUnits()->where('unit_id', $targetUnit->id)->exists()) {
+                $user->completedUnits()->attach($targetUnit->id, ['completed_at' => now()]);
+                $newlyCompleted = true;
+                $newlyCompletedCount++;
+
+                try {
+                    $milestoneService = new MilestoneService();
+                    $milestoneService->checkMilestones($user, $targetUnit);
+                } catch (\Throwable $e) {
+                    Log::warning('Milestone check warning: ' . $e->getMessage());
+                }
             }
         }
 
         $nextUnit = $unit->nextUnit();
+        $group = app(LessonGroupResolver::class)->resolveForUnit($unit);
 
         return response()->json([
             'success' => true,
             'message' => 'Lesson marked as completed.',
             'newly_completed' => $newlyCompleted,
-            'xp_gained' => $newlyCompleted ? 100 : 0,
+            'xp_gained' => $newlyCompletedCount > 0 ? 100 * $newlyCompletedCount : 0,
             'next_unit_id' => $nextUnit?->id,
+            'next_group_unit_id' => $group['next_group_unit']?->id,
             'mastery_streak' => $user->getMasteryStreak(),
             'completed_units_count' => $user->completedUnits()->count(),
         ]);

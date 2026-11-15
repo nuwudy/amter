@@ -963,7 +963,7 @@ function amterGuidedChat(config) {
         },
 
         get isSessionComplete() {
-            return this.turns.length > 0 && this.visibleCount >= this.turns.length;
+            return this.turns.length === 0 || this.visibleCount >= this.turns.length;
         },
 
         get hasProgress() {
