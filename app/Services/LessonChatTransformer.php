@@ -132,24 +132,16 @@ class LessonChatTransformer
                     $englishText = trim((string) ($data['english_text'] ?? $data['text'] ?? ''));
                     $malayalamText = $data['malayalam_text'] ?? null;
                     if ($englishText !== '') {
-                        $pushTurn('tutor', 'tts', [
+                        $pushTurn('tutor', 'tts_drill', [
                             'text' => $englishText,
-                            'heading' => 'Listen',
+                            'phrases' => [$englishText],
+                            'heading' => 'Listen & Speak',
                             'show_headings' => true,
                             'instructions' => $data['instructions'] ?? null,
                             'meaning_malayalam' => $malayalamText,
                             'hide_english' => (bool) ($data['hide_english'] ?? false),
                             'tts_url' => $this->buildTtsUrl($ttsStreamEndpoint, $englishText),
-                        ], 'Listen');
-
-                        $pushTurn('student', 'voice_match', [
-                            'phrases' => [$englishText],
-                            'instructions' => $data['instructions'] ?? 'Now repeat the phrase aloud',
-                            'meaning_malayalam' => $malayalamText,
-                            'button_label' => 'Tap to Speak & Match',
-                            'hide_english' => (bool) ($data['hide_english'] ?? false),
-                            'tts_url' => $this->buildTtsUrl($ttsStreamEndpoint, $englishText),
-                        ], 'Speak');
+                        ], 'Listen & Speak');
                     }
                     break;
 
