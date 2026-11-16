@@ -149,6 +149,64 @@
         flex-direction: column;
         gap: 14px;
     }
+    .amter-turn-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        animation: amterMsgIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes amterMsgIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px) scale(0.985);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    .amter-voice-error {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        background: #fff1f2;
+        border: 1px solid #fecdd3;
+        color: #be123c;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+    .amter-tap-hint {
+        margin: 6px 0 0 0;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fde68a;
+    }
+    @media (max-width: 640px) {
+        .amter-chat-root {
+            padding: 0 6px 136px 6px;
+        }
+        .amter-avatar {
+            width: 32px;
+            height: 32px;
+        }
+        .amter-bubble {
+            max-width: calc(100% - 42px);
+            padding: 12px 14px;
+            border-radius: 18px;
+        }
+        .amter-pill-action {
+            min-height: 36px;
+        }
+        .amter-speak-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .amter-speak-row .amter-pill-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
     .amter-msg-row {
         display: flex;
         align-items: flex-end;
@@ -588,9 +646,9 @@
     </div>
 
     {{-- Chat Thread --}}
-    <div class="amter-chat-stream">
+    <div class="amter-chat-stream" x-ref="chatStream">
         <template x-for="(turn, idx) in visibleTurns" :key="turn.id">
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="amter-turn-wrap" :data-turn-idx="idx">
                 {{-- Left Bubble: Amter Tutor --}}
                 <template x-if="turn.role === 'tutor'">
                     <div class="amter-msg-row is-tutor">
@@ -657,6 +715,7 @@
                                             Your turn!
                                         </span>
                                     </div>
+                                    <div x-show="turn.kind === 'tts_drill' && voiceError && voiceError.turnId === turn.id" class="amter-voice-error" x-text="voiceError?.message"></div>
                                 </div>
                             </template>
                         </div>
@@ -674,7 +733,7 @@
                             <div x-show="turnStates[turn.id].mirrorUrl" class="amter-wave-box">
                                 <button type="button" @click="playMirror(turn.id)" style="width: 30px; height: 30px; border-radius: 50%; border: none; background: #10b981; color: #0f172a; font-weight: 900; cursor: pointer;">&#9654;</button>
                                 <div class="amter-wave-bars">
-                                    <template x-for="bar in [35,65,90,50,80,45,95,60,75,40,85,55,70,45]" :key="bar">
+                                    <template x-for="(bar, bIdx) in [35,65,90,50,80,45,95,60,75,40,85,55,70,45]" :key="bIdx">
                                         <span class="amter-wave-bar" :style="`height: ${bar}%;`"></span>
                                     </template>
                                 </div>
@@ -695,6 +754,9 @@
                                     ></button>
                                 </template>
                             </div>
+                            <p x-show="turnStates[turn.id].diff?.some(c => c.status === 'red')" class="amter-tap-hint">
+                                Tap any red word to hear it slowly (0.75x)
+                            </p>
                             <p x-show="turnStates[turn.id].spoken" style="margin: 6px 0 0 0; font-size: 11px; opacity: 0.9;">
                                 Heard: "<span x-text="turnStates[turn.id].spoken"></span>"
                             </p>
@@ -749,8 +811,15 @@
                                             <button type="button" @click="playTts((turn.data.phrases || [''])[0], slowSpeed ? 0.75 : 1.0)" class="amter-pill-action amter-pill-slate">
                                                 &#9654; Tutor Audio
                                             </button>
-                                            <button type="button" @click="toggleVoicePractice(turn)" class="amter-pill-action amter-pill-indigo" x-text="activeTurnId === turn.id && isListening ? 'Stop Mic' : (turn.data.button_label || 'Speak')"></button>
+                                            <button
+                                                type="button"
+                                                @click="toggleVoicePractice(turn)"
+                                                class="amter-pill-action amter-pill-indigo"
+                                                :class="activeTurnId === turn.id && isListening ? 'amter-speak-listening' : ''"
+                                                x-text="activeTurnId === turn.id && isListening ? 'Listening... Tap to Stop' : (turn.data.button_label || 'Speak')"
+                                            ></button>
                                         </div>
+                                        <div x-show="voiceError && voiceError.turnId === turn.id" class="amter-voice-error" x-text="voiceError?.message"></div>
                                     </div>
                                 </template>
 
@@ -765,6 +834,8 @@
                                             <input
                                                 type="text"
                                                 x-model="dictationInputs[turn.id]"
+                                                @keydown.enter.prevent="checkDictation(turn)"
+                                                enterkeyhint="done"
                                                 placeholder="Type what you hear..."
                                                 style="flex: 1; border-radius: 12px; border: 1.5px solid #cbd5e1; padding: 8px 12px; font-size: 13px; color: #0f172a;"
                                             />
@@ -809,7 +880,7 @@
                                     <div x-show="turnStates[turn.id].mirrorUrl" class="amter-wave-box">
                                         <button type="button" @click="playMirror(turn.id)" style="width: 30px; height: 30px; border-radius: 50%; border: none; background: #10b981; color: #0f172a; font-weight: 900; cursor: pointer;">&#9654;</button>
                                         <div class="amter-wave-bars">
-                                            <template x-for="bar in [35,65,90,50,80,45,95,60,75,40,85,55,70,45]" :key="bar">
+                                            <template x-for="(bar, bIdx) in [35,65,90,50,80,45,95,60,75,40,85,55,70,45]" :key="bIdx">
                                                 <span class="amter-wave-bar" :style="`height: ${bar}%;`"></span>
                                             </template>
                                         </div>
@@ -831,6 +902,9 @@
                                             ></button>
                                         </template>
                                     </div>
+                                    <p x-show="turnStates[turn.id].diff?.some(c => c.status === 'red')" class="amter-tap-hint">
+                                        Tap any red word to hear it slowly (0.75x)
+                                    </p>
 
                                     <p x-show="turnStates[turn.id].spoken" style="margin: 6px 0 0 0; font-size: 11px; opacity: 0.9;">
                                         Heard: "<span x-text="turnStates[turn.id].spoken"></span>"
@@ -945,6 +1019,8 @@ function amterGuidedChat(config) {
         nativeDurationMs: 4500,
         activeTurnId: null,
         isListening: false,
+        voiceError: null,
+        voiceTimeout: null,
         holdTimer: null,
         speechStartedAt: 0,
         recognition: null,
@@ -1161,6 +1237,13 @@ function amterGuidedChat(config) {
                     this.isDocked = true;
                 }
                 this.saveProgress();
+                this.$nextTick(() => {
+                    const targetIdx = this.visibleCount - 1;
+                    const el = this.$refs.chatStream?.querySelector(`[data-turn-idx="${targetIdx}"]`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
             }
         },
 
@@ -1289,20 +1372,166 @@ function amterGuidedChat(config) {
             }
         },
 
+        isMobileDevice() {
+            const ua = navigator.userAgent || '';
+            const mobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+            const coarseTouch = (navigator.maxTouchPoints > 1) && window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            return mobileUa || coarseTouch;
+        },
+
         async toggleVoicePractice(turn) {
             if (this.isListening && this.activeTurnId === turn.id) {
                 this.stopVoicePractice();
                 return;
             }
             this.pauseAllVideos();
+            if (this.ttsAudio) {
+                try { this.ttsAudio.pause(); } catch (_) {}
+            }
+            if (typeof window.stopAmterSpeech === 'function') {
+                try { window.stopAmterSpeech(); } catch (_) {}
+            }
             this.stopVoicePractice();
+            this.voiceError = null;
             this.activeTurnId = turn.id;
             this.isListening = true;
             this.speechStartedAt = performance.now();
 
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const isMobile = this.isMobileDevice();
+
+            // On mobile (Android Chrome, iOS Safari), getUserMedia/MediaRecorder holds exclusive mic focus
+            // and blocks the OS SpeechRecognition service. Only run MediaRecorder alongside SpeechRec on desktop.
+            const shouldRecordMirror = !isMobile || !SpeechRec;
+
+            if (SpeechRec) {
+                const rec = new SpeechRec();
+                this.recognition = rec;
+                rec.lang = 'en-US';
+                rec.interimResults = true;
+                rec.continuous = false;
+                rec.maxAlternatives = 1;
+
+                let hasResult = false;
+                const candidates = (Array.isArray(turn.data?.phrases) && turn.data.phrases.length)
+                    ? turn.data.phrases
+                    : [turn.data?.text || ''];
+
+                rec.onresult = (event) => {
+                    let transcript = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        transcript += event.results[i][0].transcript + ' ';
+                    }
+                    const cleaned = transcript.trim();
+                    if (!cleaned) return;
+                    hasResult = true;
+
+                    let best = { diff: [], score: -1 };
+                    for (const candidate of candidates) {
+                        const res = this.computeWordDiff(candidate, cleaned);
+                        if (res.score > best.score) best = res;
+                    }
+                    const { diff, score } = best;
+                    const primaryTarget = candidates[0] || '';
+                    const elapsedMs = Math.max(400, performance.now() - this.speechStartedAt);
+                    const rhythmLabel = this.computeRhythmBadge(elapsedMs, primaryTarget);
+
+                    const passed = score >= 75;
+                    const praises = [
+                        'Spot on! 🎉 Great job!',
+                        'Nice rhythm! Keep going 💪',
+                        'You nailed that! ✨',
+                        'Awesome pronunciation! 🌟',
+                    ];
+                    const tutorReply = passed
+                        ? praises[Math.floor(Math.random() * praises.length)]
+                        : 'Almost there! Tap any red word to hear it at 0.75x, or try once more.';
+
+                    this.turnStates[turn.id] = {
+                        ...(this.turnStates[turn.id] || {}),
+                        spoken: cleaned,
+                        diff,
+                        score,
+                        rhythmLabel,
+                        tutorReply,
+                        tutorReplyPassed: passed,
+                    };
+
+                    if (turn.data?.is_baseline) {
+                        this.beforeAttempt = { ...(this.beforeAttempt || {}), score };
+                    }
+                    if (turn.data?.is_mastery) {
+                        this.afterAttempt = { ...(this.afterAttempt || {}), score };
+                    }
+
+                    this.saveProgress();
+
+                    if (event.results[event.results.length - 1]?.isFinal && score >= 75) {
+                        setTimeout(() => this.advanceStep(), 900);
+                    }
+                };
+
+                rec.onend = () => {
+                    if (this.recognition === rec) {
+                        this.stopVoicePractice();
+                    }
+                };
+
+                rec.onerror = (e) => {
+                    const code = e?.error || 'unknown';
+                    const messages = {
+                        'not-allowed': 'Microphone access was denied. Please allow mic permission in your browser settings.',
+                        'service-not-allowed': 'Speech recognition is blocked. Please allow microphone access and try again.',
+                        'audio-capture': 'Microphone is busy or unavailable. Close other apps using the mic and try again.',
+                        'no-speech': "Didn't catch any speech — tap Speak and try again closer to the mic.",
+                        'network': 'Speech recognition needs an internet connection. Please check your network.',
+                    };
+                    if (code !== 'aborted') {
+                        this.voiceError = {
+                            turnId: turn.id,
+                            message: messages[code] || 'Voice recognition could not start. Please try again.',
+                        };
+                    }
+                    if (this.recognition === rec) {
+                        this.stopVoicePractice();
+                    }
+                };
+
+                try {
+                    rec.start();
+                    this.voiceTimeout = setTimeout(() => {
+                        if (this.isListening && this.activeTurnId === turn.id) {
+                            if (!hasResult && !this.voiceError) {
+                                this.voiceError = {
+                                    turnId: turn.id,
+                                    message: "Didn't catch any speech — tap Speak and try again.",
+                                };
+                            }
+                            this.stopVoicePractice();
+                        }
+                    }, 10000);
+                } catch (_) {
+                    this.voiceError = {
+                        turnId: turn.id,
+                        message: 'Could not start speech recognition. Please tap Speak again.',
+                    };
+                    this.stopVoicePractice();
+                    return;
+                }
+            } else {
+                this.voiceError = {
+                    turnId: turn.id,
+                    message: 'Speech recognition is not supported in this browser. Try Chrome or Safari.',
+                };
+            }
+
+            if (shouldRecordMirror && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    if (!this.isListening || this.activeTurnId !== turn.id) {
+                        stream.getTracks().forEach((t) => t.stop());
+                        return;
+                    }
                     this.recordedChunks = [];
                     this.mediaRecorder = new MediaRecorder(stream);
                     this.mediaRecorder.ondataavailable = (e) => {
@@ -1329,73 +1558,25 @@ function amterGuidedChat(config) {
                 } catch (_) {}
             }
 
-            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) {
-                setTimeout(() => {
+                this.voiceTimeout = setTimeout(() => {
                     if (this.isListening && this.activeTurnId === turn.id) {
                         this.stopVoicePractice();
                     }
                 }, 4000);
-                return;
             }
-
-            this.recognition = new SpeechRec();
-            this.recognition.lang = 'en-US';
-            this.recognition.interimResults = true;
-            this.recognition.onresult = (event) => {
-                let transcript = '';
-                for (let i = 0; i < event.results.length; i++) {
-                    transcript += event.results[i][0].transcript + ' ';
-                }
-                const target = (turn.data.phrases && turn.data.phrases[0]) || '';
-                const { diff, score } = this.computeWordDiff(target, transcript.trim());
-                const elapsedMs = Math.max(400, performance.now() - this.speechStartedAt);
-                const rhythmLabel = this.computeRhythmBadge(elapsedMs, target);
-
-                const passed = score >= 75;
-                const praises = [
-                    'Spot on! 🎉 Great job!',
-                    'Nice rhythm! Keep going 💪',
-                    'You nailed that! ✨',
-                    'Awesome pronunciation! 🌟',
-                ];
-                const tutorReply = passed
-                    ? praises[Math.floor(Math.random() * praises.length)]
-                    : 'Almost there! Tap any red word to hear it at 0.75x, or try once more.';
-
-                this.turnStates[turn.id] = {
-                    ...(this.turnStates[turn.id] || {}),
-                    spoken: transcript.trim(),
-                    diff,
-                    score,
-                    rhythmLabel,
-                    tutorReply,
-                    tutorReplyPassed: passed,
-                };
-
-                if (turn.data?.is_baseline) {
-                    this.beforeAttempt = { ...(this.beforeAttempt || {}), score };
-                }
-                if (turn.data?.is_mastery) {
-                    this.afterAttempt = { ...(this.afterAttempt || {}), score };
-                }
-
-                this.saveProgress();
-
-                if (event.results[event.results.length - 1]?.isFinal && score >= 75) {
-                    setTimeout(() => this.advanceStep(), 900);
-                }
-            };
-            this.recognition.onend = () => this.stopVoicePractice();
-            this.recognition.onerror = () => this.stopVoicePractice();
-            this.recognition.start();
         },
 
         stopVoicePractice() {
             this.isListening = false;
+            if (this.voiceTimeout) {
+                clearTimeout(this.voiceTimeout);
+                this.voiceTimeout = null;
+            }
             if (this.recognition) {
-                try { this.recognition.stop(); } catch (_) {}
+                const rec = this.recognition;
                 this.recognition = null;
+                try { rec.stop(); } catch (_) {}
             }
             if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
                 try { this.mediaRecorder.stop(); } catch (_) {}
