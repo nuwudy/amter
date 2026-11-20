@@ -46,6 +46,13 @@ class UnitController extends Controller
         $user = auth()->user();
 
         if (!$user) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'completed' => false,
+                    'auth_required' => true,
+                    'message' => 'Please sign in to save your progress.',
+                ], 401);
+            }
             return redirect()->route('register')->with('info', 'നിങ്ങളുടെ പുരോഗതി രേഖപ്പെടുത്താനും കൂടുതൽ ഫ്രീ ക്ലാസ്സുകൾ കാണാനും സൗജന്യമായി റജിസ്റ്റർ ചെയ്യൂ!');
         }
 
@@ -58,11 +65,13 @@ class UnitController extends Controller
 
         $milestoneService = new \App\Services\MilestoneService();
         $unitsToComplete = Unit::whereIn('id', $groupUnitIds)->get();
+        $newlyCompleted = false;
 
         foreach ($unitsToComplete as $targetUnit) {
             if (!$user->completedUnits()->where('unit_id', $targetUnit->id)->exists()) {
                 $user->completedUnits()->attach($targetUnit->id, ['completed_at' => now()]);
                 $milestoneService->checkMilestones($user, $targetUnit);
+                $newlyCompleted = true;
             }
         }
 
@@ -106,6 +115,16 @@ class UnitController extends Controller
                 $redirectParams['track_id'] = $trackId;
             }
 
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'completed' => true,
+                    'newly_completed' => $newlyCompleted,
+                    'xp_gained' => $newlyCompleted ? 100 : 0,
+                    'next_unit_id' => $nextUnit->id,
+                    'next_unit_url' => route('student.units.show', $redirectParams),
+                ]);
+            }
+
             return redirect()->route('student.units.show', $redirectParams)
                 ->with('success', 'Lesson Mastered! Moving to next lesson.')
                 ->with('lesson_mastered', true)
@@ -115,6 +134,17 @@ class UnitController extends Controller
         $redirectParams = ['unit' => $unit];
         if ($trackId) {
             $redirectParams['track_id'] = $trackId;
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'completed' => true,
+                'newly_completed' => $newlyCompleted,
+                'course_completed' => true,
+                'xp_gained' => $newlyCompleted ? 500 : 0,
+                'next_unit_id' => null,
+                'next_unit_url' => null,
+            ]);
         }
 
         return redirect()->route('student.units.show', $redirectParams)

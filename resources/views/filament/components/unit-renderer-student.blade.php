@@ -640,7 +640,7 @@
                     </button>
                 </div>
                 <div x-show="viewMode === 'chat'">
-                    @include('filament.components.unit-chat-player', ['unit' => $unit, 'contentBlocks' => $contentBlocks])
+                    @include('filament.components.unit-chat-player', ['unit' => $unit, 'contentBlocks' => $contentBlocks, 'isFullscreen' => false])
                 </div>
                 <div x-show="viewMode === 'classic'" x-cloak>
             @endif
