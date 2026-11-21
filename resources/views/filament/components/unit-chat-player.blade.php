@@ -821,17 +821,60 @@
                     {{-- ==================== 3. CARD B — SPEAK PRACTICE STEP ==================== --}}
                     <template x-if="step.type === 'speak'">
                         <div class="w-full flex flex-col items-center text-center">
-                            {{-- Top Eyebrow OR Prominent Score & Status Banner --}}
+                            {{-- Top Eyebrow OR Prominent Animated Check / Red Try-Again Badge + Score Banner --}}
                             <template x-if="getSpeakFeedback(step)">
-                                <div
-                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-extrabold tracking-wide"
-                                    :class="getSpeakFeedback(step).score >= 75
-                                        ? 'bg-emerald-600/12 border-emerald-600/40 text-emerald-700'
-                                        : 'bg-amber-600/12 border-amber-600/40 text-amber-700'"
-                                >
-                                    <svg x-show="getSpeakFeedback(step).score >= 75" class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clip-rule="evenodd"/></svg>
-                                    <svg x-show="getSpeakFeedback(step).score < 75" class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2Zm-2 18a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-1h-4v1Z"/></svg>
-                                    <span x-text="formatScoreBanner(getSpeakFeedback(step).score)"></span>
+                                <div class="flex flex-col items-center gap-2">
+                                    <style>
+                                        @keyframes amterBadgePop {
+                                            0% { transform: scale(0.35) rotate(-10deg); opacity: 0; }
+                                            65% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+                                            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+                                        }
+                                        @keyframes amterBadgeShake {
+                                            0% { transform: scale(0.5); opacity: 0; }
+                                            45% { transform: scale(1.08) translateX(-4px); opacity: 1; }
+                                            65% { transform: scale(1.02) translateX(4px); }
+                                            82% { transform: scale(1) translateX(-2px); }
+                                            100% { transform: scale(1) translateX(0); opacity: 1; }
+                                        }
+                                        @keyframes amterCheckDraw {
+                                            0% { stroke-dashoffset: 36; }
+                                            100% { stroke-dashoffset: 0; }
+                                        }
+                                        .amter-badge-pass { animation: amterBadgePop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+                                        .amter-badge-retry { animation: amterBadgeShake 0.5s ease-out forwards; }
+                                        .amter-check-stroke { stroke-dasharray: 36; stroke-dashoffset: 36; animation: amterCheckDraw 0.42s ease-out 0.15s forwards; }
+                                    </style>
+
+                                    {{-- >= 75%: Animated Mint-Green Scalloped Checkmark Badge --}}
+                                    <template x-if="getSpeakFeedback(step).score >= 75">
+                                        <div class="amter-badge-pass drop-shadow-md">
+                                            <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M32 3.5C35.2 3.5 37.6 5.9 40.5 6.8C43.4 7.7 46.8 6.8 49.4 8.7C52 10.6 52.3 14.1 54.1 16.7C55.9 19.3 59.3 20.5 60.2 23.4C61.1 26.3 59.1 29.3 59.1 32.5C59.1 35.7 61.1 38.7 60.2 41.6C59.3 44.5 55.9 45.7 54.1 48.3C52.3 50.9 52 54.4 49.4 56.3C46.8 58.2 43.4 57.3 40.5 58.2C37.6 59.1 35.2 61.5 32 61.5C28.8 61.5 26.4 59.1 23.5 58.2C20.6 57.3 17.2 58.2 14.6 56.3C12 54.4 11.7 50.9 9.9 48.3C8.1 45.7 4.7 44.5 3.8 41.6C2.9 38.7 4.9 35.7 4.9 32.5C4.9 29.3 2.9 26.3 3.8 23.4C4.7 20.5 8.1 19.3 9.9 16.7C11.7 14.1 12 10.6 14.6 8.7C17.2 6.8 20.6 7.7 23.5 6.8C26.4 5.9 28.8 3.5 32 3.5Z" fill="#2CC59B"/>
+                                                <path class="amter-check-stroke" d="M21 33.5L28.5 41L43.5 24" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </template>
+
+                                    {{-- < 75%: Animated Red Try-Again Badge --}}
+                                    <template x-if="getSpeakFeedback(step).score < 75">
+                                        <div class="amter-badge-retry drop-shadow-md">
+                                            <svg class="w-16 h-16" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="32" cy="32" r="28" fill="#EF4444"/>
+                                                <path d="M42.5 27.5A11.5 11.5 0 1 0 43 35.5" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round"/>
+                                                <path d="M44 19.5V28.5H35" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </template>
+
+                                    <div
+                                        class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-extrabold tracking-wide"
+                                        :class="getSpeakFeedback(step).score >= 75
+                                            ? 'bg-emerald-600/12 border-emerald-600/40 text-emerald-700'
+                                            : 'bg-rose-600/12 border-rose-600/40 text-rose-700'"
+                                    >
+                                        <span x-text="formatScoreBanner(getSpeakFeedback(step).score)"></span>
+                                    </div>
                                 </div>
                             </template>
 
