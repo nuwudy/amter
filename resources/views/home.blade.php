@@ -175,7 +175,7 @@
                 <!-- Hero Video -->
                 <div class="relative z-10 transform rotate-2 hover:rotate-0 transition-all duration-500">
                     <video autoplay loop muted playsinline preload="auto" poster="{{ asset('images/hero-chips.jpg') }}" class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full max-w-md mx-auto object-cover" style="display: block;">
-                        <source src="{{ asset('storage/media-library/01M6XP64QQPAEFH92N94YFRE00.mp4') }}" type="video/mp4">
+                        <source src="{{ asset('storage/media-library/01M7Y3G2T0A8E7M1QD54E81S8T.mp4') }}" type="video/mp4">
                     </video>
                     
                     <!-- Floating Badge -->
