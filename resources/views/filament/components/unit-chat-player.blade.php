@@ -844,15 +844,7 @@
                             {{-- Top Eyebrow OR Prominent Animated Check / Red Try-Again Badge + Score Banner --}}
                             <template x-if="getSpeakFeedback(step)">
                                 <div class="flex flex-col items-center gap-2">
-                                    @if(request()->is('admin/*'))
-    <script>
-        window.tailwind = window.tailwind || {};
-        window.tailwind.config = { corePlugins: { preflight: false } };
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-@endif
-
-<style>
+                                    <style>
                                         @keyframes amterBadgePop {
                                             0% { transform: scale(0.35) rotate(-10deg); opacity: 0; }
                                             65% { transform: scale(1.12) rotate(3deg); opacity: 1; }
