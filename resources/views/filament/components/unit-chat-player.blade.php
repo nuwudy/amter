@@ -508,6 +508,18 @@
                 <span class="text-xs font-bold tracking-tight">Home</span>
             </a>
 
+            @if($prevGroupUrl)
+                <a
+                    href="{{ $prevGroupUrl }}"
+                    @click="stopAllMedia()"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-white text-slate-700 border border-slate-200/90 shadow-sm hover:bg-slate-100 active:scale-95 transition-all shrink-0 no-underline text-xs font-bold"
+                    title="Previous Video Lesson"
+                >
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    <span>Prev</span>
+                </a>
+            @endif
+
             {{-- Center: Slim Unit Title, Step Counter & Progress Bar --}}
             <div class="flex-1 min-w-0 flex flex-col">
                 <div class="flex items-center justify-between gap-2">
@@ -628,6 +640,9 @@
     <main
         x-ref="scroller"
         @scroll.passive="onScrollerScroll()"
+        @touchstart.passive="onTouchStart($event)"
+        @touchend.passive="onTouchEnd($event)"
+        @wheel.passive="onTopWheel($event)"
         class="amter-vp-scroller flex-1 min-h-0 w-full overflow-y-auto relative"
     >
         <template x-for="(step, idx) in steps" :key="step.keyId">
@@ -1533,7 +1548,43 @@ function amterStepPlayer(config) {
             });
         },
 
+        touchStartY: null,
+        _navigatingPrev: false,
+
         // ---------- Navigation & Media Lifecycle ----------
+        goToPrevUnit() {
+            if (!this.prevGroupUrl || this._navigatingPrev) return;
+            this._navigatingPrev = true;
+            this.stopAllMedia();
+            this.showToast('Opening previous lesson...');
+            window.location.href = this.prevGroupUrl;
+        },
+
+        onTouchStart(event) {
+            const touch = event.touches?.[0];
+            this.touchStartY = touch ? touch.clientY : null;
+        },
+
+        onTouchEnd(event) {
+            if (this.touchStartY === null || !this.prevGroupUrl) return;
+            const touch = event.changedTouches?.[0];
+            if (!touch) return;
+            const deltaY = touch.clientY - this.touchStartY;
+            this.touchStartY = null;
+            const scroller = this.$refs.scroller;
+            if (this.currentIndex === 0 && (!scroller || scroller.scrollTop <= 4) && deltaY > 75) {
+                this.goToPrevUnit();
+            }
+        },
+
+        onTopWheel(event) {
+            if (!this.prevGroupUrl || this.currentIndex !== 0) return;
+            const scroller = this.$refs.scroller;
+            if ((!scroller || scroller.scrollTop <= 2) && event.deltaY < -85) {
+                this.goToPrevUnit();
+            }
+        },
+
         onScrollerScroll() {
             const scroller = this.$refs.scroller;
             if (!scroller || !scroller.clientHeight) return;
@@ -1566,7 +1617,11 @@ function amterStepPlayer(config) {
                 this.goToStep(this.currentIndex + 1);
             } else if (event.key === 'ArrowUp' || event.key === 'PageUp') {
                 event.preventDefault();
-                this.goToStep(this.currentIndex - 1);
+                if (this.currentIndex === 0 && this.prevGroupUrl) {
+                    this.goToPrevUnit();
+                } else {
+                    this.goToStep(this.currentIndex - 1);
+                }
             } else if (event.key === 'Escape' && this.menuOpen) {
                 this.menuOpen = false;
             }
