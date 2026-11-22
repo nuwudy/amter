@@ -1,5 +1,5 @@
 @php
-    $isFullscreen = $isFullscreen ?? true;
+    $isFullscreen = $isFullscreen ?? !request()->is('admin/*');
     $groupData = isset($unit)
         ? app(\App\Services\LessonGroupResolver::class)->resolveForUnit($unit, $currentTrack ?? null)
         : ['units' => [], 'unit_ids' => [], 'lead_video' => null, 'previous_group_unit' => null, 'next_group_unit' => null];
@@ -350,6 +350,14 @@
         ];
     }
 @endphp
+
+@if(request()->is('admin/*'))
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = { corePlugins: { preflight: false } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+@endif
 
 <style>
     [x-cloak] { display: none !important; }
@@ -836,7 +844,15 @@
                             {{-- Top Eyebrow OR Prominent Animated Check / Red Try-Again Badge + Score Banner --}}
                             <template x-if="getSpeakFeedback(step)">
                                 <div class="flex flex-col items-center gap-2">
-                                    <style>
+                                    @if(request()->is('admin/*'))
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = { corePlugins: { preflight: false } };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+@endif
+
+<style>
                                         @keyframes amterBadgePop {
                                             0% { transform: scale(0.35) rotate(-10deg); opacity: 0; }
                                             65% { transform: scale(1.12) rotate(3deg); opacity: 1; }
