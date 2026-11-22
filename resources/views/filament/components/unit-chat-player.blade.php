@@ -25,6 +25,7 @@
     $groupUnitIdsCsv = implode(',', $groupData['unit_ids'] ?? (isset($unit) ? [$unit->id] : []));
     $storageKey = 'amter_step_v2_' . ($groupUnitIdsCsv !== '' ? $groupUnitIdsCsv : ($unit->id ?? '0'));
 
+    $course = $course ?? null;
     $makeUnitUrl = function ($targetUnit) use ($trackId, $course) {
         if (!$targetUnit) {
             return null;
