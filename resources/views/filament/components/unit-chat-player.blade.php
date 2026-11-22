@@ -442,6 +442,17 @@
         padding-left: 1.25rem;
         margin: 0.5rem 0;
     }
+
+    /* Ensure SVG icon sizes work even in Filament Admin where frontend Tailwind utilities aren't compiled */
+    .amter-vp-shell svg { flex-shrink: 0; }
+    .amter-vp-shell svg.w-3\.5 { width: 0.875rem; height: 0.875rem; }
+    .amter-vp-shell svg.w-4 { width: 1rem; height: 1rem; }
+    .amter-vp-shell svg.w-\[18px\] { width: 18px; height: 18px; }
+    .amter-vp-shell svg.w-5 { width: 1.25rem; height: 1.25rem; }
+    .amter-vp-shell svg.w-6 { width: 1.5rem; height: 1.5rem; }
+    .amter-vp-shell svg.w-8 { width: 2rem; height: 2rem; }
+    .amter-vp-shell svg.w-9 { width: 2.25rem; height: 2.25rem; }
+    .amter-vp-shell svg.w-16 { width: 4rem; height: 4rem; }
 </style>
 
 <div
