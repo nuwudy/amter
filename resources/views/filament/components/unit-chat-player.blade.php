@@ -226,16 +226,25 @@
             case 'text':
                 $html = trim((string) ($data['html'] ?? ''));
                 if ($html !== '') {
-                    $steps[] = [
-                        'keyId' => "turn_{$tKey}_text",
-                        'type' => 'rich_text',
-                        'title' => $title,
-                        'htmlContent' => $html,
-                        'alignment' => (string) ($data['alignment'] ?? 'left'),
-                        'textColor' => (string) ($data['text_color'] ?? 'default'),
-                        'attachedImageUrl' => $attachedImage,
-                        'turnKey' => $tKey,
-                    ];
+                    if (
+                        count($steps) === 1 &&
+                        in_array($steps[0]['type'] ?? '', ['video', 'external_video'], true) &&
+                        empty($steps[0]['introHtml']) &&
+                        empty($attachedImage)
+                    ) {
+                        $steps[0]['introHtml'] = $html;
+                    } else {
+                        $steps[] = [
+                            'keyId' => "turn_{$tKey}_text",
+                            'type' => 'rich_text',
+                            'title' => $title,
+                            'htmlContent' => $html,
+                            'alignment' => (string) ($data['alignment'] ?? 'left'),
+                            'textColor' => (string) ($data['text_color'] ?? 'default'),
+                            'attachedImageUrl' => $attachedImage,
+                            'turnKey' => $tKey,
+                        ];
+                    }
                 }
                 break;
 
@@ -685,6 +694,12 @@
                                 class="text-base sm:text-lg font-extrabold text-slate-900 text-center leading-snug m-0 px-2"
                                 x-text="step.transcript"
                             ></p>
+
+                            <div
+                                x-show="step.introHtml"
+                                class="amter-richtext-body w-full px-4 py-3 rounded-2xl bg-white border border-slate-200/80 shadow-sm text-sm text-slate-700 leading-relaxed"
+                                x-html="step.introHtml"
+                            ></div>
                         </div>
                     </template>
 
