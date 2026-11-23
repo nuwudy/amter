@@ -175,74 +175,49 @@
                 <!-- Hero Video -->
                 <div
                     x-data="{
-                        looping: true,
-                        needsTap: false,
-                        init() {
-                            const v = this.$refs.heroVideo;
-                            if (!v) return;
-                            v.muted = false;
-                            v.loop = true;
-                            const p = v.play();
-                            if (p && typeof p.catch === 'function') {
-                                p.catch(() => { this.needsTap = true; });
-                            }
-                        },
-                        toggleLoop() {
-                            this.looping = !this.looping;
-                            if (this.$refs.heroVideo) {
-                                this.$refs.heroVideo.loop = this.looping;
-                            }
-                        },
-                        playWithSound() {
+                        isPlaying: false,
+                        hasStarted: false,
+                        playVideo() {
                             const v = this.$refs.heroVideo;
                             if (!v) return;
                             v.muted = false;
                             v.play();
-                            this.needsTap = false;
                         }
                     }"
                     class="relative z-10 transform rotate-2 hover:rotate-0 transition-all duration-500 max-w-md mx-auto"
                 >
                     <video
                         x-ref="heroVideo"
-                        autoplay
-                        loop
-                        controls
+                        :controls="hasStarted"
                         playsinline
-                        preload="auto"
+                        preload="none"
                         poster="{{ asset('images/hero-chips.jpg') }}"
-                        @play="needsTap = false"
+                        @play="isPlaying = true; hasStarted = true"
+                        @pause="if (!$refs.heroVideo.seeking) isPlaying = false"
+                        @ended="isPlaying = false; hasStarted = false"
                         class="rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-4 border-white w-full object-cover"
                         style="display: block;"
                     >
                         <source src="{{ asset('storage/media-library/01M7ZDWKBJ5NKB3CZ6HKGJBEXB.mp4') }}" type="video/mp4">
                     </video>
 
-                    <!-- Loop Toggle Pill -->
+                    <!-- Play Button Overlay (shown until visitor clicks Play, and again if paused or ended) -->
                     <button
                         type="button"
-                        @click="toggleLoop()"
-                        class="absolute top-4 right-4 z-20 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border transition-all cursor-pointer"
-                        :class="looping
-                            ? 'bg-gray-900/80 text-white border-white/25 hover:bg-gray-900'
-                            : 'bg-white/95 text-gray-800 border-gray-200 hover:bg-white'"
+                        x-show="!isPlaying"
+                        @click="playVideo()"
+                        aria-label="Play hero video"
+                        class="absolute inset-0 z-20 flex items-center justify-center rounded-[2.5rem] bg-slate-950/30 hover:bg-slate-950/20 transition-colors cursor-pointer group focus:outline-none"
                     >
-                        <span x-text="looping ? '🔁 Loop: On (Stop)' : '⏹ Loop: Off'"></span>
-                    </button>
-
-                    <!-- Fallback Play with Sound button if browser blocks unmuted autoplay -->
-                    <button
-                        type="button"
-                        x-show="needsTap"
-                        x-cloak
-                        @click="playWithSound()"
-                        class="absolute inset-0 m-auto w-fit h-fit z-20 inline-flex items-center gap-2 px-5 py-3 rounded-full bg-gray-900/85 text-white text-sm font-bold shadow-2xl border border-white/25 hover:bg-gray-900 cursor-pointer"
-                    >
-                        <span>▶ Play with Sound</span>
+                        <span class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary-500 text-slate-950 shadow-2xl shadow-primary-500/40 ring-4 ring-white/80 group-hover:scale-110 group-hover:bg-primary-400 transition-all duration-300">
+                            <svg class="w-9 h-9 ml-1" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M8 5.14v14l11-7-11-7z" />
+                            </svg>
+                        </span>
                     </button>
                     
                     <!-- Floating Badge -->
-                    <div class="absolute -bottom-6 -right-6 bg-white p-4 rounded-2xl shadow-xl animate-bounce delay-1000 border border-gray-50">
+                    <div class="absolute -bottom-6 -right-6 z-30 bg-white p-4 rounded-2xl shadow-xl animate-bounce delay-1000 border border-gray-50">
                         <div class="flex items-center gap-3">
                             <span class="text-3xl">😋</span>
                             <div>
