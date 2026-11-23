@@ -815,8 +815,65 @@
                                 </button>
                             </div>
 
+                            {{-- Google-style Free SVG Lip-Movement Guide --}}
+                            <div
+                                class="mt-4 w-[108px] h-[94px] rounded-2xl bg-[#E8F0FE] border border-[#BFDBFE] shadow-sm flex items-center justify-center overflow-hidden transition-transform"
+                                :class="playingStepKey === step.keyId ? 'scale-[1.03] ring-2 ring-cyan-500/30' : ''"
+                                aria-hidden="true"
+                            >
+                                <svg viewBox="0 0 120 105" class="w-full h-full" style="width:100%;height:100%;" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {{-- Chin / Jawline --}}
+                                    <path d="M12 68C26 90 44 98 60 98C76 98 94 90 108 68" stroke="#60A5FA" stroke-width="2" stroke-linecap="round"/>
+                                    {{-- Nose tip --}}
+                                    <path d="M51 20C54 27 57 29 60 29C63 29 66 27 69 20" stroke="#3B82F6" stroke-width="2.2" stroke-linecap="round"/>
+                                    {{-- Chin dimple --}}
+                                    <path d="M53 76C57 74 63 74 67 76" stroke="#93C5FD" stroke-width="2.2" stroke-linecap="round"/>
+
+                                    <g x-data="{ get v() { return playingStepKey === step.keyId ? activeViseme : 'rest'; } }">
+                                        {{-- Rest / Closed --}}
+                                        <g x-show="v === 'rest' || v === 'closed'">
+                                            <path d="M34 52C44 45 53 45 60 47C67 45 76 45 86 52C76 58 67 59 60 59C53 59 44 58 34 52Z" fill="#BFDBFE" stroke="#2563EB" stroke-width="2.2" stroke-linejoin="round"/>
+                                            <path d="M32 52H88" stroke="#0F172A" stroke-width="2.4" stroke-linecap="round"/>
+                                        </g>
+
+                                        {{-- F / V (upper teeth on lower lip) --}}
+                                        <g x-show="v === 'fv'">
+                                            <path d="M35 50C45 45 54 45 60 47C66 45 75 45 85 50C76 57 67 58 60 58C53 58 44 57 35 50Z" fill="#BFDBFE" stroke="#2563EB" stroke-width="2.2"/>
+                                            <path d="M40 50H80L77 54H43L40 50Z" fill="#FFFFFF" stroke="#1E3A8A" stroke-width="1.2"/>
+                                        </g>
+
+                                        {{-- Wide (E / I / Y) --}}
+                                        <g x-show="v === 'wide'">
+                                            <path d="M30 51C42 42 52 43 60 45C68 43 78 42 90 51C79 62 69 63 60 63C51 63 41 62 30 51Z" fill="#1E293B" stroke="#2563EB" stroke-width="2.4" stroke-linejoin="round"/>
+                                            <path d="M36 49H84L80 53H40L36 49Z" fill="#FFFFFF"/>
+                                            <path d="M44 60C52 57 68 57 76 60" stroke="#F472B6" stroke-width="3.2" stroke-linecap="round"/>
+                                        </g>
+
+                                        {{-- Open (A / AH) --}}
+                                        <g x-show="v === 'open'">
+                                            <path d="M35 49C45 41 53 42 60 44C67 42 75 41 85 49C83 66 72 70 60 70C48 70 37 66 35 49Z" fill="#1E293B" stroke="#2563EB" stroke-width="2.4" stroke-linejoin="round"/>
+                                            <path d="M41 47H79L76 52H44L41 47Z" fill="#FFFFFF"/>
+                                            <ellipse cx="60" cy="64" rx="13" ry="4.5" fill="#F472B6"/>
+                                        </g>
+
+                                        {{-- Round (O / OO / W) --}}
+                                        <g x-show="v === 'round'">
+                                            <ellipse cx="60" cy="54" rx="14" ry="12" fill="#1E293B" stroke="#2563EB" stroke-width="2.8"/>
+                                            <ellipse cx="60" cy="61" rx="7" ry="3" fill="#F472B6"/>
+                                        </g>
+
+                                        {{-- Dental / Mid (D / T / L / N / S / K) --}}
+                                        <g x-show="v === 'dental'">
+                                            <path d="M34 51C44 43 53 44 60 46C67 44 76 43 86 51C79 61 70 63 60 63C50 63 41 61 34 51Z" fill="#1E293B" stroke="#2563EB" stroke-width="2.4" stroke-linejoin="round"/>
+                                            <path d="M40 49H80L77 53H43L40 49Z" fill="#FFFFFF"/>
+                                            <path d="M46 58C54 55 66 55 74 58" stroke="#F472B6" stroke-width="3" stroke-linecap="round"/>
+                                        </g>
+                                    </g>
+                                </svg>
+                            </div>
+
                             {{-- Prominent Centered Circular Play Hero Button (84px) --}}
-                            <div class="mt-8 relative flex items-center justify-center w-[112px] h-[112px]">
+                            <div class="mt-4 relative flex items-center justify-center w-[112px] h-[112px]">
                                 <span
                                     x-show="playingStepKey === step.keyId"
                                     class="amter-listen-ripple absolute w-[84px] h-[84px] rounded-full bg-cyan-600/30 pointer-events-none"
@@ -1486,6 +1543,8 @@ function amterStepPlayer(config) {
 
         // Media & Speech
         ttsAudio: null,
+        activeViseme: 'rest',
+        _lipRaf: null,
         playingStepKey: null,
         isListening: false,
         activeSpeakKey: null,
@@ -1652,6 +1711,7 @@ function amterStepPlayer(config) {
                 this.ttsAudio = null;
             }
             this.playingStepKey = null;
+            this.stopLipSync();
 
             if (typeof window.stopAmterSpeech === 'function') {
                 try { window.stopAmterSpeech(); } catch (_) {}
@@ -1803,12 +1863,63 @@ function amterStepPlayer(config) {
             return !!this.turnStates[this.stateKeyFor(step)]?.listened;
         },
 
-        playAudioUrl(url, rate = 1.0, stepKey = null) {
+        textToVisemes(text) {
+            const clean = (text || '').toLowerCase().trim();
+            if (!clean) return ['rest'];
+            const visemes = [];
+            for (let i = 0; i < clean.length; i++) {
+                const ch = clean[i];
+                if ('mbp'.includes(ch)) visemes.push('closed');
+                else if ('fv'.includes(ch)) visemes.push('fv');
+                else if ('a'.includes(ch)) visemes.push('open');
+                else if ('eiy'.includes(ch)) visemes.push('wide');
+                else if ('ouwq'.includes(ch)) visemes.push('round');
+                else if (/[a-z]/.test(ch)) visemes.push('dental');
+                else if (' ,.!?;:'.includes(ch)) visemes.push('rest');
+            }
+            return visemes.length ? visemes : ['rest'];
+        },
+
+        stopLipSync() {
+            if (this._lipRaf) {
+                cancelAnimationFrame(this._lipRaf);
+                this._lipRaf = null;
+            }
+            this.activeViseme = 'rest';
+        },
+
+        startLipSync(text, audio, rate = 1.0) {
+            this.stopLipSync();
+            const visemes = this.textToVisemes(text);
+            const startTs = performance.now();
+            const stepMs = 115 / Math.max(0.5, rate);
+
+            const tick = (now) => {
+                if (!this.ttsAudio || this.ttsAudio !== audio || audio.paused || audio.ended) {
+                    this.activeViseme = 'rest';
+                    this._lipRaf = null;
+                    return;
+                }
+                let idx;
+                if (Number.isFinite(audio.duration) && audio.duration > 0) {
+                    const progress = Math.min(0.999, Math.max(0, audio.currentTime / audio.duration));
+                    idx = Math.floor(progress * visemes.length);
+                } else {
+                    idx = Math.floor((now - startTs) / stepMs) % visemes.length;
+                }
+                this.activeViseme = visemes[idx] || 'rest';
+                this._lipRaf = requestAnimationFrame(tick);
+            };
+            this._lipRaf = requestAnimationFrame(tick);
+        },
+
+        playAudioUrl(url, rate = 1.0, stepKey = null, lipText = '') {
             if (!url) return Promise.resolve();
             return new Promise((resolve) => {
                 if (this.ttsAudio) {
                     try { this.ttsAudio.pause(); } catch (_) {}
                 }
+                this.stopLipSync();
                 const audio = new Audio(url);
                 audio.playbackRate = rate;
                 this.ttsAudio = audio;
@@ -1817,8 +1928,12 @@ function amterStepPlayer(config) {
                 const finish = () => {
                     if (this.ttsAudio === audio) {
                         this.playingStepKey = null;
+                        this.stopLipSync();
                     }
                     resolve();
+                };
+                audio.onplay = () => {
+                    if (lipText) this.startLipSync(lipText, audio, rate);
                 };
                 audio.onended = finish;
                 audio.onerror = finish;
@@ -1830,7 +1945,7 @@ function amterStepPlayer(config) {
             const clean = (text || '').trim();
             if (!clean) return Promise.resolve();
             const url = `${this.ttsEndpoint.replace(/\/$/, '')}?text=${encodeURIComponent(clean)}&tl=en-US`;
-            return this.playAudioUrl(url, rate, stepKey);
+            return this.playAudioUrl(url, rate, stepKey, clean);
         },
 
         async toggleListenPlay(step, overrideRate = null) {
