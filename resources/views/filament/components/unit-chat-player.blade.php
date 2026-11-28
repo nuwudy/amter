@@ -507,18 +507,18 @@
     {{-- Minimalist Floating Top Overlay --}}
     <header class="shrink-0 z-30 w-full bg-slate-50/90 backdrop-blur-md">
         <div class="max-w-xl mx-auto w-full px-3 pt-2.5 pb-1.5 flex items-center gap-2.5">
-            {{-- Top-Left Floating Home Pill --}}
+            {{-- Top-Left Prominent Dashboard Pill --}}
             <a
                 href="{{ $homeUrl }}"
                 @click="stopAllMedia()"
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white text-slate-900 border border-slate-200/90 shadow-sm hover:bg-slate-100 active:scale-95 transition-all shrink-0 no-underline"
+                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-600 text-white border border-indigo-500 shadow-md shadow-indigo-600/25 hover:bg-indigo-700 active:scale-95 transition-all shrink-0 no-underline"
                 title="Go to Dashboard"
             >
-                <svg class="w-[18px] h-[18px] text-indigo-600 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <svg class="w-[18px] h-[18px] text-white shrink-0" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M11.47 3.841a.75.75 0 0 1 1.06 0l8.69 8.69a.75.75 0 1 0 1.06-1.061l-8.689-8.69a2.25 2.25 0 0 0-3.182 0l-8.69 8.69a.75.75 0 1 0 1.061 1.06l8.69-8.689Z" />
                     <path d="m12 5.432 8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 0 1-.75-.75v-4.5a.75.75 0 0 0-.75-.75h-3a.75.75 0 0 0-.75.75V21a.75.75 0 0 1-.75.75H5.625a1.875 1.875 0 0 1-1.875-1.875v-6.198a2.29 2.29 0 0 0 .091-.086L12 5.432Z" />
                 </svg>
-                <span class="text-xs font-bold tracking-tight">Home</span>
+                <span class="text-xs sm:text-[13px] font-extrabold tracking-wide">Dashboard</span>
             </a>
 
             @if($prevGroupUrl)
