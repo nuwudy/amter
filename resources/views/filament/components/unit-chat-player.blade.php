@@ -2072,9 +2072,12 @@ function amterStepPlayer(config) {
                 }
 
                 const isFinal = !!event.results[event.results.length - 1]?.isFinal;
+                const isPerfect = best.score === 100;
                 const passed = best.score >= 75;
 
-                if (isFinal || passed) {
+                // Only finalize early if 100% of words are already matched;
+                // otherwise wait for isFinal so the last word is never cut off at 75%.
+                if (isFinal || isPerfect) {
                     const elapsedMs = Math.max(250, performance.now() - this.speechStartedAt);
                     const rhythmLabel = this.computeRhythmLabel(primaryTarget, cleaned, elapsedMs);
 
@@ -2096,7 +2099,7 @@ function amterStepPlayer(config) {
                     this.speakStatusMap[step.keyId] = null;
                     this.saveProgress();
 
-                    if (passed && !isFinal) {
+                    if (isPerfect && !isFinal) {
                         this.stopSpeechRecognition();
                     }
                 }
