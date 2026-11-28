@@ -246,7 +246,16 @@ class LessonChatTransformer
 
         $normalizePhrase = static fn (string $p): string => strtolower(trim(preg_replace('/[^a-z0-9\s]/i', '', $p)));
 
-        $pushTurn = function (string $role, string $kind, array $data, ?string $title = null) use (&$turns, &$index, &$firstVoiceTagged, &$lastVoiceTurnIndex, &$pendingImageUrl, &$seenDrillPhrases, $normalizePhrase): void {
+        $currentSourceUnitId = null;
+        $currentSourceBlockIndex = null;
+        $currentSourceBlockType = null;
+
+        $pushTurn = function (string $role, string $kind, array $data, ?string $title = null) use (&$turns, &$index, &$firstVoiceTagged, &$lastVoiceTurnIndex, &$pendingImageUrl, &$seenDrillPhrases, &$currentSourceUnitId, &$currentSourceBlockIndex, &$currentSourceBlockType, $normalizePhrase): void {
+            if ($currentSourceUnitId !== null && !isset($data['source_unit_id'])) {
+                $data['source_unit_id'] = $currentSourceUnitId;
+                $data['source_block_index'] = $currentSourceBlockIndex;
+                $data['source_block_type'] = $currentSourceBlockType;
+            }
             if ($pendingImageUrl !== null && in_array($kind, ['tts', 'tts_drill', 'voice_match', 'text'], true) && empty($data['is_malayalam_intro'])) {
                 $data['attached_image_url'] = $pendingImageUrl;
                 $pendingImageUrl = null;
@@ -303,12 +312,15 @@ class LessonChatTransformer
         }
 
         foreach ($units as $unit) {
+            $currentSourceUnitId = (int) $unit->id;
             $blocks = is_array($unit->content_blocks) ? $unit->content_blocks : [];
-            foreach ($blocks as $block) {
+            foreach ($blocks as $blockIdx => $block) {
                 if (!is_array($block)) {
                     continue;
                 }
                 $type = (string) ($block['type'] ?? 'rich_text');
+                $currentSourceBlockIndex = (int) $blockIdx;
+                $currentSourceBlockType = $type;
                 $rawData = is_array($block['data'] ?? null) ? $block['data'] : [];
                 $data = $this->normalizeBlockData($type, $rawData);
                 $title = $this->extractTitle($data);

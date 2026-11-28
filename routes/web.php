@@ -36,6 +36,96 @@ Route::middleware('web')->group(function () {
 Route::get('/units/{unit}', [UnitController::class, 'show'])->name('student.units.show');
 Route::post('/units/{unit}/complete', [UnitController::class, 'complete'])->name('student.units.complete');
 
+Route::post('/admin/units/{unit}/quick-edit-block', function (\Illuminate\Http\Request $request, \App\Models\Unit $unit) {
+    abort_unless($request->user()?->isAdmin(), 403);
+
+    $blocks = is_array($unit->content_blocks) ? $unit->content_blocks : [];
+    $blockIndex = $request->input('block_index');
+    $targetIdx = is_numeric($blockIndex) ? (int) $blockIndex : null;
+
+    if ($targetIdx === null || !isset($blocks[$targetIdx])) {
+        foreach ($blocks as $idx => $blk) {
+            if (($blk['type'] ?? '') === 'video') {
+                $targetIdx = $idx;
+                break;
+            }
+        }
+    }
+
+    if ($targetIdx === null || !isset($blocks[$targetIdx]) || !is_array($blocks[$targetIdx])) {
+        return response()->json(['success' => false, 'message' => 'Target block not found on this unit.'], 404);
+    }
+
+    $type = (string) ($blocks[$targetIdx]['type'] ?? '');
+    $data = is_array($blocks[$targetIdx]['data'] ?? null) ? $blocks[$targetIdx]['data'] : [];
+
+    $text = $request->input('text');
+    $instructions = $request->input('instructions');
+    $malayalam = $request->input('meaning_malayalam');
+    $hideEnglish = $request->boolean('hide_english');
+
+    switch ($type) {
+        case 'text_to_speech':
+            if ($text !== null) {
+                $data['text'] = trim((string) $text);
+            }
+            $data['instructions'] = $instructions !== null && trim((string) $instructions) !== '' ? trim((string) $instructions) : null;
+            $data['meaning_malayalam'] = $malayalam !== null && trim((string) $malayalam) !== '' ? trim((string) $malayalam) : null;
+            $data['hide_english'] = $hideEnglish;
+            break;
+
+        case 'listen_speak':
+            if ($text !== null) {
+                $data['english_text'] = trim((string) $text);
+            }
+            $data['instructions'] = $instructions !== null && trim((string) $instructions) !== '' ? trim((string) $instructions) : null;
+            $data['malayalam_text'] = $malayalam !== null && trim((string) $malayalam) !== '' ? trim((string) $malayalam) : null;
+            $data['hide_english'] = $hideEnglish;
+            break;
+
+        case 'voice_match':
+            if ($text !== null) {
+                $data['phrase'] = [trim((string) $text)];
+            }
+            $data['instructions'] = $instructions !== null && trim((string) $instructions) !== '' ? trim((string) $instructions) : null;
+            $data['meaning_malayalam'] = $malayalam !== null && trim((string) $malayalam) !== '' ? trim((string) $malayalam) : null;
+            $data['hide_english'] = $hideEnglish;
+            break;
+
+        case 'rich_text':
+            if ($text !== null) {
+                $data['content'] = (string) $text;
+            }
+            break;
+
+        case 'video':
+            if ($text !== null) {
+                $data['transcript'] = trim((string) $text);
+            }
+            $data['instructions'] = $instructions !== null && trim((string) $instructions) !== '' ? trim((string) $instructions) : null;
+            $data['meaning_malayalam'] = $malayalam !== null && trim((string) $malayalam) !== '' ? trim((string) $malayalam) : null;
+            break;
+
+        case 'dictation_test':
+            if ($text !== null) {
+                $data['correct_sentence'] = trim((string) $text);
+            }
+            $data['instructions'] = $instructions !== null && trim((string) $instructions) !== '' ? trim((string) $instructions) : null;
+            break;
+    }
+
+    $blocks[$targetIdx]['data'] = $data;
+    $unit->content_blocks = $blocks;
+    $unit->saveQuietly();
+
+    return response()->json([
+        'success' => true,
+        'unit_id' => $unit->id,
+        'block_index' => $targetIdx,
+        'block_type' => $type,
+    ]);
+})->middleware(['auth'])->name('admin.units.quick-edit-block');
+
 // Course Session Jump & Search Routes (default when studying from Library / Dashboard)
 Route::get('/sessions/{session}/jump/{order}', function (\App\Models\CourseSession $session, $order) {
     $unit = $session->units()

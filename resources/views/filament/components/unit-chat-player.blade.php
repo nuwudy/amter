@@ -179,6 +179,10 @@
                     $hideEn = !empty($data['hide_english']);
                     $btnLabel = trim((string) ($data['button_label'] ?? '')) ?: 'Tap to Speak';
 
+                    $srcUnitId = $data['source_unit_id'] ?? ($unit->id ?? null);
+                    $srcBlockIdx = $data['source_block_index'] ?? null;
+                    $srcBlockType = $data['source_block_type'] ?? null;
+
                     // Card A — Listen
                     $steps[] = [
                         'keyId' => "turn_{$tKey}_listen",
@@ -189,6 +193,9 @@
                         'hideEnglishByDefault' => $hideEn,
                         'attachedImageUrl' => $attachedImage,
                         'turnKey' => $tKey,
+                        'unitId' => $srcUnitId,
+                        'blockIndex' => $srcBlockIdx,
+                        'blockType' => $srcBlockType,
                         'nextHint' => 'Swipe up to practice speaking',
                     ];
                     // Card B — Speak Practice
@@ -202,6 +209,9 @@
                         'buttonLabel' => $btnLabel,
                         'attachedImageUrl' => $attachedImage,
                         'turnKey' => $tKey,
+                        'unitId' => $srcUnitId,
+                        'blockIndex' => $srcBlockIdx,
+                        'blockType' => $srcBlockType,
                         'isBaseline' => !empty($data['is_baseline']),
                         'isMastery' => !empty($data['is_mastery']),
                         'nextHint' => 'Swipe up for next',
@@ -243,6 +253,9 @@
                             'textColor' => (string) ($data['text_color'] ?? 'default'),
                             'attachedImageUrl' => $attachedImage,
                             'turnKey' => $tKey,
+                            'unitId' => $data['source_unit_id'] ?? ($unit->id ?? null),
+                            'blockIndex' => $data['source_block_index'] ?? null,
+                            'blockType' => $data['source_block_type'] ?? null,
                         ];
                     }
                 }
@@ -538,6 +551,18 @@
                     ></div>
                 </div>
             </div>
+
+            @if($isAdmin)
+                <button
+                    type="button"
+                    @click="openQuickEdit()"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 shadow-sm hover:bg-amber-200 active:scale-95 transition-all shrink-0 cursor-pointer text-xs font-bold"
+                    title="Quick Edit Current Slide (Admin)"
+                >
+                    <svg class="w-3.5 h-3.5 text-amber-700" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>Edit</span>
+                </button>
+            @endif
 
             {{-- Top-Right Compact Overflow Menu --}}
             <div class="relative shrink-0" @click.outside="menuOpen = false">
@@ -1482,6 +1507,90 @@
         </template>
     </main>
 
+    {{-- Admin Live Quick-Edit Modal --}}
+    @if($isAdmin)
+        <div
+            x-show="quickEditOpen"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4"
+            @click.self="quickEditOpen = false"
+        >
+            <div class="w-full max-w-md rounded-3xl bg-white border border-slate-200 shadow-2xl p-5 flex flex-col gap-3.5 text-left">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                            Admin Quick Edit · Unit #<span x-text="quickEditForm.unitId"></span>
+                        </span>
+                        <h3 class="text-base font-extrabold text-slate-900 mt-1.5 mb-0">Edit Current Slide</h3>
+                    </div>
+                    <button
+                        type="button"
+                        @click="quickEditOpen = false"
+                        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 border-0 cursor-pointer font-bold"
+                    >✕</button>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1" x-text="quickEditForm.stepType === 'rich_text' ? 'Rich Text / HTML Content' : 'English Text / Transcript'"></label>
+                    <textarea
+                        x-model="quickEditForm.text"
+                        rows="3"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ></textarea>
+                </div>
+
+                <div x-show="quickEditForm.stepType !== 'rich_text'">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Instructions (Optional)</label>
+                    <textarea
+                        x-model="quickEditForm.instructions"
+                        rows="2"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ></textarea>
+                </div>
+
+                <div x-show="quickEditForm.stepType !== 'rich_text'">
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Meaning in Malayalam (Optional)</label>
+                    <textarea
+                        x-model="quickEditForm.meaningMalayalam"
+                        rows="2"
+                        class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    ></textarea>
+                </div>
+
+                <label x-show="quickEditForm.stepType === 'listen' || quickEditForm.stepType === 'speak'" class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input type="checkbox" x-model="quickEditForm.hideEnglish" class="rounded border-slate-300">
+                    <span>Hide English by default</span>
+                </label>
+
+                <p x-show="quickEditError" class="text-xs font-bold text-red-600 m-0" x-text="quickEditError"></p>
+
+                <div class="flex items-center justify-between gap-2 pt-1">
+                    <a
+                        :href="`/admin/units/${quickEditForm.unitId}/edit`"
+                        target="_blank"
+                        class="text-xs font-bold text-indigo-600 hover:underline no-underline"
+                    >
+                        Open Full Editor ↗
+                    </a>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            @click="quickEditOpen = false"
+                            class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border-0 cursor-pointer"
+                        >Cancel</button>
+                        <button
+                            type="button"
+                            @click="saveQuickEdit()"
+                            :disabled="quickEditSaving"
+                            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold border-0 cursor-pointer disabled:opacity-50"
+                            x-text="quickEditSaving ? 'Saving...' : 'Save Live'"
+                        ></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Subtle Tappable Bottom Swipe-Up Cue (for Desktop & Accessibility) --}}
     <footer
         x-show="showBottomCue"
@@ -1533,6 +1642,19 @@ function amterStepPlayer(config) {
         latestScore: null,
         toastMessage: '',
         toastTimer: null,
+        quickEditOpen: false,
+        quickEditSaving: false,
+        quickEditError: '',
+        quickEditForm: {
+            unitId: null,
+            blockIndex: null,
+            stepType: '',
+            turnKey: '',
+            text: '',
+            instructions: '',
+            meaningMalayalam: '',
+            hideEnglish: false,
+        },
 
         // Per-step / per-turn state
         turnStates: {},
@@ -1609,6 +1731,86 @@ function amterStepPlayer(config) {
 
         touchStartY: null,
         _navigatingPrev: false,
+
+        openQuickEdit() {
+            const step = this.steps[this.currentIndex];
+            if (!step) return;
+            this.stopAllMedia();
+            this.quickEditError = '';
+            this.quickEditForm = {
+                unitId: step.unitId || @js($unit->id ?? null),
+                blockIndex: step.blockIndex ?? null,
+                stepType: step.type || '',
+                turnKey: step.turnKey || '',
+                text: step.type === 'rich_text'
+                    ? (step.htmlContent || '')
+                    : ((step.phrases && step.phrases[0]) || step.transcript || step.correctSentence || ''),
+                instructions: step.instructions || '',
+                meaningMalayalam: step.meaningMalayalam || '',
+                hideEnglish: !!step.hideEnglishByDefault,
+            };
+            this.quickEditOpen = true;
+        },
+
+        async saveQuickEdit() {
+            if (!this.quickEditForm.unitId || this.quickEditSaving) return;
+            this.quickEditSaving = true;
+            this.quickEditError = '';
+            try {
+                const res = await fetch(`/admin/units/${this.quickEditForm.unitId}/quick-edit-block`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': this.csrfToken,
+                    },
+                    body: JSON.stringify({
+                        block_index: this.quickEditForm.blockIndex,
+                        text: this.quickEditForm.text,
+                        instructions: this.quickEditForm.instructions,
+                        meaning_malayalam: this.quickEditForm.meaningMalayalam,
+                        hide_english: this.quickEditForm.hideEnglish,
+                    }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok || !data.success) {
+                    this.quickEditError = data.message || 'Could not save changes.';
+                    return;
+                }
+
+                // Update live slide(s) in-place without reloading
+                const trimmedText = (this.quickEditForm.text || '').trim();
+                const trimmedInstr = (this.quickEditForm.instructions || '').trim() || null;
+                const trimmedMl = (this.quickEditForm.meaningMalayalam || '').trim() || null;
+                const tKey = this.quickEditForm.turnKey;
+
+                this.steps.forEach((s, idx) => {
+                    const isSame = idx === this.currentIndex || (tKey && s.turnKey === tKey);
+                    if (!isSame) return;
+                    if (s.type === 'rich_text') {
+                        s.htmlContent = this.quickEditForm.text;
+                    } else if (s.type === 'video') {
+                        s.transcript = trimmedText || null;
+                        s.instructions = trimmedInstr;
+                    } else if (s.type === 'dictation') {
+                        s.correctSentence = trimmedText;
+                        s.instructions = trimmedInstr;
+                    } else {
+                        s.phrases = trimmedText ? [trimmedText] : s.phrases;
+                        s.instructions = trimmedInstr;
+                        s.meaningMalayalam = trimmedMl;
+                        s.hideEnglishByDefault = !!this.quickEditForm.hideEnglish;
+                    }
+                });
+
+                this.quickEditOpen = false;
+                this.showToast('Saved & updated live!');
+            } catch (_) {
+                this.quickEditError = 'Network error while saving.';
+            } finally {
+                this.quickEditSaving = false;
+            }
+        },
 
         // ---------- Navigation & Media Lifecycle ----------
         goToPrevUnit() {
